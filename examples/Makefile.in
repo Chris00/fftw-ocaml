@@ -1,0 +1,37 @@
+#							-*-makefile-gmake-*-
+export OCAMLMAKEFILE = ../OCamlMakefile
+
+export INCDIRS = ../src @INC@
+export LIBS = @all_requires@ magic
+
+define PROJ_mem
+  SOURCES = mem.ml
+  RESULT  = mem
+endef
+export PROJ_mem
+
+define PROJ_delta
+  SOURCES = delta.ml
+  RESULT  = delta
+endef
+export PROJ_delta
+
+# Use these, if the environment does not define subprojects to handle:
+ifndef SUBPROJS
+  export SUBPROJS = mem delta
+endif
+
+
+.PHONY: all byte opt
+all: @BEST@
+byte: byte-code
+opt: native-code
+
+export OCAMLC 	= @OCAMLC@ 
+export OCAMLOPT = @OCAMLOPT@ 
+
+export TRASH += $(wildcard *~)
+
+# Catch-all target will be applied to all subprojects automatically
+%:
+	@$(MAKE) -f $(OCAMLMAKEFILE) subprojs SUBTARGET=$@

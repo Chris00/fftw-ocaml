@@ -8,3 +8,6 @@
 *.o
 *.exe
 *.com
+autom4te.cache/
+config.log
+config.status

@@ -1,0 +1,24 @@
+OCAMLMAKEFILE = ../OCamlMakefile
+ANNOTATE = "yes"
+
+SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
+RESULT  = fftw3
+INCDIRS = @INC@
+LIBS = @all_requires@
+CLIBS = @CLIBS@
+CFLAGS = @CFLAGS@
+#CFLAGS += -DWANT_DEBUG
+
+.PHONY: all byte opt install uninstall update
+all: @BEST@
+byte: byte-code-library
+opt: native-code-library
+
+install: libinstall
+uninstall: libuninstall
+update: uninstall install
+
+
+OCAMLC		= @OCAMLC@
+OCAMLOPT	= @OCAMLOPT@
+include $(OCAMLMAKEFILE)
