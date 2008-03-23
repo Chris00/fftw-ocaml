@@ -1,0 +1,47 @@
+
+		     Interface to FFTW, version 3
+
+------------------------------------------------------------------------
+
+PERQUISITES
+
+The FFTW, version 3, with its development files (fftw3.h) must be
+installed on your platform.
+
+
+COMPILATION
+
+  ocamlbuild fftw3.cma fftw3.cmxa
+
+  (or "make" which will be available until ocamlbuild becomes common)
+
+
+USAGE
+
+Fftw3 contains two submodules differing only by precision Fftw3.D for
+double precision and Fftw3.S for single precision.  See the mli file
+for more details.
+
+
+BUGS
+
+To report bugs, send an email to <chris_77@users.sourceforge.net>.
+
+
+DEVELOPMENT
+
+If you want to participate to the development of Fftw3, make a
+checkout from thr SVN repository on sourceforge
+(https://ocaml-fftw.svn.sourceforge.net/svnroot/ocaml-fftw/trunk).
+Personally, I use bzr (http://bazaar-vcs.org/) for development
+(branching from the SVN repository above) so you just need to publish
+your branch somewhere on the web and tell me so I can track it.
+
+
+LICENCE
+
+FFtw3 is released under the LGPL with the special axception of the
+standard library.  See the file LICENSE for more details.
+
+Although not required, it will be appreciated if your product mentions
+it uses these bindings.
