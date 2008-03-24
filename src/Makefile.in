@@ -1,6 +1,8 @@
 OCAMLMAKEFILE = ../OCamlMakefile
-ANNOTATE = "yes"
+ANNOTATE := yes
+USE_CAMLP4 := yes
 
+PRE_TARGETS = fftw3S_external.ml
 SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
 RESULT  = fftw3
 INCDIRS = @INC@
@@ -18,7 +20,15 @@ install: libinstall
 uninstall: libuninstall
 update: uninstall install
 
+# Building single precision by text substitution (OCaml macros require
+# code duplication which we'd rather avoid).
+fftw3S_external.ml: fftw3D_external.ml
+	@echo "(* AUTOMATICALLY GENERATED FILE *)" > $@
+	sed -e "s/fftw_ocaml/fftwf_ocaml/" $< >> $@
+	@chmod a-w $@
+
 
 OCAMLC		= @OCAMLC@
 OCAMLOPT	= @OCAMLOPT@
+#CAMLP4O		= @CAMLP4O@
 include $(OCAMLMAKEFILE)
