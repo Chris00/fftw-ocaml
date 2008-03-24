@@ -23,7 +23,7 @@ update: uninstall install
 # Building single precision by text substitution (OCaml macros require
 # code duplication which we'd rather avoid).
 fftw3S_external.ml: fftw3D_external.ml
-	@$(RM) $@
+	@-$(RM) $@
 	@echo "(* AUTOMATICALLY GENERATED FILE *)" > $@
 	sed -e "s/fftw_ocaml/fftwf_ocaml/" $< >> $@
 	@chmod a-w $@
