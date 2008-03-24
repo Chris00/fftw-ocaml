@@ -76,6 +76,7 @@ if test "$OCAMLOPT" != no ; then
     fi
 fi
 
+
 AC_PATH_PROG(OCAMLDEP,ocamldep,no)
 if test "$OCAMLDEP" = no ; then
 	AC_MSG_ERROR(Cannot find ocamldep.)
@@ -104,7 +105,7 @@ AC_TRY_LINK([#include <fftw3.h>],
 	    fftw_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);],
             [AC_MSG_RESULT([found]); CLIBS="$CLIBS fftw3"],
             [AC_MSG_ERROR([Check for fftw3 (double precision) failed.])])
-AC_MSG_CHECKING([for libfftw3 (single precision)])
+AC_MSG_CHECKING([for libfftw3f (single precision)])
 LIBS="$LIBS -lfftw3f"
 AC_TRY_LINK([#include <fftw3.h>],
             [const int n = 10;
@@ -143,7 +144,7 @@ AC_SUBST(all_requires)
 
 # Finally create the Makefile and samples
 AC_CONFIG_FILES([Makefile],[chmod a-w Makefile])
-AC_CONFIG_FILES([src/META],[chmod a-w Makefile])
-AC_CONFIG_FILES([src/Makefile],[chmod a-w Makefile])
-AC_CONFIG_FILES([examples/Makefile],[chmod a-w Makefile])
+AC_CONFIG_FILES([src/META],[chmod a-w src/META])
+AC_CONFIG_FILES([src/Makefile],[chmod a-w src/Makefile])
+AC_CONFIG_FILES([examples/Makefile],[chmod a-w examples/Makefile])
 AC_OUTPUT
