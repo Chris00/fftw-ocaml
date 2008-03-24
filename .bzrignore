@@ -11,3 +11,6 @@
 autom4te.cache/
 config.log
 config.status
+Makefile
+src/META
+src/fftw3S_external.ml
