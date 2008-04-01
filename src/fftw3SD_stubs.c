@@ -44,7 +44,7 @@ static struct custom_operations FFTW(caml_plan_ops) = {
 /* Executing plans
  ***********************************************************************/
 
-CAMLprim value FFTW(ocaml_execute)(value p)
+CAMLexport value FFTW(ocaml_execute)(value p)
 {
   /* noalloc */
   enter_blocking_section();  /* Allow other threads */
@@ -53,7 +53,7 @@ CAMLprim value FFTW(ocaml_execute)(value p)
   return(Val_unit);
 }
 
-CAMLprim value FFTW(ocaml_execute_dft)(value p, value i, value o)
+CAMLexport value FFTW(ocaml_execute_dft)(value p, value i, value o)
 {
   /* noalloc */
   enter_blocking_section();  /* Allow other threads */
@@ -62,9 +62,9 @@ CAMLprim value FFTW(ocaml_execute_dft)(value p, value i, value o)
   return(Val_unit);
 }
 
-CAMLprim value FFTW(ocaml_execute_split_dft)(value p,
-                                             value ri, value ii,
-                                             value ro, value io)
+CAMLexport value FFTW(ocaml_execute_split_dft)(value p,
+                                               value ri, value ii,
+                                               value ro, value io)
 {
   /* noalloc */
   enter_blocking_section();  /* Allow other threads */
@@ -73,6 +73,24 @@ CAMLprim value FFTW(ocaml_execute_split_dft)(value p,
                           Data_bigarray_val(ro), Data_bigarray_val(io));
   leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
+}
+
+
+/* Normalizing transforms
+ ***********************************************************************/
+
+CAMLexport
+value FFTW(ocaml_normalize)(value va, /* array */
+                            value vofs, value vstride, value vdim,
+                            value vfactor)
+{
+  /* noalloc */
+  FFTW(complex) a = Data_bigarray_val(va) + Int_val(vofs);
+  
+  enter_blocking_section();  /* Allow other threads */
+
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);  
 }
 
 
@@ -98,7 +116,7 @@ CAMLprim value FFTW(ocaml_execute_split_dft)(value p,
     howmany_dims[k].os = Int_val(Field(vhowmanyo, k));          \
   }
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_dft)(value vi, value vo,  value sign, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
@@ -127,7 +145,7 @@ value FFTW(ocaml_guru_dft)(value vi, value vo,  value sign, value flags,
   CAMLreturn(plan);
 }
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_dft_bc)(value * argv, int argn)
 {
   return FFTW(ocaml_guru_dft)(argv[0], argv[1], argv[2], argv[3], argv[4],
@@ -136,7 +154,7 @@ value FFTW(ocaml_guru_dft_bc)(value * argv, int argn)
 }
 
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_r2c)(value vi, value vo, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
@@ -165,7 +183,7 @@ value FFTW(ocaml_guru_r2c)(value vi, value vo, value flags,
   CAMLreturn(plan);
 }
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_r2c_bc)(value * argv, int argn)
 {
   return FFTW(ocaml_guru_r2c)(argv[0], argv[1], argv[2], argv[3], argv[4],
@@ -175,7 +193,7 @@ value FFTW(ocaml_guru_r2c_bc)(value * argv, int argn)
 
 
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_c2r)(value vi, value vo, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
@@ -204,7 +222,7 @@ value FFTW(ocaml_guru_c2r)(value vi, value vo, value flags,
   CAMLreturn(plan);
 }
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_c2r_bc)(value * argv, int argn)
 {
   return FFTW(ocaml_guru_c2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
@@ -213,7 +231,7 @@ value FFTW(ocaml_guru_c2r_bc)(value * argv, int argn)
 }
 
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_r2r)(value vi, value vo, value vkind, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
@@ -246,7 +264,7 @@ value FFTW(ocaml_guru_r2r)(value vi, value vo, value vkind, value flags,
   CAMLreturn(plan);
 }
 
-CAMLprim
+CAMLexport
 value FFTW(ocaml_guru_r2r_bc)(value * argv, int argn)
 {
   return FFTW(ocaml_guru_r2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
