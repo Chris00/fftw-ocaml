@@ -1,9 +1,8 @@
-(* File: fftw3D.ml
+(* File: fftw3SD.ml
 
    Copyright (C) 2006
 
-     Christophe Troestler
-     email: Christophe.Troestler@umh.ac.be
+     Christophe Troestler <chris_77@users.sourceforge.net>
      WWW: http://math.umh.ac.be/an/software/
 
    This library is free software; you can redistribute it and/or modify
@@ -16,18 +15,26 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details. *)
 
-(* FFTW3 interface for Double precision *)
+(* FFTW3 interface for Single/Double precision *)
 
 open Bigarray
 open Printf
 
-
-(* The types for Array1,... can be converted to this at no cost. *)
-type 'l complex_array = (Complex.t, complex_elt, 'l) Genarray.t
-type 'l float_array   = (float, float_elt, 'l) Genarray.t
-
-
 type 'a fftw_plan (* single and double precision plans are different *)
+
+(* Types of plans *)
+type c2c
+type r2c
+type c2r
+type r2r
+
+IFDEF SINGLE_PREC THEN
+INCLUDE "fftw3S_external.ml"
+ELSE
+INCLUDE "fftw3D_external.ml"
+ENDIF
+;;
+
 type 'a plan = {
   plan: 'a fftw_plan;
   i : 'b 'c 'd. ('b,'c,'d) Genarray.t; (* input array; => not freed by GC *)
@@ -38,11 +45,6 @@ type 'a plan = {
   normalize : bool; (* whether to normalize the output *)
   normalize_factor : float; (* multiplication factor to normalize *)
 }
-
-type c2c
-type r2c
-type c2r
-type r2r
 
 type dir = Forward | Backward
 type measure = Estimate | Measure | Patient | Exhaustive
@@ -59,11 +61,11 @@ let sign_of_dir = function
 let flags meas unaligned preserve_input =
   let f = match meas with
     | Measure -> 0 (* 0U *)
-    | Exhaustive -> 8 (* 1U << 3 *)
-    | Patient -> 32 (* 1U << 5 *)
-    | Estimate -> 64 (* 1U << 6 *) in
-  let f = if unaligned then f lor 2 (* 1U << 1 *) else f in
-  if preserve_input then f lor 16 (* 1U << 4 *) else f lor 1 (* 1U << 0 *)
+    | Exhaustive -> 8 (* 1U lsl 3 *)
+    | Patient -> 32 (* 1U lsl 5 *)
+    | Estimate -> 64 (* 1U lsl 6 *) in
+  let f = if unaligned then f lor 2 (* 1U lsl 1 *) else f in
+  if preserve_input then f lor 16 (* 1U lsl 4 *) else f lor 1 (* 1U lsl 0 *)
 
 (* WARNING: keep in sync with fftw3.h *)
 let int_of_r2r_kind = function
@@ -83,26 +85,10 @@ let int_of_r2r_kind = function
 (** {2 Execution of plans}
  ***********************************************************************)
 
-(* [normalize mat offset strides n nm] multiply all the matrix entries
-   determined by [offset], [strides] and [n] (same as for wrappers
-   below), by [nm]. *)
-external normalize : (_,_,_) Genarray.t -> int -> int array -> int array ->
-  float -> unit
-  = "fftw_ocaml_normalize" "noalloc"
-
-external fftw_exec : 'a plan -> unit = "fftw_ocaml_execute" "noalloc"
-
 let exec p =
   fftw_exec p.plan;
   if p.normalize then
-    normalize p.o p.offset p.strideo p.no p.normalize_factor
-
-
-external exec_dft : c2c plan -> 'l complex_array -> 'l complex_array -> unit
-  = "fftw_ocaml_execute_dft" "noalloc"
-external exec_split_dft : c2c plan -> 'l float_array -> 'l float_array ->
-  'l float_array -> 'l float_array -> unit
-  = "fftw_ocaml_execute_split_dft" "noalloc"
+    normalize p.o p.offseto p.strideo p.no p.normalize_factor
 
 let exec_dft plan i o =
   (* how to check that the arrays conform to the plan specification? *)
@@ -118,11 +104,16 @@ let exec_split_dft plan ri ii ro io =
 
 let min i j = if (i:int) < j then i else j
 
-let rec list_iteri_loop f i = function
-  | [] -> ()
-  | a :: tl -> f i a; list_iteri_loop f (succ i) tl
+module List =
+struct
+  include List
 
-let list_iteri f l = list_iteri_loop f 0 l
+  let rec list_iteri_loop f i = function
+    | [] -> ()
+    | a :: tl -> f i a; list_iteri_loop f (succ i) tl
+
+  let iteri f l = list_iteri_loop f 0 l
+end
 
 (* positive part *)
 let pos i = if i > 0 then i else 0
@@ -133,75 +124,6 @@ let neg i = if i < 0 then i else 0
 
 (** {2 Creating plans}
  ***********************************************************************)
-
-(* BEWARE: wrapper functions are just thin wrappers around their C
-   counterpart.  In particular, their arguments must be thought for
-   the C layout. *)
-external guru_dft :
-  (* in *)  'l complex_array ->
-  (* out *) 'l complex_array ->
-  (* sign (forward/backward) *) int ->
-  (* flags (GOOD: they do not use the 32th bit) *) int ->
-  (* input offset (as 1D array) *) int ->
-  (* output offset (as 1D array) *) int ->
-  (* n (transform dimensions; its length = rank) *) int array ->
-  (* istride (same length as [n]) *) int array ->
-  (* ostride (same length as [n]) *) int array ->
-  (* howmany (multiplicity dimensions; its length=howmany_rank) *) int array ->
-  (* howmany input strides (same length as [howmany]) *) int array ->
-  (* howmany output strides (same length as [howmany]) *) int array
-  -> c2c fftw_plan
-  = "fftw_ocaml_guru_dft_bc" "fftw_ocaml_guru_dft"
-  (* Wrapper of fftw_plan_guru_dft.  No coherence check is done in the
-     C code.  @raise Failure if the plan cannot be created. *)
-
-external guru_r2c :
-  (* in *) 'l float_array ->
-  (* out *) 'l complex_array ->
-  (* flags *) int ->
-  (* input offset *) int ->
-  (* output offset *) int ->
-  (* n (transform dimensions) *) int array ->
-  (* istride (same length as [n]) *) int array ->
-  (* ostride (same length as [n]) *) int array ->
-  (* howmany (multiplicity dimensions) *) int array ->
-  (* howmany input strides (same length as [howmany]) *) int array ->
-  (* howmany output strides (same length as [howmany]) *) int array
-  -> r2c fftw_plan
-  = "fftw_ocaml_guru_r2c_bc" "fftw_ocaml_guru_r2c"
-
-external guru_c2r :
-  (* in *) 'l complex_array ->
-  (* out *) 'l float_array ->
-  (* flags *) int ->
-  (* input offset *) int ->
-  (* output offset *) int ->
-  (* n (transform dimensions) *) int array ->
-  (* istride (same length as [n]) *) int array ->
-  (* ostride (same length as [n]) *) int array ->
-  (* howmany (multiplicity dimensions) *) int array ->
-  (* howmany input strides (same length as [howmany]) *) int array ->
-  (* howmany output strides (same length as [howmany]) *) int array
-  -> c2r fftw_plan
-  = "fftw_ocaml_guru_c2r_bc" "fftw_ocaml_guru_c2r"
-
-external guru_r2r :
-  (* in *) 'l float_array ->
-  (* out *) 'l float_array ->
-  (* kind (same length as [n]) *) int array ->
-  (* flags *) int ->
-  (* input offset *) int ->
-  (* output offset *) int ->
-  (* n (transform dimensions) *) int array ->
-  (* istride (same length as [n]) *) int array ->
-  (* ostride (same length as [n]) *) int array ->
-  (* howmany (multiplicity dimensions) *) int array ->
-  (* howmany input strides (same length as [howmany]) *) int array ->
-  (* howmany output strides (same length as [howmany]) *) int array
-  -> r2r fftw_plan
-  = "fftw_ocaml_guru_r2r_bc" "fftw_ocaml_guru_r2r"
-
-
 
 module Genarray = struct
   external create: ('a, 'b) Bigarray.kind -> 'c Bigarray.layout ->
@@ -353,7 +275,7 @@ module Genarray = struct
         else invalid_arg(sprintf "%s: length %s = %i <> length %s = %i"
                             name hm_nname (Array.length hm_n) hmname hm_rank) in
       let hm_stride = Array.make hm_rank 0 in
-      list_iteri (fun i v ->
+      List.iteri begin fun i v ->
         (* [i]th translation vector [v] *)
         if Array.length v <> rank then
           invalid_arg(sprintf "%s: length %ith element of %s <> %i \
@@ -394,7 +316,7 @@ module Genarray = struct
           invalid_arg(sprintf "%s: %ith element of %s = [|0.;...;0.|]"
                          name i hmname);
         hm_stride.(i) <- !hm_s;
-      ) hm;
+      end hm;
       hm_stride, hm_n, stride, n
     )
 
@@ -536,7 +458,7 @@ module Genarray = struct
         else invalid_arg(sprintf "%s: length %s = %i <> length %s = %i"
                             name hm_nname (Array.length hm_n) hmname hm_rank) in
       let hm_stride = Array.make hm_rank 0 in
-      list_iteri (fun i v ->
+      List.iteri begin fun i v ->
         (* [i]th translation vector [v] *)
         if Array.length v <> rank then
           invalid_arg(sprintf "%s: length %ith element of %s <> %i \
@@ -578,7 +500,7 @@ module Genarray = struct
           invalid_arg(sprintf "%s: %ith element of %s = [|0.;...;0.|]"
                          name i hmname);
         hm_stride.(i) <- !hm_s;
-      ) hm;
+      end hm;
       hm_stride, hm_n, stride, n
     )
 
@@ -618,8 +540,8 @@ module Genarray = struct
       (guru_dft i o (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_rank howmany n ofsi inci i ofso inco o
 
-  (* At the moment, in place transforms are not possible but tey may be
-     if bug #0004333 is resolved. *)
+  (* At the moment, in place transforms are not possible but they may
+     be if OCaml bug 0004333 is resolved. *)
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?n
       ?howmany_ranki ?howmanyi  ?ofsi ?inci (i: 'l float_array)
