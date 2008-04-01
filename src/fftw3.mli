@@ -20,7 +20,7 @@
 (** Interface for FFTW version 3.
 
     @author Christophe Troestler <chris_77\@users.sourceforge.net>
-    @version 0.5
+    @version 0.5.0
 *)
 
 
@@ -33,7 +33,7 @@
     or
     {[
       module FFT = Fftw3.S 						]}
-    according to the precision you need (this way of proceeding makes it
+    depending to the precision you need (this way of proceeding makes it
     easy to change the precision of the FFT sould it be necessary) and
     then use it as
     {[
@@ -46,10 +46,10 @@
     FFT of [x] into [y].  {b Beware} that creating the plan usually
     destroys the content of [x] and [y], so only fill them afterwards.
 
-    RECOMMENDATION: The plan creation functions like
-    {!Fftw3.D.Array1.dft} have many optional arguments for maximum
-    flexibility.  The two important ones are [~meas] and [~normalize].
-    The other ones can be ignored at first.
+    HINT: Plan creation functions like {!Fftw3.Sig.Array1.dft} have
+    many optional arguments for maximum flexibility.  The two
+    important ones are [~meas] and [~normalize].  The other ones can
+    be ignored at first.
 *)
 module type Sig = sig
   open Bigarray
@@ -62,9 +62,11 @@ module type Sig = sig
     (** Precision of complex numbers. *)
 
   val float : (float, float_elt) Bigarray.kind
-    (** Float of the precision of this module. *)
+    (** Float of the precision of this module.  Use this to create
+        precision independent code. *)
   val complex : (Complex.t, complex_elt) Bigarray.kind
-    (** Complex of the precision of this module. *)
+    (** Complex of the precision of this module.  Use this to create
+        precision independent code. *)
 
 
   (** {2 Specifying plans} *)
