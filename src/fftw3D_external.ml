@@ -1,10 +1,20 @@
-(* External functions for the fftw3 stubs *)
+(* External functions for the fftw3 stubs (in double precision for the
+   original file). *)
+
+(* The types for Array1,... can be converted to this at no cost. *)
+type 'l complex_array = (Complex.t, complex_elt, 'l) Genarray.t
+type 'l float_array   = (float, float_elt, 'l) Genarray.t
+
 
 (** {2 Execution of plans}
  ***********************************************************************)
 
-external normalize : (_,_,_) Genarray.t -> int -> int array -> int array ->
-  float -> unit
+external normalize :
+  (* array *) (_,_,_) Genarray.t ->
+  (* offset *) int ->
+  (* strides *) int array ->
+  (* dimensions *) int array ->
+  (* multiply all entries by this number *) float -> unit
   = "fftw_ocaml_normalize" "noalloc"
 
 external fftw_exec : 'a fftw_plan -> unit = "fftw_ocaml_execute" "noalloc"
