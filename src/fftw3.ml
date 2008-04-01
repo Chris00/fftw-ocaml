@@ -1,3 +1,4 @@
+(*pp camlp4o pa_macro.cmo *)
 (* File: fftw3.ml
 
    Objective Caml interface for FFTW.
@@ -23,8 +24,8 @@ module D =
 struct
   type float_elt = Bigarray.float64_elt
   type complex_elt = Bigarray.complex64_elt
-  let float = float64
-  let complex = complex64
+  let float = Bigarray.float64
+  let complex = Bigarray.complex64
 
   INCLUDE "fftw3SD.ml"
 end
@@ -33,9 +34,10 @@ module S =
 struct
   type float_elt = Bigarray.float32_elt
   type complex_elt = Bigarray.complex32_elt
-  let float = float32
-  let complex = complex32
+  let float = Bigarray.float32
+  let complex = Bigarray.complex32
 
+  DEFINE SINGLE_PREC
   INCLUDE "fftw3SD.ml"
 end
 
