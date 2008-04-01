@@ -8,6 +8,9 @@
 *.o
 *.exe
 *.com
+._bcdi/
+._d/
+._ncdi/
 autom4te.cache/
 config.log
 config.status
