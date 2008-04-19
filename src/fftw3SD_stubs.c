@@ -85,10 +85,10 @@ value FFTW(ocaml_normalize)(value va, /* array */
                             value vfactor)
 {
   /* noalloc */
-  FFTW(complex) a = Data_bigarray_val(va) + Int_val(vofs);
+  FFTW(complex) *a = Data_bigarray_val(va) + Int_val(vofs);
   
   enter_blocking_section();  /* Allow other threads */
-
+/* FIXME: code missing */
   leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);  
 }
