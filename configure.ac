@@ -1,12 +1,16 @@
 
-# check for one particular file of the sources 
-AC_INIT(ocaml-fftw3, 0.5.0, chris_77@users.sourceforge.net)
+# Keep the version in sync with src/fftw3.mli
+AC_INIT(ocaml-fftw3, 0.5.1, chris_77@users.sourceforge.net)
 
-VERSION=$PACKAGE_VERSION
 AC_MSG_RESULT([configuring $PACKAGE_STRING])
 
 OCAMLFIND_LDCONF=""
-AC_ARG_ENABLE([ldconf], AC_HELP_STRING([--disable-ldconf],[don't modify the dynamic loader configuration file (default is enable)]),[ac_enable_ldconf=$enableval],[ac_enable_ldconf=$enableval],[ac_enable_ldconf=yes])
+AC_ARG_ENABLE([ldconf],
+  AC_HELP_STRING([--disable-ldconf],
+    [don't modify the dynamic loader configuration file (default is enable)]),
+  [ac_enable_ldconf=$enableval],
+  [ac_enable_ldconf=$enableval],
+  [ac_enable_ldconf=yes])
 if test "$ac_enable_ldconf" = no ; then
 	AC_MSG_RESULT([disabling modification of ld.conf])
 	OCAMLFIND_LDCONF=dummy
@@ -15,21 +19,21 @@ fi
 # Check for Ocaml compilers
 
 # we first look for ocamlc in the path; if not present, we fail
-AC_CHECK_PROG(OCAMLC,ocamlc,`which ocamlc`,no)
+AC_PATH_PROG(OCAMLC,ocamlc,no)
 if test "$OCAMLC" = no ; then
 	AC_MSG_ERROR(Cannot find ocamlc.)
 fi
 
-# we look for the directory of ocamlc in $OCAMLC
+# Directory of ocamlc in $OCAMLC
 OCAMLBIN=`dirname $OCAMLC`
 
-# we extract Ocaml version number and library path
-OCAMLVERSION=`$OCAMLC -v | sed -n -e 's|.*version* *\(.*\)$|\1|p' `
-echo "ocaml version is $OCAMLVERSION"
-OCAMLLIB=`$OCAMLC -v | tail -n 1 | cut -f 4 -d " "`
-echo "ocaml library path is $OCAMLLIB"
+# Ocaml version number and library path
+OCAML_VERSION=`$OCAMLC -version`
+echo "ocaml version is $OCAML_VERSION"
+OCAMLLIBPATH=`$OCAMLC -where`
+echo "ocaml library path is $OCAMLLIBPATH"
 
-# then we look for ocamlopt; if not present, we issue a warning
+# We look for ocamlopt; if not present, we issue a warning
 # if the version is not the same, we also discard it
 # we set OCAMLBEST to "opt" or "byte", whether ocamlopt is available or not
 AC_PATH_PROG(OCAMLOPT,ocamlopt,no)
@@ -39,7 +43,7 @@ if test "$OCAMLOPT" = no ; then
 else
 	AC_MSG_CHECKING(ocamlopt version)
 	TMPVERSION=`$OCAMLOPT -v | sed -n -e 's|.*version* *\(.*\)$|\1|p' `
-	if test "$TMPVERSION" != "$OCAMLVERSION" ; then
+	if test "$TMPVERSION" != "$OCAML_VERSION" ; then
 	    AC_MSG_RESULT(differs from ocamlc; ocamlopt discarded.)
 	    OCAMLOPT=no
 	else
@@ -48,12 +52,12 @@ else
 	fi
 fi
 
-# checking for ocamlc.opt
+# Checking for ocamlc.opt
 AC_PATH_PROG(OCAMLCDOTOPT,ocamlc.opt,no)
 if test "$OCAMLCDOTOPT" != no ; then
 	AC_MSG_CHECKING(ocamlc.opt version)
-	TMPVERSION=`$OCAMLCDOTOPT -v | sed -n -e 's|.*version* *\(.*\)$|\1|p' `
-	if test "$TMPVERSION" != "$OCAMLVERSION" ; then
+	TMPVERSION=`$OCAMLCDOTOPT -version`
+	if test "$TMPVERSION" != "$OCAML_VERSION" ; then
 	    AC_MSG_RESULT(differs from ocamlc; ocamlc.opt discarded.)
 	else
 	    AC_MSG_RESULT(ok)
@@ -61,13 +65,13 @@ if test "$OCAMLCDOTOPT" != no ; then
 	fi
 fi
 
-# checking for ocamlopt.opt
+# Checking for ocamlopt.opt
 if test "$OCAMLOPT" != no ; then
     AC_PATH_PROG(OCAMLOPTDOTOPT,ocamlopt.opt,no)
     if test "$OCAMLOPTDOTOPT" != no ; then
 	AC_MSG_CHECKING(ocamlc.opt version)
-	TMPVER=`$OCAMLOPTDOTOPT -v | sed -n -e 's|.*version* *\(.*\)$|\1|p' `
-	if test "$TMPVER" != "$OCAMLVERSION" ; then
+	TMPVER=`$OCAMLOPTDOTOPT -version`
+	if test "$TMPVER" != "$OCAML_VERSION" ; then
 	    AC_MSG_RESULT(differs from ocamlc; ocamlopt.opt discarded.)
 	else
 	    AC_MSG_RESULT(ok)
@@ -89,14 +93,12 @@ if test "$OCAMLFIND" = no ; then
 	AC_MSG_ERROR(Cannot find ocamlfind.)
 fi
 
-CAMLLIBPATH=`$OCAMLC -where`
-
 AC_PROG_CC()
 
 # Add the math lib
 CLIBS="$CLIBS m"
 
-# libfftw3 detection (put in CLIB)
+# libfftw3 detection (put in CLIBS)
 AC_MSG_CHECKING([for libfftw3 (double precision)])
 LIBS="$LIBS -lfftw3"
 AC_TRY_LINK([#include <fftw3.h>],
@@ -105,6 +107,7 @@ AC_TRY_LINK([#include <fftw3.h>],
 	    fftw_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);],
             [AC_MSG_RESULT([found]); CLIBS="$CLIBS fftw3"],
             [AC_MSG_ERROR([Check for fftw3 (double precision) failed.])])
+
 AC_MSG_CHECKING([for libfftw3f (single precision)])
 LIBS="$LIBS -lfftw3f"
 AC_TRY_LINK([#include <fftw3.h>],
@@ -121,28 +124,29 @@ else
 fi
 
 # substitutions to perform
-AC_SUBST(VERSION)
+AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(OCAMLC)
 AC_SUBST(OCAMLOPT)
 AC_SUBST(OCAMLDEP)
 AC_SUBST(OCAMLBEST)
-AC_SUBST(OCAMLVERSION)
-AC_SUBST(OCAMLLIB)
+AC_SUBST(OCAML_VERSION)
+AC_SUBST(OCAMLLIBPATH)
 AC_SUBST(OCAMLBIN)
 AC_SUBST(OCAMLDOC)
 AC_SUBST(OCAMLFIND)
 AC_SUBST(OCAMLFIND_LDCONF)
 AC_SUBST(OCAMLCP)
-AC_SUBST(CAMLLIBPATH)
 AC_SUBST(BEST)
 AC_SUBST(INC)
 AC_SUBST(CLIBS)
 AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(CPPFLAGS)
 AC_SUBST(requires)
-all_requires="`ocamlfind query -r -separator " " -format "%p" $requires` $_requires"
+all_requires="`$OCAMLFIND query -r -separator " " -format "%p" $requires` $_requires"
 AC_SUBST(all_requires)
 
-# Finally create the Makefile and samples
+# Finally create the Makefile and samples (read only to avoid mistakes)
 AC_CONFIG_FILES([Makefile],[chmod a-w Makefile])
 AC_CONFIG_FILES([src/META],[chmod a-w src/META])
 AC_CONFIG_FILES([src/Makefile],[chmod a-w src/Makefile])

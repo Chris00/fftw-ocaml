@@ -27,8 +27,12 @@ all: @BEST@
 byte: byte-code
 opt: native-code
 
-export OCAMLC 	= @OCAMLC@ 
-export OCAMLOPT = @OCAMLOPT@ 
+export OCAMLC		= @OCAMLC@
+export OCAMLOPT		= @OCAMLOPT@
+export OCAMLDEP		= @OCAMLDEP@
+export OCAMLDOC		= @OCAMLDOC@
+export OCAMLFIND	= @OCAMLFIND@
+export OCAMLLIBPATH	= @OCAMLLIBPATH@
 
 export TRASH += $(wildcard *~)
 

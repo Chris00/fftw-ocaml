@@ -20,7 +20,7 @@
 (** Interface for FFTW version 3.
 
     @author Christophe Troestler <chris_77\@users.sourceforge.net>
-    @version 0.5.0
+    @version 0.5.1
 *)
 
 
