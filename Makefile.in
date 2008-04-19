@@ -4,7 +4,7 @@ DISTFILES := ChangeLog INSTALL LICENSE README \
 	bootstrap configure.ac configure Makefile.in OCamlMakefile \
 	src/*.ml src/*.mli src/*.c src/Makefile.in src/META.in \
 	examples/*.ml examples/*.txt examples/Makefile.in
-VERSION = @VERSION@
+VERSION = @PACKAGE_VERSION@
 PKG_TARBALL = $(PKG_NAME)-$(VERSION).tar.gz
 
 # Web site locally and on sourceforge:
