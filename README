@@ -11,9 +11,18 @@ installed on your platform.
 
 COMPILATION
 
-  ocamlbuild fftw3.cma fftw3.cmxa
+  ./bootstrap (optional, requires autoconf)
+  ./configure
+  make
 
-  (or "make" which will be available until ocamlbuild becomes common)
+If your fftw3 header files or libraries are not where you C compiler
+expects to find them, you need to tell configure by using the
+following syntax:
+
+  CPPFLAGS="-I/opt/local/include" LDFLAGS="-L/opt/local/lib" ./configure
+
+Of course, replace /opt/local/include (resp. /opt/local/lib) by the
+actual paths of your header files (resp. library).
 
 
 USAGE
