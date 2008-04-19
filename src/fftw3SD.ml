@@ -1,6 +1,6 @@
 (* File: fftw3SD.ml
 
-   Copyright (C) 2006
+   Copyright (C) 2006-2008
 
      Christophe Troestler <chris_77@users.sourceforge.net>
      WWW: http://math.umh.ac.be/an/software/
@@ -19,21 +19,6 @@
 
 open Bigarray
 open Printf
-
-(* Include these definitions here so one can compile this file
-   directly (e.g. with -dtypes) *)
-IFDEF SINGLE_PREC THEN
-type float_elt = Bigarray.float32_elt
-type complex_elt = Bigarray.complex32_elt
-let float = Bigarray.float32
-let complex = Bigarray.complex32
-ELSE
-type float_elt = Bigarray.float64_elt
-type complex_elt = Bigarray.complex64_elt
-let float = Bigarray.float64
-let complex = Bigarray.complex64
-ENDIF
-;;
 
 type 'a fftw_plan (* single and double precision plans are different *)
 
@@ -127,7 +112,7 @@ struct
     | [] -> ()
     | a :: tl -> f i a; list_iteri_loop f (succ i) tl
 
-  let iteri f l = list_iteri_loop f 0 l
+  let iteri (f: int -> _ -> unit) l = list_iteri_loop f 0 l
 end
 
 (* positive part *)
@@ -150,8 +135,8 @@ module Genarray = struct
 
   let is_c_layout m = (Genarray.layout m = (Obj.magic c_layout : 'a layout))
 
-  (* [get_rank default m] returns the rank provided by the first
-     matrix in the list of options [m]. *)
+  (** [get_rank default m] returns the rank provided by the first
+      matrix in the list of options [m]. *)
   let rec get_rank default = function
     | [] -> default
     | None :: t -> get_rank default t
@@ -165,9 +150,9 @@ module Genarray = struct
                          name rank (Array.length m));
         m
 
-  (* Assume that [a] has at least one element -- which does not matter
-     for here because bigarrays have at least one dim. *)
+  (** Return a string showing the content of the array *)
   let string_of_array a =
+    assert(Array.length a >= 1);
     let b = Buffer.create 80 in
     Buffer.add_string b "[|";
     Buffer.add_string b (string_of_int a.(0));
