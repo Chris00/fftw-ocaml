@@ -20,6 +20,21 @@
 open Bigarray
 open Printf
 
+(* Include these definitions here so one can compile this file
+   directly (e.g. with -dtypes) *)
+IFDEF SINGLE_PREC THEN
+type float_elt = Bigarray.float32_elt
+type complex_elt = Bigarray.complex32_elt
+let float = Bigarray.float32
+let complex = Bigarray.complex32
+ELSE
+type float_elt = Bigarray.float64_elt
+type complex_elt = Bigarray.complex64_elt
+let float = Bigarray.float64
+let complex = Bigarray.complex64
+ENDIF
+;;
+
 type 'a fftw_plan (* single and double precision plans are different *)
 
 (* Types of plans *)
@@ -58,7 +73,7 @@ let sign_of_dir = function
   | Backward -> 1
 
 (* WARNING: keep in sync with fftw3.h *)
-let flags meas unaligned preserve_input =
+let flags meas unaligned preserve_input : int =
   let f = match meas with
     | Measure -> 0 (* 0U *)
     | Exhaustive -> 8 (* 1U lsl 3 *)
