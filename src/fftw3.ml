@@ -36,11 +36,42 @@ struct
   let iteri (f: int -> _ -> unit) l = list_iteri_loop f 0 l
 end
 
-(* positive part *)
+(** positive part *)
 let pos i = if i > 0 then i else 0
 
-(* negative part *)
+(** negative part *)
 let neg i = if i < 0 then i else 0
+
+(** Return a string showing the content of the array *)
+let string_of_array a =
+  assert(Array.length a >= 1);
+  let b = Buffer.create 80 in
+  Buffer.add_string b "[|";
+  Buffer.add_string b (string_of_int a.(0));
+  for i = 1 to Array.length a - 1 do
+    Buffer.add_string b "; ";
+    Buffer.add_string b (string_of_int a.(i));
+  done;
+  Buffer.add_string b "|]";
+  Buffer.contents b
+
+
+let is_c_layout m = (Genarray.layout m = (Obj.magic c_layout : 'a layout))
+
+(** [get_rank default m] returns the length of by the first array in
+    the list of options [m]. *)
+let rec get_rank default = function
+  | [] -> default
+  | None :: t -> get_rank default t
+  | Some m :: _ -> Array.length m
+
+let get_mat_rank name rank default = function
+  | None -> Array.make rank default (* Create matrix with default value *)
+  | Some m ->
+      if Array.length m <> rank then
+        invalid_arg(sprintf "%s: expected length=%i, got=%i"
+                      name rank (Array.length m));
+      m
 
 
 (** {2 Precision dependent modules}
