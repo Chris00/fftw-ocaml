@@ -19,6 +19,9 @@
    LICENSE for more details.
 *)
 
+open Bigarray
+open Printf
+
 (** {2 Helper funs}
  ***********************************************************************)
 
@@ -56,7 +59,8 @@ let string_of_array a =
   Buffer.contents b
 
 
-let is_c_layout m = (Genarray.layout m = (Obj.magic c_layout : 'a layout))
+let is_c_layout m =
+  (Genarray.layout m = (Obj.magic c_layout : 'a layout))
 
 (** [get_rank default m] returns the length of by the first array in
     the list of options [m]. *)
