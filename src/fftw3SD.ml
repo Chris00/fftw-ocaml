@@ -17,9 +17,6 @@
 
 (* FFTW3 interface for Single/Double precision *)
 
-open Bigarray
-open Printf
-
 type 'a fftw_plan (* single and double precision plans are different *)
 
 (* Types of plans *)
@@ -155,35 +152,33 @@ module Genarray = struct
   (* At the moment, in place transforms are not possible but they may
      be if OCaml bug 0004333 is resolved. *)
   let r2c ?(meas=Measure) ?(normalize=false)
-      ?(preserve_input=false) ?(unaligned=false) ?n
-      ?howmany_ranki ?howmanyi  ?ofsi ?inci (i: 'l float_array)
-      ?howmany_ranko ?howmanyo  ?ofso ?inco (o: 'l complex_array) =
+      ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ofsi ?inci (i: 'l float_array)
+      ?(howmanyo=[]) ?ofso ?inco (o: 'l complex_array) =
     apply "Fftw3.D.Genarray.r2c"
       (guru_r2c i o (flags meas unaligned preserve_input))
-      howmany_rank howmany howmany_ofsi howmany_inci howmany_ofso howmany_inco
-      n ofsi inci i ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
 
   let c2r ?(meas=Measure) ?(normalize=false)
-      ?(preserve_input=false) ?(unaligned=false) ?n
-      ?howmany_ranki ?howmanyi  ?ofsi ?inci (i: 'l float_array)
-      ?howmany_ranko ?howmanyo  ?ofso ?inco (o: 'l complex_array) =
+      ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ofsi ?inci (i: 'l complex_array)
+      ?(howmanyo=[]) ?ofso ?inco (o: 'l float_array) =
     (* FIXME:  Are the checks of apply appropriate here? *)
     apply "Fftw3.D.Genarray.c2r"
       (guru_c2r i o (flags meas unaligned preserve_input))
-      howmany_rank howmany howmany_ofsi howmany_inci howmany_ofso howmany_inco
-      n ofsi inci i ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
 
   let r2r kind ?(meas=Measure) ?(normalize=false)
-      ?(preserve_input=true) ?(unaligned=false) ?n
-      ?howmany_ranki ?howmanyi  ?ofsi ?inci (i: 'l float_array)
-      ?howmany_ranko ?howmanyo  ?ofso ?inco (o: 'l complex_array) =
+      ?(preserve_input=true) ?(unaligned=false) ?n ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ofsi ?inci (i: 'l float_array)
+      ?(howmanyo=[]) ?ofso ?inco (o: 'l float_array) =
     (* FIXME: must check [kind] has the right length?? *)
     let kind = Array.map int_of_r2r_kind kind in
     apply "Fftw3.D.Genarray.r2r"
       (guru_r2r i o kind (flags meas unaligned preserve_input))
-      (* howmany_rank: *)(Some(Genarray.num_dims i - Array.length kind))
-      howmany howmany_ofsi howmany_inci howmany_ofso howmany_inco
-      n ofsi inci i ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
+(*       (\* howmany_rank: *\)(Some(Genarray.num_dims i - Array.length kind)) *)
+
 
 end
 
