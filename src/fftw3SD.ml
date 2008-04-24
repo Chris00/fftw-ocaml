@@ -37,7 +37,8 @@ ENDIF
 
 type 'a plan = {
   plan: 'a fftw_plan;
-  i : 'b 'c 'd. ('b,'c,'d) Genarray.t; (* input array; => not freed by GC *)
+  i : 'b 'c 'd. ('b,'c,'d) Genarray.t; (* hold input array => not
+                                          freed by GC before the plan *)
   offseto : int; (* output offset; C-stubs *)
   strideo : int array; (* strides; C-stubs *)
   no : int array; (* dimensions *)
@@ -99,28 +100,6 @@ let exec_split_dft plan ri ii ro io =
   exec_split_dft plan ri ii ro io
 
 
-(** {2 Helper funs}
- ***********************************************************************)
-
-let min i j = if (i:int) < j then i else j
-
-module List =
-struct
-  include List
-
-  let rec list_iteri_loop f i = function
-    | [] -> ()
-    | a :: tl -> f i a; list_iteri_loop f (succ i) tl
-
-  let iteri (f: int -> _ -> unit) l = list_iteri_loop f 0 l
-end
-
-(* positive part *)
-let pos i = if i > 0 then i else 0
-
-(* negative part *)
-let neg i = if i < 0 then i else 0
-
 
 (** {2 Creating plans}
  ***********************************************************************)
@@ -135,8 +114,8 @@ module Genarray = struct
 
   let is_c_layout m = (Genarray.layout m = (Obj.magic c_layout : 'a layout))
 
-  (** [get_rank default m] returns the rank provided by the first
-      matrix in the list of options [m]. *)
+  (** [get_rank default m] returns the length of by the first array in
+      the list of options [m]. *)
   let rec get_rank default = function
     | [] -> default
     | None :: t -> get_rank default t
@@ -162,6 +141,30 @@ module Genarray = struct
     done;
     Buffer.add_string b "|]";
     Buffer.contents b
+
+  (* C layout *)
+  module C =
+  struct
+    DEFINE LAYOUT = "c_layout";;
+    DEFINE FIRST_INDEX = 0;;
+    DEFINE FOR_DIM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
+    DEFINE LT_DIM_SYM = "<";;
+    DEFINE GE_DIM_SYM = ">=";;
+    INCLUDE "fftw3SD_genarray.ml"
+  end
+
+  (* FORTRAN layout *)
+  module F =
+  struct
+    DEFINE FORTRAN (* BEWARE it is still defined after this module! *)
+    DEFINE LAYOUT = "fortran_layout";;
+    DEFINE FIRST_INDEX = 1;;
+    DEFINE FOR_DIM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
+    DEFINE LT_DIM_SYM = "<=";;
+    DEFINE GE_DIM_SYM = ">";;
+    INCLUDE "fftw3SD_genarray.ml"
+  end
+
 
   (* Check whether the matrix given by [ofs], [inc], [n] is a valid
      submatrix of the one whose dimensions are given by [dim].  Return

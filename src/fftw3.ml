@@ -19,6 +19,32 @@
    LICENSE for more details.
 *)
 
+(** {2 Helper funs}
+ ***********************************************************************)
+
+(* specialized for speed *)
+let min i j = if (i:int) < j then i else j
+
+module List =
+struct
+  include List
+
+  let rec list_iteri_loop f i = function
+    | [] -> ()
+    | a :: tl -> f i a; list_iteri_loop f (succ i) tl
+
+  let iteri (f: int -> _ -> unit) l = list_iteri_loop f 0 l
+end
+
+(* positive part *)
+let pos i = if i > 0 then i else 0
+
+(* negative part *)
+let neg i = if i < 0 then i else 0
+
+
+(** {2 Precision dependent modules}
+ ***********************************************************************)
 
 module D =
 struct
