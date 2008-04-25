@@ -226,6 +226,43 @@ let get_mat_rank name rank default = function
       m
 
 
+(** {2 Geometry checks}
+ ***********************************************************************)
+
+(* This module perform some checks on the dimensions and howmany
+   specifications that depend on the layout but not on the
+   precision. *)
+module Geom =
+struct
+  (* C layout *)
+  module C =
+  struct
+    DEFINE LAYOUT = "c_layout";;
+    DEFINE FIRST_INDEX = 0;;
+    DEFINE LAST_INDEX(dim) = dim - 1;;
+    DEFINE FOR_DIM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
+    DEFINE FOR_HM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
+    DEFINE LT_DIM_SYM = "<";;
+    DEFINE GE_DIM_SYM = ">=";;
+    INCLUDE "fftw3_geom.ml"
+  end
+
+  (* FORTRAN layout *)
+  module F =
+  struct
+    DEFINE FORTRAN (* BEWARE it is still defined after this module! *)
+    DEFINE LAYOUT = "fortran_layout";;
+    DEFINE FIRST_INDEX = 1;;
+    DEFINE LAST_INDEX(dim) = dim;;
+    DEFINE FOR_DIM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
+    DEFINE FOR_HM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
+    DEFINE LT_DIM_SYM = "<=";;
+    DEFINE GE_DIM_SYM = ">";;
+    INCLUDE "fftw3_geom.ml"
+  end
+
+end
+
 (** {2 Precision dependent modules}
  ***********************************************************************)
 
