@@ -1,4 +1,4 @@
-(* File: fftw3SD_genarray.ml
+(* File: fftw3_geom.ml
 
    Copyright (C) 2008
 

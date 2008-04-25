@@ -32,14 +32,18 @@ INCLUDE "fftw3D_external.ml"
 ENDIF
 ;;
 
+type genarray
+external genarray : ('b,'c,'d) Genarray.t -> genarray = "%identity"
+    (* We use this only internally to refer to bigarray independently
+       of their caracteristics. *)
+
 type 'a plan = {
   plan: 'a fftw_plan;
-  i : 'b 'c 'd. ('b,'c,'d) Genarray.t; (* hold input array => not
-                                          freed by GC before the plan *)
+  i : genarray; (* hold input array => not freed by GC before the plan *)
   offseto : int; (* output offset; C-stubs *)
   strideo : int array; (* strides; C-stubs *)
   no : int array; (* dimensions *)
-  o : 'b 'c 'd. ('b,'c,'d) Genarray.t; (* output array *)
+  o : genarray; (* output array *)
   normalize : bool; (* whether to normalize the output *)
   normalize_factor : float; (* multiplication factor to normalize *)
 }
@@ -109,37 +113,21 @@ module Genarray = struct
   type 'l complex_array = (Complex.t, complex_elt, 'l) Genarray.t
   type 'l float_array   = (float, float_elt, 'l) Genarray.t
 
-  (* C layout *)
-  module C =
-  struct
-    DEFINE LAYOUT = "c_layout";;
-    DEFINE FIRST_INDEX = 0;;
-    DEFINE LAST_INDEX(dim) = dim - 1;;
-    DEFINE FOR_DIM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
-    DEFINE FOR_HM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
-    DEFINE LT_DIM_SYM = "<";;
-    DEFINE GE_DIM_SYM = ">=";;
-    INCLUDE "fftw3SD_genarray.ml"
-  end
-
-  (* FORTRAN layout *)
-  module F =
-  struct
-    DEFINE FORTRAN (* BEWARE it is still defined after this module! *)
-    DEFINE LAYOUT = "fortran_layout";;
-    DEFINE FIRST_INDEX = 1;;
-    DEFINE LAST_INDEX(dim) = dim;;
-    DEFINE FOR_DIM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
-    DEFINE FOR_HM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
-    DEFINE LT_DIM_SYM = "<=";;
-    DEFINE GE_DIM_SYM = ">";;
-    INCLUDE "fftw3SD_genarray.ml"
-  end
 
   (* Layout independent function *)
   let apply name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o =
-    (if is_c_layout i then C.apply else F.apply)
-      name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o
+    let plan =
+      (if is_c_layout i then Geom.C.apply else Geom.F.apply)
+        name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o in
+    { plan = plan;
+      i = genarray i;
+      offseto = ofso;
+      strideo = inco;
+      no = hm_n;
+      o = genarray o;
+      normalize = false;                (* FIXME *)
+      normalize_factor = 1.;
+    }
 
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
