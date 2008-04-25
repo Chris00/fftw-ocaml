@@ -22,6 +22,154 @@
 open Bigarray
 open Printf
 
+module type Sig = sig
+  type float_elt
+    (** Precision of float numbers. *)
+  type complex_elt
+    (** Precision of complex numbers. *)
+
+  val float : (float, float_elt) Bigarray.kind
+  val complex : (Complex.t, complex_elt) Bigarray.kind
+
+  type 'a plan (** Immutable FFTW plan. *)
+  type c2c
+  type r2c
+  type c2r
+  type r2r
+
+  type dir = Forward | Backward
+
+  type measure =
+    | Estimate
+    | Measure
+    | Patient
+    | Exhaustive
+
+
+  type r2r_kind =
+    | R2HC
+    | HC2R
+    | DHT
+    | REDFT00
+    | REDFT10
+    | REDFT01
+    | REDFT11
+    | RODFT00
+    | RODFT10
+    | RODFT01
+    | RODFT11
+
+  val exec : 'a plan -> unit
+
+  module Genarray :
+  sig
+    external create: ('a, 'b) kind -> 'c layout -> int array
+      -> ('a, 'b, 'c) Bigarray.Genarray.t
+      = "fftw3_ocaml_ba_create"
+
+    type 'l complex_array = (Complex.t, complex_elt, 'l) Bigarray.Genarray.t
+    type 'l float_array   = (float, float_elt, 'l) Bigarray.Genarray.t
+
+    val dft : dir ->
+      ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int array -> ?howmany_n:int array ->
+      ?howmanyi:int array list ->
+      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
+      ?howmanyo:int array list ->
+      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      -> c2c plan
+
+    val r2c : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int array -> ?howmany_n:int array ->
+      ?howmanyi:int array list ->
+      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
+      ?howmanyo:int array list ->
+      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      -> r2c plan
+
+    val c2r : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int array -> ?howmany_n:int array ->
+      ?howmanyi:int array list ->
+      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
+      ?howmanyo:int array list ->
+      ?ofso:int array -> ?inco:int array -> 'l float_array
+      -> c2r plan
+
+    val r2r : r2r_kind array ->
+      ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int array -> ?howmany_n:int array ->
+      ?howmanyi:int array list ->
+      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
+      ?howmanyo:int array list ->
+      ?ofso:int array -> ?inco:int array -> 'l float_array
+      -> r2r plan
+  end
+
+
+  module Array1 :
+  sig
+    val create: ('a, 'b) kind -> 'c layout -> int -> ('a, 'b, 'c) Array1.t
+    val of_array : ('a, 'b) kind -> 'c layout -> 'a array -> ('a, 'b, 'c) Array1.t
+    type 'l complex_array = (Complex.t, complex_elt, 'l) Array1.t
+    type 'l float_array   = (float, float_elt, 'l) Array1.t
+
+    val dft : dir -> ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int ->
+      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
+      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
+      -> c2c plan
+
+    val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int ->
+      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
+      ?howmanyi:int list -> ?ofso:int -> ?inco:int -> 'l float_array
+      -> r2r plan
+  end
+
+  module Array2 :
+  sig
+    val create: ('a, 'b) kind -> 'c layout -> int -> int -> ('a, 'b, 'c) Array2.t
+    type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
+    type 'l float_array   = (float, float_elt, 'l) Array2.t
+
+    val dft : dir ->
+      ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n: int * int -> ?howmany_n:int ->
+      ?howmanyi:(int * int) list ->
+      ?ofsi:int * int -> ?inci:int * int -> 'l complex_array ->
+      ?howmanyo:(int * int) list ->
+      ?ofso:int * int -> ?inco:int * int -> 'l complex_array
+      -> c2c plan
+  end
+
+  module Array3 :
+  sig
+    val create: ('a, 'b) kind -> 'c layout -> int -> int -> int
+      -> ('a, 'b, 'c) Array3.t
+
+    type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
+    type 'l float_array   = (float, float_elt, 'l) Array3.t
+
+    val dft : dir ->
+      ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n: int * int * int -> ?howmany_n:int * int ->
+      ?howmanyi:(int * int * int) list ->
+      ?ofsi:int * int * int -> ?inci:int * int * int -> 'l complex_array ->
+      ?howmanyo:(int * int * int) list ->
+      ?ofso:int * int * int -> ?inco:int * int * int -> 'l complex_array
+      -> c2c plan
+  end
+end
+
+
 (** {2 Helper funs}
  ***********************************************************************)
 
