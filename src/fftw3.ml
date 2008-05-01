@@ -119,16 +119,16 @@ module type Sig = sig
 
     val dft : dir -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int ->
+      ?n:int -> ?howmany:int ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
       ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int ->
+      ?n:int -> ?howmany:int ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
-      ?howmanyi:int list -> ?ofso:int -> ?inco:int -> 'l float_array
+      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
   end
 
@@ -141,7 +141,7 @@ module type Sig = sig
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int -> ?howmany_n:int ->
+      ?n: int * int -> ?howmany_n:int array ->
       ?howmanyi:(int * int) list ->
       ?ofsi:int * int -> ?inci:int * int -> 'l complex_array ->
       ?howmanyo:(int * int) list ->
@@ -160,7 +160,7 @@ module type Sig = sig
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int * int -> ?howmany_n:int * int ->
+      ?n: int * int * int -> ?howmany_n:int array ->
       ?howmanyi:(int * int * int) list ->
       ?ofsi:int * int * int -> ?inci:int * int * int -> 'l complex_array ->
       ?howmanyo:(int * int * int) list ->
@@ -192,6 +192,8 @@ let pos i = if i > 0 then i else 0
 
 (** negative part *)
 let neg i = if i < 0 then i else 0
+
+let option_map f = function Some v -> Some(f v) | None -> None
 
 (** Return a string showing the content of the array *)
 let string_of_array a =
@@ -272,7 +274,8 @@ struct
   type complex_elt = Bigarray.complex64_elt
   let float = Bigarray.float64
   let complex = Bigarray.complex64
-
+  ;;
+  DEFINE FFTW = "Fftw3.D.";;
   INCLUDE "fftw3SD.ml"
 end
 
@@ -282,8 +285,9 @@ struct
   type complex_elt = Bigarray.complex32_elt
   let float = Bigarray.float32
   let complex = Bigarray.complex32
-
-  DEFINE SINGLE_PREC
+  ;;
+  DEFINE SINGLE_PREC;;
+  DEFINE FFTW = "Fftw3.S.";;
   INCLUDE "fftw3SD.ml"
 end
 

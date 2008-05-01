@@ -174,9 +174,9 @@ module type Sig = sig
 	  but guarantees that it is aligned so one gets the better
 	  performance from FFTW.
 
-          Remark: In order to deserialize, this module must be linked to
-          the program as the deserialization function also aligns the
-          data. *)
+          Remark: In order to deserialize such a bigarray, this module
+          must be linked to the program as the deserialization
+          function also aligns the data. *)
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Bigarray.Genarray.t
         (** Double precision complex array. *)
@@ -224,7 +224,7 @@ module type Sig = sig
 
           {9 Subarrays}
 
-          Fftw3 allows you to perform the FFT tranform on subarrays
+          Fftw3 allows you to perform the FFT transform on subarrays
           defined by offset, strides and dimensions.
 
           - [ofsi] the initial element in the input array.  Default:
@@ -239,7 +239,7 @@ module type Sig = sig
 
           {9 Multiple transforms}
 
-	  - [howmany_rank] allow to compute several transforms at once
+	  - [howmany_n] allow to compute several transforms at once
 	  by specifying the number of dimensions ([< Genarray.num_dims
 	  i]) used to index the arrays.  Default: 0.  *)
 
@@ -309,7 +309,7 @@ module type Sig = sig
 
     val dft : dir -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int ->
+      ?n:int -> ?howmany:int ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
       ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
@@ -328,9 +328,9 @@ module type Sig = sig
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int ->
+      ?n:int -> ?howmany:int ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
-      ?howmanyi:int list -> ?ofso:int -> ?inco:int -> 'l float_array
+      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
   end
 
@@ -348,7 +348,7 @@ module type Sig = sig
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int -> ?howmany_n:int ->
+      ?n: int * int -> ?howmany_n:int array ->
       ?howmanyi:(int * int) list ->
       ?ofsi:int * int -> ?inci:int * int -> 'l complex_array ->
       ?howmanyo:(int * int) list ->
@@ -372,7 +372,7 @@ module type Sig = sig
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int * int -> ?howmany_n:int * int ->
+      ?n: int * int * int -> ?howmany_n: int array ->
       ?howmanyi:(int * int * int) list ->
       ?ofsi:int * int * int -> ?inci:int * int * int -> 'l complex_array ->
       ?howmanyo:(int * int * int) list ->
