@@ -1,4 +1,4 @@
-/* File: fftw3_ocaml_stub.c
+/* File: fftw3_stubs.c
 
    Objective Caml interface for FFTW.
 
@@ -187,7 +187,7 @@ value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 #undef FLOAT
 #undef FFTW
 
-
+#ifdef FFTW3F_EXIST
 #define FFTW(name) fftwf_ ## name
 #define FLOAT float
 #define PREC "S"
@@ -195,7 +195,7 @@ value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 #undef PREC
 #undef FLOAT
 #undef FFTW
-
+#endif
 
 /* Wisdom
  ***********************************************************************/
