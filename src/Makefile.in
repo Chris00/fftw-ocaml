@@ -24,7 +24,7 @@ update: uninstall install
 # code duplication which we'd rather avoid).
 fftw3S_external.ml: fftw3D_external.ml
 	@-$(RM) $@
-	@echo "(* AUTOMATICALLY GENERATED FILE *)" > $@
+	@echo "(* AUTOMATICALLY GENERATED FROM $< *)" > $@
 	sed -e "s/fftw_ocaml/fftwf_ocaml/" $< >> $@
 	@chmod a-w $@
 
