@@ -28,8 +28,10 @@ actual paths of your header files (resp. library).
 USAGE
 
 Fftw3 contains two submodules differing only by precision Fftw3.D for
-double precision and Fftw3.S for single precision.  See the mli file
-for more details.
+double precision and Fftw3.S for single precision.  Note that the
+single precision module will only exist if the corresponding FFTW3
+library was discovered by the configure script.  See the mli file for
+more details.
 
 
 BUGS
