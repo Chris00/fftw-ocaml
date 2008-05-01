@@ -1,4 +1,4 @@
-(*pp camlp4o pa_macro.cmo *)
+(*pp camlp4o pa_macro.cmo $FFTW3F_EXIST *)
 (* File: fftw3.ml
 
    Objective Caml interface for FFTW.
@@ -279,6 +279,7 @@ struct
   INCLUDE "fftw3SD.ml"
 end
 
+IFDEF FFTW3F_EXIST THEN
 module S =
 struct
   type float_elt = Bigarray.float32_elt
@@ -290,7 +291,7 @@ struct
   DEFINE FFTW = "Fftw3.S.";;
   INCLUDE "fftw3SD.ml"
 end
-
+ENDIF
 
 
 module Wisdom =
