@@ -15,8 +15,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details. *)
 
-(** Uniform treatement of the C and FORTRAN layouts through macros
-    (for the bigarray interface). *)
+(** Geometry checks.  Uniform treatement of the C and FORTRAN layouts
+    through macros (for the bigarray interface).  Does not depend on
+    the precision of the arrays. *)
 
 
 (* Check whether the matrix given by [ofs], [inc], [n] is a valid
@@ -197,12 +198,12 @@ let get_geom_hm name hm_nname hm_n hmname hm stride ofs inc nname n mat =
     hm_stride, hm_n, stride, n
   )
 
-(* Take the [wrapper], the dimensions, offsets and increments of
-   input/output arrays and compute the informations needed by the
-   wrapper.  Check the coherence of the data at the same time.  There
-   may be more input (resp. output) arrays than [i] (resp. [o]) but
-   these must have the same dimensions. *)
-let apply name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o =
+(* Take the [make_plan] function creating plans, the dimensions, offsets
+   and increments of input/output arrays and compute the informations
+   needed by [make_plan].  Check the coherence of the data at the same
+   time.  There may be more input (resp. output) arrays than [i]
+   (resp. [o]) but these must have the same dimensions. *)
+let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o =
   let rank = Genarray.num_dims i in
   if rank <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
@@ -221,4 +222,4 @@ let apply name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o =
   if hm_ni <> hm_no then
     invalid_arg("howmany dim input = " ^ string_of_array hm_ni
                 ^ " <> howmany dim output = " ^ string_of_array hm_no);
-  wrapper offseti offseto ni stridei strideo hm_ni hm_stridei hm_strideo
+  make_plan offseti offseto ni stridei strideo hm_ni hm_stridei hm_strideo
