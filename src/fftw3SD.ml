@@ -33,9 +33,11 @@ ENDIF
 ;;
 
 type genarray
-external genarray : ('b,'c,'d) Genarray.t -> genarray = "%identity"
-    (* We use this only internally to refer to bigarray independently
-       of their caracteristics. *)
+external genarray : (_,_,_) Genarray.t -> genarray = "%identity"
+    (* Since we want the FFT functions to be polymorphic in the layout
+       of the arrays, some back magic is unavoidable.  This one way
+       conversion is actually safe, it is the use of [genarray] by C
+       functions that must be taken care of. *)
 
 type 'a plan = {
   plan: 'a fftw_plan;
@@ -89,8 +91,9 @@ let int_of_r2r_kind = function
 
 let exec p =
   fftw_exec p.plan;
-  if p.normalize then
-    normalize p.o p.offseto p.strideo p.no p.normalize_factor
+(*   if p.normalize then *)
+(*     normalize p.o p.offseto p.strideo p.no p.normalize_factor *)
+;;
 
 let exec_dft plan i o =
   (* how to check that the arrays conform to the plan specification? *)
@@ -115,56 +118,62 @@ module Genarray = struct
 
 
   (* Layout independent function *)
-  let apply name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o =
-    let plan =
-      (if is_c_layout i then Geom.C.apply else Geom.F.apply)
-        name wrapper n hm_n  hmi ofsi inci i  hmo ofso inco o in
-    { plan = plan;
-      i = genarray i;
-      offseto = ofso;
-      strideo = inco;
-      no = hm_n;
-      o = genarray o;
-      normalize = false;                (* FIXME *)
-      normalize_factor = 1.;
-    }
+  let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize =
+    let make offseti offseto ni stridei strideo hm_ni hm_stridei hm_strideo =
+      let p = make_plan offseti offseto ni stridei strideo
+        hm_ni hm_stridei hm_strideo in
+      { plan = p;
+        i = genarray i;
+        offseto = offseto;
+        strideo = strideo;
+        no = ni;
+        o = genarray o;
+        normalize = normalize;
+        normalize_factor = 1.;          (* FIXME:  *)
+      } in
+    (if is_c_layout i then Geom.C.apply else Geom.F.apply) name make
+      n hm_n  hmi ofsi inci i  hmo ofso inco o
 
+  let dft_name = FFTW ^ "Genarray.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?ofso ?inco (o: 'l complex_array) =
-    apply "Fftw3.D.Genarray.dft"
+    apply dft_name
       (guru_dft i o (sign_of_dir dir) (flags meas unaligned preserve_input))
-      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o  normalize
 
   (* At the moment, in place transforms are not possible but they may
      be if OCaml bug 0004333 is resolved. *)
+  let r2c_name = FFTW ^ "Genarray.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?ofso ?inco (o: 'l complex_array) =
-    apply "Fftw3.D.Genarray.r2c"
+    apply r2c_name
       (guru_r2c i o (flags meas unaligned preserve_input))
-      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o  normalize
 
+  let c2r_name = FFTW ^ "Genarray.c2r"
   let c2r ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?ofso ?inco (o: 'l float_array) =
     (* FIXME:  Are the checks of apply appropriate here? *)
-    apply "Fftw3.D.Genarray.c2r"
+    apply c2r_name
       (guru_c2r i o (flags meas unaligned preserve_input))
-      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o  normalize
 
+  let r2r_name = FFTW ^ "Genarray.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?ofso ?inco (o: 'l float_array) =
     (* FIXME: must check [kind] has the right length?? *)
     let kind = Array.map int_of_r2r_kind kind in
-    apply "Fftw3.D.Genarray.r2r"
+    apply r2r_name
       (guru_r2r i o kind (flags meas unaligned preserve_input))
-      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o
+      n howmany_n  howmanyi ofsi inci i  howmanyo ofso inco o  normalize
 (*       (\* howmany_rank: *\)(Some(Genarray.num_dims i - Array.length kind)) *)
 
 
@@ -189,106 +198,42 @@ module Array1 = struct
   type 'l complex_array = (Complex.t, complex_elt, 'l) Array1.t
   type 'l float_array   = (float, float_elt, 'l) Array1.t
 
-  let is_c_layout m = (Array1.layout m = (Obj.magic c_layout : 'a layout))
 
+  let apply name make_plan n hm  hmi ofsi inci i  hmo ofso inco o  normalize =
+    let n = option_map (fun n -> [| n |]) n in
+    let hmi = List.map (fun v -> [| v |]) hmi in
+    let ofsi = option_map (fun n -> [| n |]) ofsi in
+    let inci = Some [| inci |] in
+    let hmo = List.map (fun v -> [| v |]) hmo in
+    let ofso = option_map (fun n -> [| n |]) ofso in
+    let inco = Some [| inco |] in
+    Genarray.apply name make_plan
+      n [| hm |]  hmi ofsi inci i  hmo ofso inco o  normalize
 
-  let check_geom_c name ofsname ofs incname inc nname n dim =
-    if inc = 0 then invalid_arg(sprintf "%s: %s = 0" name incname);
-    if ofs < 0 then invalid_arg(sprintf "%s: %s < 0" name ofsname);
-    if ofs >= dim then invalid_arg(sprintf "%s: %s >= %i" name ofsname dim);
-    if inc > 0 && ofs + (n - 1) * inc >= dim then
-      invalid_arg(sprintf "%s: %s + (%s-1)*%s = %i >= %i"
-                     name ofsname nname incname (ofs + (n - 1) * inc) dim);
-    if inc < 0 && ofs + (n - 1) * inc < 0 then
-      invalid_arg(sprintf "%s: %s + (%s-1)*%s = %i < 0"
-                     name ofsname nname incname (ofs + (n - 1) * inc))
-
-
-  let apply_c name wrapper  hm hm_inci hm_inco
-      ?n ?(ofsi=0) inci i ?(ofso=0) inco o =
-    let dim = Array1.dim i in
-    let n = match n with
-      | None ->
-          if inci = 0 then invalid_arg(sprintf "%s: inci = 0" name);
-          if inci > 0 then 1 + (dim - 1 - ofsi) / inci else 1 - ofsi / inci
-      | Some n -> n in
-    check_geom_c name "ofsi" ofsi "inci" inci "n" n dim;
-    check_geom_c name "ofso" ofso "inco" inco "n" n dim;
-    (* If howmany > 1, check that matrices do not overlap. *)
-    let howmany, hm_istride, hm_ostride =
-      if hm <= 1 then [| |], [| |], [| |]
-      else
-        let hm_inci = match hm_inci with None -> ofsi + n*inci | Some i -> i
-        and hm_inco = match hm_inco with None -> ofso + n*inco | Some i -> i in
-
-        [|hm|], [|hm_inci|], [|hm_inco|] in
-    wrapper ofsi ofso [|n|] [|inci|] [|inco|] howmany hm_istride hm_ostride
-
-
-  let check_geom_f name ofsname ofs incname inc nname n dim =
-    if inc = 0 then invalid_arg(sprintf "%s: %s = 0" name incname);
-    if ofs < 0 then invalid_arg(sprintf "%s: %s < 0" name ofsname);
-    if ofs > dim then invalid_arg(sprintf "%s: %s > %i" name ofsname dim);
-    if inc > 0 && ofs + (n - 1) * inc > dim then
-      invalid_arg(sprintf "%s: %s + (%s-1)*%s = %i > %i"
-                     name ofsname nname incname (ofs + (n - 1) * inc) dim);
-    if inc < 0 && ofs + (n - 1) * inc < 1 then
-      invalid_arg(sprintf "%s: %s + (%s-1)*%s = %i < 1"
-                     name ofsname nname incname (ofs + (n - 1) * inc))
-
-  let apply_f name wrapper  hm hm_inci hm_inco
-      ?n ?(ofsi=1) inci i ?(ofso=1) inco o =
-    (* FIXME *)
-    let dim = Array1.dim i in
-    let n = match n with
-      | None ->
-          if inci = 0 then invalid_arg(sprintf "%s: inci = 0" name);
-          if inci > 0 then 1 + (dim - ofsi) / inci
-          else 1 - (ofsi - 1) / inci
-      | Some n -> n in
-    check_geom_f name "ofsi" ofsi "inci" inci "n" n dim;
-    check_geom_f name "ofso" ofso "inco" inco "n" n dim;
-    (* If howmany > 1, check that matrices do not overlap. *)
-    let howmany, hm_istride, hm_ostride =
-      if hm <= 1 then [| |], [| |], [| |]
-      else
-        let hm_inci = match hm_inci with None -> ofsi + n*inci | Some i -> i
-        and hm_inco = match hm_inco with None -> ofso + n*inco | Some i -> i in
-
-        [|hm|], [|hm_inci|], [|hm_inco|] in
-    wrapper (ofsi - 1) (ofso - 1) [|n|] [|inci|] [|inco|]
-      howmany hm_istride hm_ostride
-
-
-  let apply name wrapper  hm hm_inci hm_inco ?n ?ofsi inci i ?ofso inco o =
-    if is_c_layout i then
-      apply_c name wrapper  hm hm_inci hm_inco ?n ?ofsi inci i ?ofso inco o
-    else
-      apply_f name wrapper  hm hm_inci hm_inco ?n ?ofsi inci i ?ofso inco o
-
-
+  let dft_name = FFTW ^ "Array1.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false)
       ?n ?(howmany=1)
-      ?howmany_inci ?ofsi ?(inci=1) (i: 'l complex_array)
-      ?howmany_inco ?ofso ?(inco=1) (o: 'l complex_array) =
+      ?(howmanyi=[]) ?ofsi ?(inci=1) (i: 'l complex_array)
+      ?(howmanyo=[]) ?ofso ?(inco=1) (o: 'l complex_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    apply "Fftw3.D.Array1.dft"
+    apply dft_name
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
-      howmany howmany_inci howmany_inco ?n ?ofsi inci i ?ofso inco o
+      n howmany  howmanyi ofsi inci gi  howmanyo ofso inco go  normalize
 
+  let r2r_name = FFTW ^ "Array1.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false)
       ?n ?(howmany=1)
-      ?howmany_inci ?ofsi ?(inci=1) (i: 'l float_array)
-      ?howmany_inco ?ofso ?(inco=1) (o: 'l float_array) =
+      ?(howmanyi=[]) ?ofsi ?(inci=1) (i: 'l float_array)
+      ?(howmanyo=[]) ?ofso ?(inco=1) (o: 'l float_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    let kind = int_of_r2r_kind kind in
-    apply "Fftw3.D.Array1.r2r"
-      (guru_r2r gi go [|kind|] (flags meas unaligned preserve_input))
-      howmany howmany_inci howmany_inco ?n ?ofsi inci i ?ofso inco o
+    let kind = [| int_of_r2r_kind kind |] in
+    apply r2r_name
+      (guru_r2r gi go kind (flags meas unaligned preserve_input))
+      n howmany  howmanyi ofsi inci gi howmanyo ofso inco go  normalize
 end
 
 
@@ -303,7 +248,30 @@ module Array2 = struct
   type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
   type 'l float_array   = (float, float_elt, 'l) Array2.t
 
-  let is_c_layout m = (Array2.layout m = (Obj.magic c_layout : 'a layout))
+  let apply name make_plan n hm_n  hmi ofsi (inci1,inci2) i
+      hmo ofso (inco1,inco2) o  normalize =
+    let n = option_map (fun (n1,n2) -> [| n1; n2 |]) n in
+    let hmi = List.map (fun (d1,d2) -> [| d1; d2 |]) hmi in
+    let ofsi = option_map (fun (n1,n2) -> [| n1; n2 |]) ofsi in
+    let inci = Some [| inci1; inci2 |] in
+    let hmo = List.map (fun (d1,d2) -> [| d1; d2 |]) hmo in
+    let ofso = option_map (fun (n1,n2) -> [| n1; n2 |]) ofso in
+    let inco = Some [| inco1; inco2 |] in
+    Genarray.apply name make_plan
+      n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize
+
+  let dft_name = FFTW ^ "Array2.dft"
+  let dft dir ?(meas=Measure) ?(normalize=false)
+      ?(preserve_input=true) ?(unaligned=false)
+      ?n ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ofsi ?(inci=(1,1)) (i: 'l complex_array)
+      ?(howmanyo=[]) ?ofso ?(inco=(1,1)) (o: 'l complex_array) =
+    let gi = genarray_of_array2 i
+    and go = genarray_of_array2 o in
+    apply dft_name
+      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
+      n howmany_n  howmanyi ofsi inci gi  howmanyo ofso inco go  normalize
+
 end
 
 
@@ -318,5 +286,29 @@ module Array3 = struct
   type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
   type 'l float_array   = (float, float_elt, 'l) Array3.t
 
-  let is_c_layout m = (Array3.layout m = (Obj.magic c_layout : 'a layout))
+
+  let apply name make_plan n hm_n  hmi ofsi (inci1,inci2,inci3) i
+      hmo ofso (inco1,inco2,inco3) o  normalize =
+    let n = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) n in
+    let hmi = List.map (fun (d1,d2,d3) -> [| d1; d2; d3 |]) hmi in
+    let ofsi = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) ofsi in
+    let inci = Some [| inci1; inci2; inci3 |] in
+    let hmo = List.map (fun (d1,d2,d3) -> [| d1; d2; d3 |]) hmo in
+    let ofso = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) ofso in
+    let inco = Some [| inco1; inco2; inco3 |] in
+    Genarray.apply name make_plan
+      n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize
+
+  let dft_name = FFTW ^ "Array3.dft"
+  let dft dir ?(meas=Measure) ?(normalize=false)
+      ?(preserve_input=true) ?(unaligned=false)
+      ?n ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ofsi ?(inci=(1,1,1)) (i: 'l complex_array)
+      ?(howmanyo=[]) ?ofso ?(inco=(1,1,1)) (o: 'l complex_array) =
+    let gi = genarray_of_array3 i
+    and go = genarray_of_array3 o in
+    apply dft_name
+      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
+      n howmany_n  howmanyi ofsi inci gi  howmanyo ofso inco go  normalize
+
 end
