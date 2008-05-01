@@ -105,7 +105,7 @@ AC_TRY_LINK([#include <fftw3.h>],
             [const int n = 10;
 	    fftw_complex in[10], out[10];
 	    fftw_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);],
-            [AC_MSG_RESULT([found]); CLIBS="$CLIBS fftw3"],
+            [AC_MSG_RESULT([ok]); CLIBS="$CLIBS fftw3"],
             [AC_MSG_ERROR([Check for fftw3 (double precision) failed.])])
 
 AC_MSG_CHECKING([for libfftw3f (single precision)])
@@ -114,8 +114,10 @@ AC_TRY_LINK([#include <fftw3.h>],
             [const int n = 10;
 	    fftwf_complex in[10], out[10];
 	    fftwf_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);],
-            [AC_MSG_RESULT([found]); CLIBS="$CLIBS fftw3f"],
-            [AC_MSG_ERROR([Check for fftw3f (single precision) failed.])])
+            [AC_MSG_RESULT([ok]); CLIBS="$CLIBS fftw3f";
+	     FFTW3F_EXIST="-DFFTW3F_EXIST"],
+            [AC_MSG_RESULT(
+	      [failed, the single precision module will be disabled])])
 
 if test "$OCAMLOPT" = no ; then
     BEST=byte
@@ -142,11 +144,10 @@ AC_SUBST(CLIBS)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
-AC_SUBST(requires)
-all_requires="`$OCAMLFIND query -r -separator " " -format "%p" $requires` $_requires"
-AC_SUBST(all_requires)
+AC_SUBST(FFTW3F_EXIST)
 
-# Finally create the Makefile and samples (read only to avoid mistakes)
+# Finally create the Makefile and samples (read only to avoid changing
+# them by mistake)
 AC_CONFIG_FILES([Makefile],[chmod a-w Makefile])
 AC_CONFIG_FILES([src/META],[chmod a-w src/META])
 AC_CONFIG_FILES([src/Makefile],[chmod a-w src/Makefile])
