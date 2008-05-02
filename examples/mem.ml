@@ -19,13 +19,6 @@ let delta = sqrt epsilon_float
 (* creates a vector (1D bigarray) guaranteed to be aligned in memory. *)
 let create n : vec = FFT.Array1.create FFT.float fortran_layout n
 
-(* Print a vector in Mathematica format (automatically splitted on
-   several lines if needed). *)
-let print_vec fh (x:vec) =
-  fprintf fh "{ @[";
-  for i = 1 to Vec.dim x - 1 do fprintf fh "%g,@ " x.{i} done;
-  fprintf fh "%f @]}@\n" x.{Vec.dim x}
-
 
 (** [grad f x] approximate the gradient of [f] at [x] by means of
     divided differences (of order 1). *)
@@ -72,7 +65,7 @@ let gradient_ascent ?(print=fun _ _ _ _ _ -> ()) (f: vec -> float) f' (x:vec) =
     $$ %}
     where {% $p_k$ %} is the square root of [y.{k}] and [y] is the
     discrete sine transform of [x]. *)
-let mem consts n =
+let mem (consts:vec) n =
   let d = Array1.dim consts in
   if n <= d then invalid_arg(sprintf "mem: 'n' is too small, pick n > %i" d);
   let x = create n
@@ -105,7 +98,7 @@ let mem consts n =
 (* Rename this alternative to [mem] function if you want to recover
    the very same results as given by the downloadable code from the
    "OCaml for Scientists" book. *)
-let mem_harrop consts n =
+let mem_harrop (consts: vec) n =
   let d = Array1.dim consts in
   if n <= d then invalid_arg(sprintf "mem: 'n' is too small, pick n > %i" d);
   let x = FFT.Array1.create FFT.complex fortran_layout (2*n)
@@ -134,7 +127,7 @@ let mem_harrop consts n =
 	h := !h +. yk *. log yk;
       end
     done;
-    log !s -. !h /. !s
+    log !s -. !h (* /. !s *)
   in
   let v = Vec.make0 (n-d) (* starting point *) in
   gradient_ascent entropy (grad entropy) v
@@ -161,11 +154,32 @@ let read_consts bh =
     ignore(List.fold_left (fun k f -> c.{k} <- f; k-1) !d !l);
     c
 
+(* Print a vector in Mathematica format (automatically splitted on
+   several lines if needed). *)
+let print_vec fh (x:vec) =
+  fprintf fh "{ @[";
+  for i = 1 to Vec.dim x - 1 do fprintf fh "%g,@ " x.{i} done;
+  fprintf fh "%f @]}@\n" x.{Vec.dim x}
+
+
 let () =
-  let n =
-    try int_of_string(Array.get Sys.argv 1)
-    with _ -> printf "Usage: %s <n>@\nExpect a string of the form {f1,...,fN} \
-	(N < n) on the standard input.@\n" Sys.argv.(0); exit 1 in
+  let output = ref "" in
+  let n = ref 1 in
+  let usage =
+    sprintf "Usage: %s <n>@\nExpect a string of the form {f1,...,fN} \
+	(N < n) on the standard input.@\n" Sys.argv.(0) in
+  let args = Arg.align [
+    ("--output", Arg.Set_string output,
+     "output file (default: standard output)");
+  ] in
+  Arg.parse args (fun s -> n := int_of_string s) usage;
+  if !n <= 1 then (Arg.usage args usage; exit 1);
+
   let consts = read_consts Scanning.stdib in
-  let x = mem consts n in
-  print_vec std_formatter x
+  let x = mem consts !n in
+  if !output = "" then print_vec std_formatter x
+  else begin
+    let fh = open_out !output in
+    for i = 1 to Vec.dim x - 1 do Printf.fprintf fh "%g\n" x.{i} done;
+    close_out fh
+  end
