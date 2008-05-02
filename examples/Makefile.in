@@ -4,11 +4,12 @@ export ANNOTATE := yes
 
 export INCDIRS = ../src @INC@
 export LIBS = bigarray fftw3
+export LACAML_PATH = @LACAML_PATH@
 
 define PROJ_mem
   SOURCES = mem.ml
   RESULT  = mem
-  INCDIRS += $(HOME)/software/OCaml/lacaml/lib
+  INCDIRS += $(LACAML_PATH)
   LIBS += lacaml
 endef
 export PROJ_mem
@@ -21,7 +22,11 @@ export PROJ_delta
 
 # Use these, if the environment does not define subprojects to handle:
 ifndef SUBPROJS
-  export SUBPROJS = mem delta
+  SUBPROJS = delta
+  ifneq ($(strip $(LACAML_PATH)),)
+    SUBPROJS += mem
+  endif
+  export SUBPROJS
 endif
 
 

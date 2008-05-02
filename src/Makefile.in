@@ -1,3 +1,4 @@
+#							-*-makefile-gmake-*-
 OCAMLMAKEFILE = ../OCamlMakefile
 ANNOTATE := yes
 USE_CAMLP4 := yes
@@ -40,5 +41,4 @@ OCAMLLIBPATH	= @OCAMLLIBPATH@
 # Pass the possible configure LDFLAGS to ocamlmklib:
 OCAMLMKLIB_FLAGS= @LDFLAGS@
 CPPFLAGS	= @CPPFLAGS@
-#CAMLP4O		= @CAMLP4O@
 include $(OCAMLMAKEFILE)
