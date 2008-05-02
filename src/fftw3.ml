@@ -147,6 +147,15 @@ module type Sig = sig
       ?howmanyo:(int * int) list ->
       ?ofso:int * int -> ?inco:int * int -> 'l complex_array
       -> c2c plan
+
+    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int * int -> ?howmany_n:int array ->
+      ?howmanyi:(int * int) list ->
+      ?ofsi:int * int -> ?inci:int * int -> 'l float_array ->
+      ?howmanyo:(int * int) list ->
+      ?ofso:int * int -> ?inco:int * int -> 'l float_array
+      -> r2r plan
   end
 
   module Array3 :

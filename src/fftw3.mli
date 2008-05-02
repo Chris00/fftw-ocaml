@@ -356,6 +356,16 @@ module type Sig = sig
       ?ofso:int * int -> ?inco:int * int -> 'l complex_array
       -> c2c plan
       (** See {!Fftw3.D.Genarray.dft}. *)
+
+    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?n:int * int -> ?howmany_n:int array ->
+      ?howmanyi:(int * int) list ->
+      ?ofsi:int * int -> ?inci:int * int -> 'l float_array ->
+      ?howmanyo:(int * int) list ->
+      ?ofso:int * int -> ?inco:int * int -> 'l float_array
+      -> r2r plan
+      (** See {!Fftw3.D.Genarray.r2r}. *)
   end
 
 
