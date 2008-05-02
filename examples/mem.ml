@@ -11,7 +11,7 @@
 open Format
 open Scanf
 open Bigarray
-open Lacaml.D
+open Lacaml.Impl.D
 module FFT = Fftw3.D
 
 let delta = sqrt epsilon_float

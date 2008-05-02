@@ -2,11 +2,13 @@
 export OCAMLMAKEFILE = ../OCamlMakefile
 
 export INCDIRS = ../src @INC@
-export LIBS = @all_requires@ magic
+export LIBS = bigarray fftw3
 
 define PROJ_mem
   SOURCES = mem.ml
   RESULT  = mem
+  INCDIRS += $(HOME)/software/OCaml/lacaml/lib
+  LIBS += lacaml
 endef
 export PROJ_mem
 
