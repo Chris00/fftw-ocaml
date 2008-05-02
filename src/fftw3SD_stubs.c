@@ -76,6 +76,64 @@ CAMLexport value FFTW(ocaml_execute_split_dft)(value p,
 }
 
 
+CAMLexport value FFTW(ocaml_execute_dft_r2c)(value p, value i, value o)
+{
+  /* noalloc */
+  enter_blocking_section();  /* Allow other threads */
+  FFTW(execute_dft_r2c)(PLAN_VAL(p), Data_bigarray_val(i),
+                        Data_bigarray_val(o));
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);
+}
+
+CAMLexport value FFTW(ocaml_execute_split_dft_r2c)(value p,
+                                                   value i,
+                                                   value ro, value io)
+{
+  /* noalloc */
+  enter_blocking_section();  /* Allow other threads */
+  FFTW(execute_split_dft_r2c)(PLAN_VAL(p),
+                              Data_bigarray_val(i),
+                              Data_bigarray_val(ro), Data_bigarray_val(io));
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);
+}
+
+
+CAMLexport value FFTW(ocaml_execute_dft_c2r)(value p, value i, value o)
+{
+  /* noalloc */
+  enter_blocking_section();  /* Allow other threads */
+  FFTW(execute_dft_c2r)(PLAN_VAL(p), Data_bigarray_val(i),
+                        Data_bigarray_val(o));
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);
+}
+
+CAMLexport value FFTW(ocaml_execute_split_dft_c2r)(value p,
+                                                   value ri, value ii,
+                                                   value o)
+{
+  /* noalloc */
+  enter_blocking_section();  /* Allow other threads */
+  FFTW(execute_split_dft_c2r)(PLAN_VAL(p),
+                              Data_bigarray_val(ri), Data_bigarray_val(ii),
+                              Data_bigarray_val(o));
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);
+}
+
+
+CAMLexport value FFTW(ocaml_execute_r2r)(value p, value i, value o)
+{
+  /* noalloc */
+  enter_blocking_section();  /* Allow other threads */
+  FFTW(execute_r2r)(PLAN_VAL(p), Data_bigarray_val(i), Data_bigarray_val(o));
+  leave_blocking_section();  /* Disallow other threads */
+  return(Val_unit);
+}
+
+
 /* Normalizing transforms
  ***********************************************************************/
 

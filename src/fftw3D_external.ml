@@ -11,7 +11,7 @@ type 'l float_array   = (float, float_elt, 'l) Genarray.t
 
 external normalize :
   (* array *) (_,_,_) Genarray.t ->
-  (* offset *) int ->
+  (* C offset *) int ->
   (* strides *) int array ->
   (* dimensions *) int array ->
   (* multiply all entries by this number *) float -> unit
@@ -24,6 +24,24 @@ external exec_dft : c2c fftw_plan -> 'l complex_array -> 'l complex_array -> uni
 external exec_split_dft : c2c fftw_plan -> 'l float_array -> 'l float_array ->
   'l float_array -> 'l float_array -> unit
   = "fftw_ocaml_execute_split_dft" "noalloc"
+
+external exec_dft_r2c : r2c fftw_plan -> 'l float_array -> 'l complex_array
+  -> unit
+  = "fftw_ocaml_execute_dft_r2c" "noalloc"
+external exec_split_dft_r2c : r2c fftw_plan -> 'l float_array ->
+  'l float_array -> 'l float_array -> unit
+  = "fftw_ocaml_execute_split_dft_r2c" "noalloc"
+
+external exec_dft_c2r : c2r fftw_plan -> 'l complex_array -> 'l float_array
+  -> unit
+  = "fftw_ocaml_execute_dft_c2r" "noalloc"
+external exec_split_dft_c2r : c2r fftw_plan -> 'l float_array -> 'l float_array
+  -> 'l float_array -> unit
+  = "fftw_ocaml_execute_split_dft_c2r" "noalloc"
+
+external exec_r2r : r2r fftw_plan -> 'l float_array -> 'l float_array
+  -> unit
+  = "fftw_ocaml_execute_r2r" "noalloc"
 
 
 (** {2 Creating plans}
