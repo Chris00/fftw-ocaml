@@ -20,9 +20,15 @@ define PROJ_delta
 endef
 export PROJ_delta
 
+define PROJ_henon
+  SOURCES = henon.ml
+  RESULT  = henon
+endef
+export PROJ_henon
+
 # Use these, if the environment does not define subprojects to handle:
 ifndef SUBPROJS
-  SUBPROJS = delta
+  SUBPROJS = delta henon
   ifneq ($(strip $(LACAML_PATH)),)
     SUBPROJS += mem
   endif
