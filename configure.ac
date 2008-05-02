@@ -170,7 +170,7 @@ AC_DEFUN([OCAML_LIB],[
   fi
 ])
 
-OCAML_LIB(lacaml1, [LACAML_PATH=$ocaml_lib_path], [])
+OCAML_LIB(lacaml, [LACAML_PATH=$ocaml_lib_path], [])
 
 
 
