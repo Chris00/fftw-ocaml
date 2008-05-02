@@ -119,6 +119,61 @@ AC_TRY_LINK([#include <fftw3.h>],
             [AC_MSG_RESULT(
 	      [failed, the single precision module will be disabled])])
 
+# Check for OCaml libraries
+
+# OCAML_LIB(lib, action-if-found, action-if-not-found)
+# action-if-found can use the variable ocaml_lib_path
+AC_DEFUN([OCAML_LIB],[
+  AC_ARG_WITH([$1],
+    AC_HELP_STRING([--with-$1=PATH], [set the path of the OCaml library $1]),
+    [], [])
+
+  AC_MSG_CHECKING(for OCaml library $1)
+  # $1 substituted when the script configure is written
+  if test "$with_$1" != "" ; then
+    if test "$with_$1" = "yes" ; then
+      AC_MSG_ERROR(Option --with-$1=PATH with PATH not provided)
+    else
+      if test "$with_$1" = "no" ; then
+        AC_MSG_RESULT(disabled)
+	$3
+      else
+        ocaml_lib_path="$with_$1"
+	AC_MSG_RESULT($ocaml_lib_path)
+        $2
+      fi
+    fi
+  else
+    ocaml_lib_path=`$OCAMLFIND query $1 2> /dev/null || echo no`
+    if test "$ocaml_lib_path" != "no" ; then
+      AC_MSG_RESULT($ocaml_lib_path)
+      $2
+    else
+      # Look in the standard OCaml directory
+      ocaml_lib=`find $OCAMLLIBPATH -name $1.cma | head -n 1`
+      if test "$ocaml_lib" != "" ; then
+        ocaml_lib_path=`dirname $ocaml_lib`
+	AC_MSG_RESULT($ocaml_lib_path)
+        $2
+      else
+        # Look in the user HOME directory (slow but avoids tricks)
+        ocaml_lib=`find $HOME -name $1.cma | head -n 1`
+        if test "$ocaml_lib" != "" ; then
+          ocaml_lib_path=`dirname $ocaml_lib`
+	  AC_MSG_RESULT($ocaml_lib_path)
+	  $2
+        else	 
+          AC_MSG_RESULT(not found)
+        fi
+      fi
+    fi
+  fi
+])
+
+OCAML_LIB(lacaml1, [LACAML_PATH=$ocaml_lib_path], [])
+
+
+
 if test "$OCAMLOPT" = no ; then
     BEST=byte
 else
@@ -145,6 +200,7 @@ AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(FFTW3F_EXIST)
+AC_SUBST(LACAML_PATH)
 
 # Finally create the Makefile and samples (read only to avoid changing
 # them by mistake)
