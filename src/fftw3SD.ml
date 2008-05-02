@@ -199,7 +199,7 @@ module Array1 = struct
   type 'l float_array   = (float, float_elt, 'l) Array1.t
 
 
-  let apply name make_plan n hm  hmi ofsi inci i  hmo ofso inco o  normalize =
+  let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize =
     let n = option_map (fun n -> [| n |]) n in
     let hmi = List.map (fun v -> [| v |]) hmi in
     let ofsi = option_map (fun n -> [| n |]) ofsi in
@@ -208,24 +208,22 @@ module Array1 = struct
     let ofso = option_map (fun n -> [| n |]) ofso in
     let inco = Some [| inco |] in
     Genarray.apply name make_plan
-      n [| hm |]  hmi ofsi inci i  hmo ofso inco o  normalize
+      n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize
 
   let dft_name = FFTW ^ "Array1.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
-      ?(preserve_input=true) ?(unaligned=false)
-      ?n ?(howmany=1)
+      ?(preserve_input=true) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?(inci=1) (i: 'l complex_array)
       ?(howmanyo=[]) ?ofso ?(inco=1) (o: 'l complex_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
     apply dft_name
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
-      n howmany  howmanyi ofsi inci gi  howmanyo ofso inco go  normalize
+      n howmany_n  howmanyi ofsi inci gi  howmanyo ofso inco go  normalize
 
   let r2r_name = FFTW ^ "Array1.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
-      ?(preserve_input=true) ?(unaligned=false)
-      ?n ?(howmany=1)
+      ?(preserve_input=true) ?(unaligned=false) ?n ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ofsi ?(inci=1) (i: 'l float_array)
       ?(howmanyo=[]) ?ofso ?(inco=1) (o: 'l float_array) =
     let gi = genarray_of_array1 i
@@ -233,7 +231,7 @@ module Array1 = struct
     let kind = [| int_of_r2r_kind kind |] in
     apply r2r_name
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
-      n howmany  howmanyi ofsi inci gi howmanyo ofso inco go  normalize
+      n howmany_n  howmanyi ofsi inci gi howmanyo ofso inco go  normalize
 end
 
 

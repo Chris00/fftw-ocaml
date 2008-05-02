@@ -310,7 +310,7 @@ module type Sig = sig
 
     val dft : dir -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany:int ->
+      ?n:int -> ?howmany_n:int array ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
       ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
@@ -329,7 +329,7 @@ module type Sig = sig
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany:int ->
+      ?n:int -> ?howmany_n:int array ->
       ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
       ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
