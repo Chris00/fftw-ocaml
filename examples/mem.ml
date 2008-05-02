@@ -8,7 +8,7 @@
     Required modules: Lacaml
 *)
 
-open Format
+open Printf
 open Scanf
 open Bigarray
 open Lacaml.Impl.D
@@ -157,29 +157,34 @@ let read_consts bh =
 (* Print a vector in Mathematica format (automatically splitted on
    several lines if needed). *)
 let print_vec fh (x:vec) =
-  fprintf fh "{ @[";
-  for i = 1 to Vec.dim x - 1 do fprintf fh "%g,@ " x.{i} done;
-  fprintf fh "%f @]}@\n" x.{Vec.dim x}
+  Format.fprintf fh "{ @[";
+  for i = 1 to Vec.dim x - 1 do Format.fprintf fh "%g,@ " x.{i} done;
+  Format.fprintf fh "%f @]}@\n" x.{Vec.dim x}
 
 
 let () =
+  let input = ref "" in
+  let n = ref 1000 in
   let output = ref "" in
-  let n = ref 1 in
-  let usage =
-    sprintf "Usage: %s <n>@\nExpect a string of the form {f1,...,fN} \
-	(N < n) on the standard input.@\n" Sys.argv.(0) in
+  let usage = sprintf "Usage: %s" Sys.argv.(0) in
   let args = Arg.align [
+    ("-n", Arg.Set_int n,
+     Printf.sprintf "i extend the data to i elements (default: %i)" !n);
+    ("--input", Arg.Set_string input, "fname input file.  Expected to contain \
+	a string of the form {f1,...,fN} (N < n).");
     ("--output", Arg.Set_string output,
-     "output file (default: standard output)");
+     "fname output file (default: standard output)");
   ] in
-  Arg.parse args (fun s -> n := int_of_string s) usage;
-  if !n <= 1 then (Arg.usage args usage; exit 1);
+  Arg.parse args (fun s -> raise(Arg.Bad "no anonymous argument")) usage;
+  if !input = "" then (Arg.usage args usage; exit 1);
 
-  let consts = read_consts Scanning.stdib in
+  let consts = read_consts (Scanning.from_file !input) in
   let x = mem consts !n in
-  if !output = "" then print_vec std_formatter x
+  if !output = "" then print_vec Format.std_formatter x
   else begin
     let fh = open_out !output in
-    for i = 1 to Vec.dim x - 1 do Printf.fprintf fh "%g\n" x.{i} done;
+    fprintf fh "# Maximum Entropy Method (#const=%i, n=%i)\n"
+      (Array1.dim consts) !n;
+    for i = 1 to Vec.dim x - 1 do fprintf fh "%g\n" x.{i} done;
     close_out fh
   end
