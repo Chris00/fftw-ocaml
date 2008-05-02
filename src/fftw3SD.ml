@@ -95,15 +95,17 @@ let exec p =
 (*     normalize p.o p.offseto p.strideo p.no p.normalize_factor *)
 ;;
 
-let exec_dft plan i o =
+module Guru = struct
+
+  let dft plan i o =
   (* how to check that the arrays conform to the plan specification? *)
   exec_dft plan i o
 
-let exec_split_dft plan ri ii ro io =
-  (* again, how to check conformance with the plan? *)
-  exec_split_dft plan ri ii ro io
+  let split_dft plan ri ii ro io =
+    (* again, how to check conformance with the plan? *)
+    exec_split_dft plan ri ii ro io
 
-
+end
 
 (** {2 Creating plans}
  ***********************************************************************)

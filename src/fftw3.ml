@@ -61,6 +61,11 @@ module type Sig = sig
 
   val exec : 'a plan -> unit
 
+  module Guru : sig
+
+  end
+
+
   module Genarray :
   sig
     external create: ('a, 'b) kind -> 'c layout -> int array

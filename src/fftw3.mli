@@ -129,8 +129,7 @@ module type Sig = sig
 
         This function is thread safe.  *)
 
-  (*
-  (** {3 Guru execution of plans.}
+  (** Guru execution of plans.
 
     If you want to transform other arrays than those specified in the
     plan, you are advised to create a new plan -- it won't be too
@@ -143,26 +142,27 @@ module type Sig = sig
     plan} in parallel by multiple threads by providing different
     arrays than the ones with which the plan was created.
   *)
+  module Guru : sig
+    (*
+      val dft : c2c plan -> 'l complex_array -> 'l complex_array -> unit
 
-    val exec_dft : c2c plan -> 'l complex_array -> 'l complex_array -> unit
+      val split_dft : c2c plan ->
+      'l float_array -> 'l float_array ->
+      'l float_array -> 'l float_array -> unit
 
-    val exec_split_dft : c2c plan ->
-    'l float_array -> 'l float_array ->
-    'l float_array -> 'l float_array -> unit
+      val r2c : r2c plan -> 'l float_array -> 'l complex_array -> unit
 
-    val exec_r2c : r2c plan -> 'l float_array -> 'l complex_array -> unit
+      val split_r2c : r2c plan ->
+      'l float_array -> 'l float_array -> 'l float_array -> unit
 
-    val exec_split_r2c : r2c plan ->
-    'l float_array -> 'l float_array -> 'l float_array -> unit
+      val c2r : c2r plan -> 'l complex_array -> 'l float_array -> unit
 
-    val exec_c2r : c2r plan -> 'l complex_array -> 'l float_array -> unit
+      val split_c2r : c2r plan ->
+      'l float_array -> 'l float_array -> 'l float_array -> unit
 
-    val exec_split_c2r : c2r plan ->
-    'l float_array -> 'l float_array -> 'l float_array -> unit
-
-    val exec_r2r : r2r plan -> 'l float_array -> 'l float_array -> unit
-  *)
-
+      val r2r : r2r plan -> 'l float_array -> 'l float_array -> unit
+    *)
+  end
 
   (** {2 Creating plans} *)
 
@@ -200,9 +200,9 @@ module type Sig = sig
 	  should not overlap.
           @raise Failure if the plan cannot be created.
 
-          {b Beware} that, unless [~meas] is [Estimate], creating a plan
-          requires some trials which will destroy the content of the
-          arrays.
+          {b Beware} that, unless [~meas] is [Estimate], creating a
+          plan requires some trials that will destroy the content of
+          the arrays.
 
 	  - [meas] controls how much time is dedicated to the
 	  creation of the plan.  Default: [Measure]
@@ -216,12 +216,12 @@ module type Sig = sig
 	  must {i not change its input} array.  Default: [true] except for
 	  c2r and HC2R. FIXME: [false] means that... (??)
 
-          - [unaligned] specifies that the algorithm may not impose any
-          unusual alignment requirements.  You normally do not need this
+          - [unaligned] specifies that the algorithm may not impose
+          any alignment requirements.  You normally do not need this
           flag unless you want to use the plan with {i other unaligned
-          arrays} (using the guru interface).  Default: [false] meaning
-          that alignment may be used to speed up the computations (when
-          [in] and [out] are aligned of course).
+          arrays} (using the guru interface).  Default: [false]
+          meaning that alignment may be used to speed up the
+          computations (when [in] and [out] are aligned of course).
 
           {9 Subarrays}
 
