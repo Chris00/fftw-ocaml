@@ -20,13 +20,10 @@
 
 (** Interface for FFTW version 3.
 
-    @author Christophe Troestler <chris_77\@users.sourceforge.net>
-    @version 0.5.1
+   @author Christophe Troestler <chris_77\@users.sourceforge.net>
+   @version 0.5.1
 *)
-
-
-(** Precision independent signature for FFTW3 submodules.
-
+(**
     We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
     {[
@@ -52,15 +49,16 @@
     important ones are [~meas] and [~normalize].  The other ones can
     be ignored at first.
 *)
+
+
+(** Precision independent signature for FFTW3 submodules. *)
 module type Sig = sig
   open Bigarray
 
   (** {2 Precision} *)
 
-  type float_elt
-    (** Precision of float numbers. *)
-  type complex_elt
-    (** Precision of complex numbers. *)
+  type float_elt (** Precision of float numbers. *)
+  type complex_elt (** Precision of complex numbers. *)
 
   val float : (float, float_elt) Bigarray.kind
     (** Float of the precision of this module.  Use this to create
@@ -72,7 +70,7 @@ module type Sig = sig
 
   (** {2 Specifying plans} *)
 
-  type 'a plan (** Immutable FFTW plan. *)
+  type 'a plan (** FFTW plan. *)
   type c2c     (** [c2c plan] usual discrete Fourier transform,
                    from complex to complex *)
   type r2c     (** [r2c plan] real to complex transform *)
@@ -164,8 +162,10 @@ module type Sig = sig
     *)
   end
 
+
   (** {2 Creating plans} *)
 
+  (** FFT of Bigarray.Genarray. *)
   module Genarray :
   sig
     external create: ('a, 'b) kind -> 'c layout -> int array
@@ -194,11 +194,11 @@ module type Sig = sig
       ?ofso:int array -> ?inco:int array -> 'l complex_array
       -> c2c plan
       (** [dft dir in out] returns a plan for computing the FFT in the
-	  direction [dir] from [in] to [out].  [in] and [out] must have
-	  the same number of dimensions and may be equal (in which case
-	  the transform is done in-place).  If they are not equal, they
-	  should not overlap.
-          @raise Failure if the plan cannot be created.
+	  direction [dir] from [in] to [out].  [in] and [out] must
+	  have the same number of (logical) dimensions and may be
+	  equal (in which case the transform is done in-place).  If
+	  they are not equal, they should not overlap.  @raise Failure
+	  if the plan cannot be created.
 
           {b Beware} that, unless [~meas] is [Estimate], creating a
           plan requires some trials that will destroy the content of
@@ -228,11 +228,25 @@ module type Sig = sig
           Fftw3 allows you to perform the FFT transform on subarrays
           defined by offset, strides and dimensions.
 
+          - [n] is the array of {i logical} dimensions of the input.
+          Of course, the dimensions must be small enough so that the
+          the subarrays fits in [i] and [o].  If [n.(k) = 0], it means
+          that we want the larger dimension [n.(k)] that the choice of
+          [ofsi] and [inci] allow (it must be compatible with what
+          [ofso] and [inco] allow).  Note that [n.(k) = 1] means that
+          the direction [k] is to be inored (i.e. the [k]th index is
+          constant with value [ofsi.(k)]).
+
           - [ofsi] the initial element in the input array.  Default:
           [[|0;...;0|]] for c_layout and [[|1;...;1|]] for fortran_layout.
 
-          - [inci] an array of increments for each dimension.
-          Default: [[|1;...;1|]].
+          - [inci] an array of increments for each (physical)
+          dimension of the input array [i].  [inci.(k)] can be
+          negative, indicating that we are going backward from
+          [ofs.(k)].  If the increment [inci.(k) = 0], that means that
+          the dimension [k] must be ignored (i.e. the index in
+          dimension [k] is constant with value [ofsi.(k)]).  Default:
+          [[|1;...;1|]].
 
           - [ofso] same as [ofsi] but for output.
 
@@ -240,9 +254,25 @@ module type Sig = sig
 
           {9 Multiple transforms}
 
-	  - [howmany_n] allow to compute several transforms at once
-	  by specifying the number of dimensions ([< Genarray.num_dims
-	  i]) used to index the arrays.  Default: 0.  *)
+          FFTW allows to compute several transforms at once.  This is
+          more efficient than to create a different plan for each
+          transform.
+
+	  - [howmany_n] is an array of the (logical) dimensions of the
+          array indexing the many transforms.  Default: [[| |]],
+          i.e. single transform.  If [howmanyi] is given but no
+          [howmany_n], then the maximum dimensions possible by the
+          dimensions of [i] (resp. [o]) are used.  A value of [0] for
+          a dimension also means to make it as large as possible.
+
+          - [howmanyi] is a list of vectors [[v1;...;vp]] generating
+          the lattice of multiple arrays.  In other words, if [a] is
+          an element of index [k] in the "first" array, then the same
+          element in the other arrays is at indexes [k + i1 * v1 +
+          ... + ip * vp].
+
+          - [howmanyo] same as [howmanyi] but for output.
+      *)
 
     val r2c : ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
@@ -257,7 +287,7 @@ module type Sig = sig
 
           - [n] is the array of {i logical} sizes of the transform.
 
-	  See {!Fftw3.D.Genarray.dft} for the meaning of the other
+	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
 
     val c2r : ?meas:measure -> ?normalize:bool ->
@@ -275,7 +305,7 @@ module type Sig = sig
 
           - [n] is the array of {i logical} sizes of the transform.
 
-	  See {!Fftw3.D.Genarray.dft} for the meaning of the other
+	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
 
     val r2r : r2r_kind array ->
@@ -289,14 +319,16 @@ module type Sig = sig
       -> r2r plan
       (** [r2r kind in out]
 
-          See {!Fftw3.D.Genarray.dft} for the meaning of optional parameters. *)
+          See {!Fftw3.Sig.Genarray.dft} for the meaning of optional
+          parameters. *)
   end
 
 
+  (** FFT of Bigarray.Array1. *)
   module Array1 :
   sig
     val create: ('a, 'b) kind -> 'c layout -> int -> ('a, 'b, 'c) Array1.t
-      (** See {!Fftw3.D.Genarray.create}. *)
+      (** See {!Fftw3.Sig.Genarray.create}. *)
 
     val of_array : ('a, 'b) kind -> 'c layout -> 'a array -> ('a, 'b, 'c) Array1.t
       (** [of_array kind layout a] build a one-dimensional aligned big
@@ -318,14 +350,14 @@ module type Sig = sig
           store it in [y].
 
           The parameters [meas], [preserve_input], [unaligned],
-          [normalize] are as for {!Fftw3.D.Genarray.dft}.
+          [normalize] are as for {!Fftw3.Sig.Genarray.dft}.
 
           @param n the logical length of the array.  If not provided, it
           is automatically computed from [ofsi], [inci] and [Array1.dim
           x].
 
           Remark: If you want to transform several 1D arrays at once,
-          use {!Fftw3.D.Array2.dft} with [~many:true]. *)
+          use {!Fftw3.Sig.Array2.dft} with [~many:true]. *)
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
@@ -336,10 +368,11 @@ module type Sig = sig
   end
 
 
+  (** FFT of Bigarray.Array2. *)
   module Array2 :
   sig
     val create: ('a, 'b) kind -> 'c layout -> int -> int -> ('a, 'b, 'c) Array2.t
-      (** See {!Fftw3.D.Genarray.create}. *)
+      (** See {!Fftw3.Sig.Genarray.create}. *)
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
         (** Double precision complex 2D array. *)
@@ -355,7 +388,7 @@ module type Sig = sig
       ?howmanyo:(int * int) list ->
       ?ofso:int * int -> ?inco:int * int -> 'l complex_array
       -> c2c plan
-      (** See {!Fftw3.D.Genarray.dft}. *)
+      (** See {!Fftw3.Sig.Genarray.dft}. *)
 
     val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
@@ -365,15 +398,16 @@ module type Sig = sig
       ?howmanyo:(int * int) list ->
       ?ofso:int * int -> ?inco:int * int -> 'l float_array
       -> r2r plan
-      (** See {!Fftw3.D.Genarray.r2r}. *)
+      (** See {!Fftw3.Sig.Genarray.r2r}. *)
   end
 
 
+  (** FFT of Bigarray.Array3. *)
   module Array3 :
   sig
     val create: ('a, 'b) kind -> 'c layout -> int -> int -> int
       -> ('a, 'b, 'c) Array3.t
-      (** See {!Fftw3.D.Genarray.create}. *)
+      (** See {!Fftw3.Sig.Genarray.create}. *)
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
         (** Double precision complex 3D array. *)
@@ -389,7 +423,7 @@ module type Sig = sig
       ?howmanyo:(int * int * int) list ->
       ?ofso:int * int * int -> ?inco:int * int * int -> 'l complex_array
       -> c2c plan
-      (** See {!Fftw3.D.Genarray.dft}. *)
+      (** See {!Fftw3.Sig.Genarray.dft}. *)
   end
 end
 
@@ -399,14 +433,13 @@ module D : Sig
   with type float_elt = Bigarray.float64_elt
   and type complex_elt = Bigarray.complex64_elt
 
-
 IFDEF FFTW3F_EXIST THEN
 (** Single precision FFTW.  This is only available if the single
     precision FFTW3 library was available when this module was
     compiled. *)
 module S : Sig
   with type float_elt = Bigarray.float32_elt
-  and type complex_elt = Bigarray.complex32_elt
+  and type complex_elt = Bigarray.complex32_elt ;;
 ENDIF
 
 (** Managing wisdom.  Save and restore plans to/from disk or other
