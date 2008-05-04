@@ -90,8 +90,9 @@ let mem (consts:vec) n =
   let v = Vec.make0 (n-d) (* starting point *) in
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
-      eprintf "%2i: l = %-.5g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
-        i l (nrm2 x) h h');
+              Format.eprintf
+                "%2i: l = %-.4g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                i l (nrm2 x) h h');
   Array1.blit v vars;
   x (* return [const] followed by the optimal [vars]. *)
 
@@ -132,8 +133,9 @@ let mem_harrop (consts: vec) n =
   let v = Vec.make0 (n-d) (* starting point *) in
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
-      eprintf "%-2i: l = %-.5g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
-        i l (nrm2 x) h h');
+              Format.eprintf
+                "%-2i: l = %-.5g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                i l (nrm2 x) h h');
   let x = copy consts ~y:(create n) (* first components of [x] are [const] *) in
   ignore(copy v ~y:x ~ofsy:(d + 1));
   x
