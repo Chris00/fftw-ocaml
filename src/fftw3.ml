@@ -20,7 +20,7 @@
 *)
 
 DEFINE DEBUG(expr) = expr;;
-(* DEFINE DEBUG(expr) = ();; *)
+DEFINE DEBUG(expr) = ();;
 
 open Bigarray
 open Printf
@@ -208,14 +208,8 @@ struct
     | [] -> ()
     | a :: tl -> f i a; list_iteri_loop f (succ i) tl
 
-  let iteri (f: int -> _ -> unit) l = list_iteri_loop f 0 l
+  let iteri ~(f: int -> _ -> unit) l = list_iteri_loop f 0 l
 end
-
-(** positive part *)
-let pos i = if i > 0 then i else 0
-
-(** negative part *)
-let neg i = if i < 0 then i else 0
 
 let option_map f = function Some v -> Some(f v) | None -> None
 
@@ -266,8 +260,8 @@ struct
     DEFINE LAYOUT = "c_layout";;
     DEFINE FIRST_INDEX = 0;;
     DEFINE LAST_INDEX(dim) = dim - 1;;
-    DEFINE FOR_DIM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
-    DEFINE FOR_HM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
+    DEFINE FOR_DIM(k, ndims, expr) = for k = ndims - 1 downto 0 do expr done;;
+    DEFINE FOR_HM(k, ndims, expr) = for k = 0 to ndims - 1 do expr done;;
     DEFINE LT_DIM_SYM = "<";;
     DEFINE GE_DIM_SYM = ">=";;
     INCLUDE "fftw3_geom.ml"
@@ -280,8 +274,8 @@ struct
     DEFINE LAYOUT = "fortran_layout";;
     DEFINE FIRST_INDEX = 1;;
     DEFINE LAST_INDEX(dim) = dim;;
-    DEFINE FOR_DIM(k, rank, expr) = for k = 0 to rank - 1 do expr done;;
-    DEFINE FOR_HM(k, rank, expr) = for k = rank - 1 downto 0 do expr done;;
+    DEFINE FOR_DIM(k, ndims, expr) = for k = 0 to ndims - 1 do expr done;;
+    DEFINE FOR_HM(k, ndims, expr) = for k = ndims - 1 downto 0 do expr done;;
     DEFINE LT_DIM_SYM = "<=";;
     DEFINE GE_DIM_SYM = ">";;
     INCLUDE "fftw3_geom.ml"
