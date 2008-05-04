@@ -125,8 +125,8 @@ let get_geom name ofsname ofs incname inc nname n mat =
           end;
           pdim := !pdim * dimk;
          );
-  DEBUG(eprintf "%s: n_log=%s; stride=%s\n%!" name (string_of_array n_log)
-          (string_of_array stride));
+  DEBUG(eprintf "%s: n_log=%s (rank=%i); stride=%s\n%!" name
+          (string_of_array n_log) !rank (string_of_array stride));
   !offset, (Array.sub n_log 0 !rank), stride, low, up
 ;;
 
@@ -135,87 +135,60 @@ let get_geom name ofsname ofs incname inc nname n mat =
    [hm_stride], [hm_n] (howmany matrix), [stride] and [n] (logical
    dimensions). *)
 let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
-  let rank = Genarray.num_dims mat in
+  let num_dims = Genarray.num_dims mat in
   if hm = [] then
     if hm_n = [| |] then
-      [| |], [| |], stride, n (* only one transform *)
-    else begin
-      (* Transforms indexed by the first (FORTRAN: last) dimensions of
-         the submatrix of [mat] defined by [ofs] and [inc]. *)
-      let hm_rank = Array.length hm_n in
-      if hm_rank >= rank then
-        invalid_arg(sprintf "%s: length %s >= %i = number of dimensions"
-                      name hm_nname rank);
-      let mat_rank = rank - hm_rank in
-      let hm_index = IFDEF FORTRAN THEN mat_rank ELSE 0 ENDIF in
-      let hm_stride = Array.sub stride hm_index hm_rank in
-      let stride_index = IFDEF FORTRAN THEN 0 ELSE hm_rank ENDIF in
-      let stride = Array.sub stride stride_index mat_rank in
-      let normalize_hm i ni =
-        let j = IFDEF FORTRAN THEN mat_rank + i ELSE i ENDIF in
-        if ni < 0 then invalid_arg(sprintf "%s: %s.(%i) < 0" name hm_nname i)
-        else if ni = 0 then n.(j)
-        else if ni <= n.(j) then ni
-        else invalid_arg(sprintf "%s: %s.(%i) = %i > %s.(%i) = %i"
-                           name hm_nname i ni nname j n.(j)) in
-      let hm_n = Array.mapi normalize_hm hm_n in
-      let n = Array.sub n stride_index mat_rank in
-      hm_stride, hm_n, stride, n
-    end
-  else (
+      [| |], [| |] (* only one transform *)
+    else
+      (* Dimensions but no the corresponding vectors *)
+      invalid_arg(sprintf "%s: %s = %s but %s = []"
+                    name hm_nname (string_of_array hm_n) hmname)
+  else begin
     (* Transforms indices = vectors of [hm] with desired dims [hm_n]. *)
     let hm_rank = List.length hm in
     let hm_n =
       if hm_n = [| |] then Array.make hm_rank 0
       else if Array.length hm_n = hm_rank then (
-        let normalize_hm i ni =
-          if ni < 0 then invalid_arg(sprintf "%s: %s.(%i) < 0" name hm_nname i);
-          ni in
         (* copy [hm_n] because 0 entries will be modified: *)
-        Array.mapi normalize_hm hm_n;
+        let copy_hm i ni =
+          if ni >= 0 then ni
+          else invalid_arg(sprintf "%s: %s.(%i) < 0" name hm_nname i) in
+        Array.mapi copy_hm hm_n
       )
       else invalid_arg(sprintf "%s: length %s = %i <> length %s = %i"
                          name hm_nname (Array.length hm_n) hmname hm_rank) in
     let hm_stride = Array.make hm_rank 0 in
-    List.iteri begin fun i v ->
+    List.iteri hm ~f:begin fun i v ->
       (* [i]th translation vector [v] *)
-      if Array.length v <> rank then
-        invalid_arg(sprintf "%s: length %ith element of %s <> %i \
-		= number of dimensions" name i hmname rank);
-      let hm_s = ref 0 in
+      if Array.length v <> num_dims then
+        invalid_arg(sprintf "%s: length %ith array of %s <> %i \
+			= number of dimensions" name i hmname num_dims);
+      let hm_s = ref 0 (* stride corresponding to [v] *) in
       if hm_n.(i) = 0 then (
-        (* dimension for [i]th "howmany vector" [v] to determine *)
+        (* Dimension for [i]th "howmany vector" [v] to determine *)
         let ni = ref max_int in
-        FOR_HM(k, rank,
+        FOR_HM(k, num_dims,
                let dimk = Genarray.nth_dim mat k in
                if v.(k) > 0 then
-                 (* max{j : ofs.(k) + inc.(k)^+ * (n.(k)-1) + v.(k)*(j-1)
-                    < dimk}.   FORTRAN: <= *)
-                 let d = LAST_INDEX(dimk) - ofs.(k) - pos inc.(k) * (n.(k)-1) in
-                 ni := min !ni (1 + d / v.(k))
+                 (* max{j | up.(k) + v.(k)*(j-1) <= LAST_INDEX(dimk)} *)
+                 ni := min !ni (1 + (LAST_INDEX(dimk) - up.(k)) / v.(k))
                else if v.(k) < 0 then
-                 (* max{j : ofs.(k) + inc.(k)^- * (n.(k)-1) + v.(k)*(j-1) >= 0}
-                    FORTRAN: >= 1 *)
-                 let d = FIRST_INDEX - ofs.(k) - neg inc.(k) * (n.(k)-1) in
-                 ni := min !ni (1 + d / v.(k));
-                 hm_s := !hm_s * dimk + v.(k); (* Horner *)
+                 (* max{j | low.(k) + v.(k)*(j-1) >= FIRST_INDEX} *)
+                 ni := min !ni (1 + (FIRST_INDEX - low.(k)) / v.(k));
+               hm_s := !hm_s * dimk + v.(k); (* Horner *)
               );
         hm_n.(i) <- !ni
       )
       else (
-        (* dimension [hm_n.(k)] provided; bound check *)
-        FOR_HM(k, rank,
+        (* dimension [hm_n.(i)] provided; bound check *)
+        FOR_HM(k, num_dims,
                let dimk = Genarray.nth_dim mat k in
-               if (v.(k) > 0 &&
-                     ofs.(k) + pos inc.(k)*(n.(k)-1) + v.(k)*(hm_n.(i)-1)
-                   > LAST_INDEX(dimk))
-                 || (v.(k) < 0 &&
-                       ofs.(k) + neg inc.(k) * (n.(k)-1) + v.(k)*(hm_n.(i)-1)
-                     < FIRST_INDEX)
+               if (v.(k) > 0 && up.(k) + v.(k)*(hm_n.(i)-1) > LAST_INDEX(dimk))
+                 || (v.(k) < 0 && low.(k) + v.(k)*(hm_n.(i)-1) < FIRST_INDEX)
                then
-                 invalid_arg(sprintf "%s: translating %i times the %ith \
-			       vector of %s exceeds the %ith dim array bounds"
-                               name hm_n.(i) i hmname k);
+                 invalid_arg(sprintf "%s: translating %i times by the %ith \
+			       vector %s of %s exceeds the %ith dim bounds"
+                               name hm_n.(i) i (string_of_array v) hmname k);
                hm_s := !hm_s * dimk + v.(k); (* Horner *)
               );
       );
@@ -223,9 +196,11 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
         invalid_arg(sprintf "%s: %ith element of %s = [|0.;...;0.|]"
                       name i hmname);
       hm_stride.(i) <- !hm_s;
-    end hm;
-    hm_stride, hm_n
-  )
+    end;
+    DEBUG(eprintf "%s: hm_n=%s; hm_stride=%s\n%!" name
+            (string_of_array hm_n) (string_of_array hm_stride));
+    hm_n, hm_stride
+  end
 
 
 (* Take the [make_plan] function creating plans, the dimensions, offsets
@@ -233,23 +208,22 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
    needed by [make_plan].  Check the coherence of the data at the same
    time.  There may be more input (resp. output) arrays than [i]
    (resp. [o]) but these must have the same dimensions. *)
-let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o =
-  let rank = Genarray.num_dims i in
-  if rank <> Genarray.num_dims o then
+let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o =
+  let num_dims = Genarray.num_dims i in
+  if num_dims <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
 	NUMBER of dimensions");
   let offseti, ni, stridei, lowi, upi =
-    get_geom name "ofsi" ofsi "inci" inci "n" n i
+    get_geom name "ofsi" ofsi "inci" inci "n" ni i
   and offseto, no, strideo, lowo, upo =
-    get_geom name "ofso" ofso "inco" inco "n" n o in
+    get_geom name "ofso" ofso "inco" inco "n" no o in
   if ni <> no then
     invalid_arg (sprintf "%s: dim input = %s <> dim ouput = %s" name
                    (string_of_array ni) (string_of_array no));
   let hm_stridei, hm_ni =
-    get_geom_hm name "howmany_n" hm_n "howmanyi" hmi stridei ofsi inci "n" ni i
+    get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  "n" ni lowi upi i
   and hm_strideo, hm_no =
-    get_geom_hm name "howmany_n" hm_n "howmanyo" hmo strideo ofso inco "n" no o
-  in
+    get_geom_hm name "howmany_n" hm_n "howmanyo" hmo  "n" no lowo upo o  in
   if hm_ni <> hm_no then
     invalid_arg(sprintf "%s: howmany dim input = %s <> howmany dim output = %s"
                   name (string_of_array hm_ni) (string_of_array hm_no));
