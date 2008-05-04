@@ -11,7 +11,7 @@ PKG_TARBALL = $(PKG_NAME)-$(VERSION).tar.gz
 SRC_WEB		= web
 SF_WEB		= /home/groups/o/oc/ocaml-fftw/htdocs
 
-.PHONY: all byte opt install uninstall examples
+.PHONY: all byte opt install uninstall examples pnc
 all byte opt install uninstall:
 	$(MAKE) -C src $@
 
@@ -20,6 +20,11 @@ examples: all
 
 distclean: clean
 	$(MAKE) -C examples clean
+
+# Profiling
+pnc:
+#	$(MAKE) -C src -B pnc
+	$(MAKE) -C examples -B pnc
 
 
 .PHONY: dist doc
