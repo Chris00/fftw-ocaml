@@ -3,7 +3,7 @@
 
    Objective Caml interface for FFTW.
 
-   Copyright (C) 2005
+   Copyright (C) 2005-2008
 
      Christophe Troestler <chris_77@users.sourceforge.net>
      WWW: http://www.umh.ac.be/math/an/software/
@@ -18,6 +18,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
+
+DEFINE DEBUG(expr) = expr;;
+(* DEFINE DEBUG(expr) = ();; *)
 
 open Bigarray
 open Printf
@@ -247,7 +250,7 @@ let get_mat_rank name rank default = function
 
 (* This module perform some checks on the dimensions and howmany
    specifications that depend on the layout but not on the
-   precision. *)
+   precision.  *)
 module Geom =
 struct
   (* C layout *)

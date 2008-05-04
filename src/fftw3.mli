@@ -187,11 +187,11 @@ module type Sig = sig
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
+      ?howmany_n:int array ->
       ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
+      ?ni:int array -> ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
       ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      ?no:int array -> ?ofso:int array -> ?inco:int array -> 'l complex_array
       -> c2c plan
       (** [dft dir in out] returns a plan for computing the FFT in the
 	  direction [dir] from [in] to [out].  [in] and [out] must
@@ -228,14 +228,15 @@ module type Sig = sig
           Fftw3 allows you to perform the FFT transform on subarrays
           defined by offset, strides and dimensions.
 
-          - [n] is the array of {i logical} dimensions of the input.
-          Of course, the dimensions must be small enough so that the
-          the subarrays fits in [i] and [o].  If [n.(k) = 0], it means
-          that we want the larger dimension [n.(k)] that the choice of
-          [ofsi] and [inci] allow (it must be compatible with what
-          [ofso] and [inco] allow).  Note that [n.(k) = 1] means that
-          the direction [k] is to be inored (i.e. the [k]th index is
-          constant with value [ofsi.(k)]).
+          - [ni] is the array with an entry for each dimension of [i].
+          [ni.(k)] indicates how many indexes of [i] we want to
+          consider in the dimension [k].  Of course, the [ni.(k)] must
+          be small enough so that the the subarrays fits in [i].  If
+          [ni.(k) = 0], it means that we want the larger dimension
+          [ni.(k)] that the choice of [ofsi.(k)] and [inci.(k)] allow.
+          Note that [ni.(k) = 1] means that the direction [k] is to be
+          ignored (i.e. the [k]th index is constant with value
+          [ofsi.(k)]).
 
           - [ofsi] the initial element in the input array.  Default:
           [[|0;...;0|]] for c_layout and [[|1;...;1|]] for fortran_layout.
@@ -247,6 +248,10 @@ module type Sig = sig
           the dimension [k] must be ignored (i.e. the index in
           dimension [k] is constant with value [ofsi.(k)]).  Default:
           [[|1;...;1|]].
+
+          - [no] same as [ni] but for output.  [no] must denote a
+          transform of the same dimensions as [ni] i.e., neglecting
+          the dimensions [1], the two matrices must be the same.
 
           - [ofso] same as [ofsi] but for output.
 
