@@ -117,7 +117,7 @@ module Genarray = struct
 
   type 'l complex_array = (Complex.t, complex_elt, 'l) Genarray.t
   type 'l float_array   = (float, float_elt, 'l) Genarray.t
-
+  type coord = int array
 
   (* Layout independent function *)
   let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o  normalize =
@@ -131,7 +131,7 @@ module Genarray = struct
         no = ni;
         o = genarray o;
         normalize = normalize;
-        normalize_factor = 1.;          (* FIXME:  *)
+        normalize_factor = 1. /. sqrt(float(Array.fold_left ( * ) 1 ni));
       } in
     (if is_c_layout i then Geom.C.apply else Geom.F.apply) name make
       n hm_n  hmi ofsi inci i  hmo ofso inco o
@@ -247,6 +247,7 @@ module Array2 = struct
 
   type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
   type 'l float_array   = (float, float_elt, 'l) Array2.t
+  type coord = int * int
 
   let apply name make_plan n hm_n  hmi ofsi (inci1,inci2) i
       hmo ofso (inco1,inco2) o  normalize =
@@ -296,7 +297,7 @@ module Array3 = struct
 
   type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
   type 'l float_array   = (float, float_elt, 'l) Array3.t
-
+  type coord = int * int * int
 
   let apply name make_plan n hm_n  hmi ofsi (inci1,inci2,inci3) i
       hmo ofso (inco1,inco2,inco3) o  normalize =

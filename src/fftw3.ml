@@ -77,43 +77,44 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Bigarray.Genarray.t
     type 'l float_array   = (float, float_elt, 'l) Bigarray.Genarray.t
+    type coord = int array
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
 
     val r2c : ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> r2c plan
 
     val c2r : ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> c2r plan
 
     val r2r : r2r_kind array ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
   end
 
@@ -127,16 +128,20 @@ module type Sig = sig
 
     val dft : dir -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany_n:int array ->
-      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
-      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi:int list ->
+      ?ni:int -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
+      ?howmanyo:int list ->
+      ?no:int -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany_n:int array ->
-      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
-      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi:int list ->
+      ?ni:int -> ?ofsi:int -> ?inci:int -> 'l float_array ->
+      ?howmanyo:int list ->
+      ?no:int -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
   end
 
@@ -145,24 +150,25 @@ module type Sig = sig
     val create: ('a, 'b) kind -> 'c layout -> int -> int -> ('a, 'b, 'c) Array2.t
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
     type 'l float_array   = (float, float_elt, 'l) Array2.t
+    type coord = int * int
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int -> ?howmany_n:int array ->
-      ?howmanyi:(int * int) list ->
-      ?ofsi:int * int -> ?inci:int * int -> 'l complex_array ->
-      ?howmanyo:(int * int) list ->
-      ?ofso:int * int -> ?inco:int * int -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
 
     val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int * int -> ?howmany_n:int array ->
-      ?howmanyi:(int * int) list ->
-      ?ofsi:int * int -> ?inci:int * int -> 'l float_array ->
-      ?howmanyo:(int * int) list ->
-      ?ofso:int * int -> ?inco:int * int -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
   end
 
@@ -173,15 +179,16 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
     type 'l float_array   = (float, float_elt, 'l) Array3.t
+    type coord = int * int * int
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int * int -> ?howmany_n:int array ->
-      ?howmanyi:(int * int * int) list ->
-      ?ofsi:int * int * int -> ?inci:int * int * int -> 'l complex_array ->
-      ?howmanyo:(int * int * int) list ->
-      ?ofso:int * int * int -> ?inco:int * int * int -> 'l complex_array
+      ?howmany_n: int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
   end
 end

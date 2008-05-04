@@ -169,8 +169,7 @@ module type Sig = sig
   module Genarray :
   sig
     external create: ('a, 'b) kind -> 'c layout -> int array
-      -> ('a, 'b, 'c) Bigarray.Genarray.t
-      = "fftw3_ocaml_ba_create"
+      -> ('a, 'b, 'c) Bigarray.Genarray.t = "fftw3_ocaml_ba_create"
       (** Creates a new array, just as [Bigarray.Genarray.create] does,
 	  but guarantees that it is aligned so one gets the better
 	  performance from FFTW.
@@ -183,15 +182,19 @@ module type Sig = sig
         (** Double precision complex array. *)
     type 'l float_array   = (float, float_elt, 'l) Bigarray.Genarray.t
         (** Double precision float array. *)
+    type coord = int array
+        (** Coordinates of elements or dimensions of an ND array
+            (therefore the length of such an array of coordinates must
+            be equal to the number of dimensions of the matrix). *)
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ni:int array -> ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
-      ?howmanyo:int array list ->
-      ?no:int array -> ?ofso:int array -> ?inco:int array -> 'l complex_array
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
       (** [dft dir in out] returns a plan for computing the FFT in the
 	  direction [dir] from [in] to [out].  [in] and [out] must
@@ -226,17 +229,20 @@ module type Sig = sig
           {9 Subarrays}
 
           Fftw3 allows you to perform the FFT transform on subarrays
-          defined by offset, strides and dimensions.
+          defined by offset, strides and dimensions.  (Only the offset
+          specification is dependent on the layout, the other two are
+          the same regardless of whether the matrix has a C or FORTRAN
+          layout.)
 
-          - [ni] is the array with an entry for each dimension of [i].
-          [ni.(k)] indicates how many indexes of [i] we want to
-          consider in the dimension [k].  Of course, the [ni.(k)] must
-          be small enough so that the the subarrays fits in [i].  If
-          [ni.(k) = 0], it means that we want the larger dimension
-          [ni.(k)] that the choice of [ofsi.(k)] and [inci.(k)] allow.
-          Note that [ni.(k) = 1] means that the direction [k] is to be
-          ignored (i.e. the [k]th index is constant with value
-          [ofsi.(k)]).
+          - [ni] is the array with an entry for each dimension [k]
+          of [i].  [ni.(k)] indicates how many increments [inci.(k)]
+          we want to consider in the dimension [k].  Of course, the
+          [ni.(k)] must be small enough so that the the subarrays fits
+          in [i].  If [ni.(k) = 0], it means that we want the larger
+          dimension [ni.(k)] that the choice of [ofsi.(k)] and
+          [inci.(k)] allow.  Note that [ni.(k) = 1] means that the
+          direction [k] is to be ignored (i.e. the [k]th index is
+          constant with value [ofsi.(k)]).
 
           - [ofsi] the initial element in the input array.  Default:
           [[|0;...;0|]] for c_layout and [[|1;...;1|]] for fortran_layout.
@@ -261,7 +267,8 @@ module type Sig = sig
 
           FFTW allows to compute several transforms at once.  This is
           more efficient than to create a different plan for each
-          transform.
+          transform.  It is your responsability to ensure that the
+          many submatrices do not overlap.
 
 	  - [howmany_n] is an array of the (logical) dimensions of the
           array indexing the many transforms.  Default: [[| |]],
@@ -281,11 +288,11 @@ module type Sig = sig
 
     val r2c : ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> r2c plan
       (** [r2c in out] returns a plan for computing the {i forward}
           transform
@@ -297,11 +304,11 @@ module type Sig = sig
 
     val c2r : ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l complex_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> c2r plan
       (** [c2r in out] returns a plan for computing the {i backward}
           transform
@@ -316,11 +323,11 @@ module type Sig = sig
     val r2r : r2r_kind array ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int array -> ?howmany_n:int array ->
-      ?howmanyi:int array list ->
-      ?ofsi:int array -> ?inci:int array -> 'l float_array ->
-      ?howmanyo:int array list ->
-      ?ofso:int array -> ?inco:int array -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
       (** [r2r kind in out]
 
@@ -347,9 +354,11 @@ module type Sig = sig
 
     val dft : dir -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany_n:int array ->
-      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
-      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi:int list ->
+      ?ni:int -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
+      ?howmanyo:int list ->
+      ?no:int -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
       (** [dft dir x y] returns a plan to compute the DFT of [x] and
           store it in [y].
@@ -366,9 +375,11 @@ module type Sig = sig
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int -> ?howmany_n:int array ->
-      ?howmanyi:int list -> ?ofsi:int -> ?inci:int -> 'l float_array ->
-      ?howmanyo:int list -> ?ofso:int -> ?inco:int -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi:int list ->
+      ?ni:int -> ?ofsi:int -> ?inci:int -> 'l float_array ->
+      ?howmanyo:int list ->
+      ?no:int -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
   end
 
@@ -383,25 +394,27 @@ module type Sig = sig
         (** Double precision complex 2D array. *)
     type 'l float_array   = (float, float_elt, 'l) Array2.t
         (** Double precision float 2D array. *)
+    type coord = int * int
+        (** Coordinates of emlements of the 2D array. *)
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int -> ?howmany_n:int array ->
-      ?howmanyi:(int * int) list ->
-      ?ofsi:int * int -> ?inci:int * int -> 'l complex_array ->
-      ?howmanyo:(int * int) list ->
-      ?ofso:int * int -> ?inco:int * int -> 'l complex_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
     val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n:int * int -> ?howmany_n:int array ->
-      ?howmanyi:(int * int) list ->
-      ?ofsi:int * int -> ?inci:int * int -> 'l float_array ->
-      ?howmanyo:(int * int) list ->
-      ?ofso:int * int -> ?inco:int * int -> 'l float_array
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
       (** See {!Fftw3.Sig.Genarray.r2r}. *)
   end
@@ -418,15 +431,17 @@ module type Sig = sig
         (** Double precision complex 3D array. *)
     type 'l float_array   = (float, float_elt, 'l) Array3.t
         (** Double precision float 3D array. *)
+    type coord = int * int * int
+        (** Coordinates of emlements of the 3D array. *)
 
     val dft : dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
-      ?n: int * int * int -> ?howmany_n: int array ->
-      ?howmanyi:(int * int * int) list ->
-      ?ofsi:int * int * int -> ?inci:int * int * int -> 'l complex_array ->
-      ?howmanyo:(int * int * int) list ->
-      ?ofso:int * int * int -> ?inco:int * int * int -> 'l complex_array
+      ?howmany_n: int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
   end
