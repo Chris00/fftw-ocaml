@@ -1,6 +1,7 @@
 #							-*-makefile-gmake-*-
 export OCAMLMAKEFILE = ../OCamlMakefile
 export ANNOTATE := yes
+export OCAMLNCFLAGS := -inline 3
 
 export INCDIRS = ../src @INC@
 export LIBS = bigarray fftw3
@@ -23,6 +24,7 @@ export PROJ_delta
 define PROJ_henon
   SOURCES = henon.ml
   RESULT  = henon
+  LIBS += unix
 endef
 export PROJ_henon
 
