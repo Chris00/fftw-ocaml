@@ -224,7 +224,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
                       name i hmname);
       hm_stride.(i) <- !hm_s;
     end hm;
-    hm_stride, hm_n, stride, n
+    hm_stride, hm_n
   )
 
 
@@ -242,14 +242,15 @@ let apply name make_plan n hm_n  hmi ofsi inci i  hmo ofso inco o =
     get_geom name "ofsi" ofsi "inci" inci "n" n i
   and offseto, no, strideo, lowo, upo =
     get_geom name "ofso" ofso "inco" inco "n" n o in
-  if ni <> no then invalid_arg("dim input = " ^ string_of_array ni
-                               ^ " <> dim ouput = " ^ string_of_array no);
-  let hm_stridei, hm_ni, stridei, ni =
+  if ni <> no then
+    invalid_arg (sprintf "%s: dim input = %s <> dim ouput = %s" name
+                   (string_of_array ni) (string_of_array no));
+  let hm_stridei, hm_ni =
     get_geom_hm name "howmany_n" hm_n "howmanyi" hmi stridei ofsi inci "n" ni i
-  and hm_strideo, hm_no, strideo, no =
+  and hm_strideo, hm_no =
     get_geom_hm name "howmany_n" hm_n "howmanyo" hmo strideo ofso inco "n" no o
   in
   if hm_ni <> hm_no then
-    invalid_arg("howmany dim input = " ^ string_of_array hm_ni
-                ^ " <> howmany dim output = " ^ string_of_array hm_no);
+    invalid_arg(sprintf "%s: howmany dim input = %s <> howmany dim output = %s"
+                  name (string_of_array hm_ni) (string_of_array hm_no));
   make_plan offseti offseto ni stridei strideo  hm_ni hm_stridei hm_strideo
