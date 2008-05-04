@@ -1,7 +1,8 @@
 #							-*-makefile-gmake-*-
 OCAMLMAKEFILE = ../OCamlMakefile
 ANNOTATE := yes
-USE_CAMLP4 := yes
+#USE_CAMLP4 := yes
+export OCAMLNCFLAGS := -inline 3
 
 PRE_TARGETS := fftw3S_external.ml
 SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
