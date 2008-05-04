@@ -156,7 +156,8 @@ value FFTW(ocaml_normalize)(value va, /* array */
 /* Creating ND plans
  ***********************************************************************/
 
-/* Copy the Caml arrays to the structure required by the guru interface */
+/* Copy the Caml arrays to the structure required by the guru interface.
+ * Single transforms may be specified with [howmany_rank = 0]. */
 #define MAKE_DIMS()                                             \
   const int rank = Wosize_val(vn);                              \
   const int howmany_rank = Wosize_val(vhowmany);                \
