@@ -55,9 +55,9 @@ external guru_dft :
   (* out *) 'l complex_array ->
   (* sign (forward/backward) *) int ->
   (* flags (GOOD: they do not use the 32th bit) *) int ->
-  (* input offset (as 1D array) *) int ->
-  (* output offset (as 1D array) *) int ->
-  (* n (transform dimensions; its length = rank) *) int array ->
+  (* input offset ([in] as 1D array) *) int ->
+  (* output offset ([out] as 1D array) *) int ->
+  (* n (transform dimensions; its length = transform rank) *) int array ->
   (* istride (same length as [n]) *) int array ->
   (* ostride (same length as [n]) *) int array ->
   (* howmany (multiplicity dimensions; its length=howmany_rank) *) int array ->
@@ -66,7 +66,11 @@ external guru_dft :
   -> c2c fftw_plan
   = "fftw_ocaml_guru_dft_bc" "fftw_ocaml_guru_dft"
   (* Wrapper of fftw_plan_guru_dft.  No coherence check is done in the
-     C code.  @raise Failure if the plan cannot be created. *)
+     C code.  @raise Failure if the plan cannot be created.
+
+     The [istride] and [ostride] parameters can be longer than [n]
+     without harm (but only the [Array.length n] first entries will be
+     used).  The same applies for the "howmany" parameters. *)
 
 external guru_r2c :
   (* in *) 'l float_array ->
