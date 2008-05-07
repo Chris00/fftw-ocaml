@@ -20,7 +20,7 @@
 *)
 
 DEFINE DEBUG(expr) = expr;;
-DEFINE DEBUG(expr) = ();;
+(* DEFINE DEBUG(expr) = ();; *)
 
 open Bigarray
 open Printf
@@ -134,6 +134,15 @@ module type Sig = sig
       ?howmanyo:int list ->
       ?no:int -> ?ofso:int -> ?inco:int -> 'l complex_array
       -> c2c plan
+
+    val r2c : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: int list ->
+      ?ni: int -> ?ofsi: int -> ?inci: int -> 'l float_array ->
+      ?howmanyo: int list ->
+      ?no: int -> ?ofso: int -> ?inco: int -> 'l complex_array
+      -> r2c plan
 
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->

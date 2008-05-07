@@ -373,6 +373,16 @@ module type Sig = sig
           Remark: If you want to transform several 1D arrays at once,
           use {!Fftw3.Sig.Array2.dft} with [~many:true]. *)
 
+    val r2c : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: int list ->
+      ?ni: int -> ?ofsi: int -> ?inci: int -> 'l float_array ->
+      ?howmanyo: int list ->
+      ?no: int -> ?ofso: int -> ?inco: int -> 'l complex_array
+      -> r2c plan
+      (** @see {!Fftw3.Sig.Genarray.r2c}. *)
+
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
