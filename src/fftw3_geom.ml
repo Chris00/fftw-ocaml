@@ -208,7 +208,8 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
    needed by [make_plan].  Check the coherence of the data at the same
    time.  There may be more input (resp. output) arrays than [i]
    (resp. [o]) but these must have the same dimensions. *)
-let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o =
+let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
+    ~same_dims =
   let num_dims = Genarray.num_dims i in
   if num_dims <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
@@ -217,7 +218,7 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o =
     get_geom name "ofsi" ofsi "inci" inci "n" ni i
   and offseto, no, strideo, lowo, upo =
     get_geom name "ofso" ofso "inco" inco "n" no o in
-  if ni <> no then
+  if same_dims ni no then
     invalid_arg (sprintf "%s: dim input = %s <> dim ouput = %s" name
                    (string_of_array ni) (string_of_array no));
   let hm_stridei, hm_ni =

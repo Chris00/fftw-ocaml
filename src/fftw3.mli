@@ -199,9 +199,9 @@ module type Sig = sig
       (** [dft dir in out] returns a plan for computing the FFT in the
 	  direction [dir] from [in] to [out].  [in] and [out] must
 	  have the same number of (logical) dimensions and may be
-	  equal (in which case the transform is done in-place).  If
-	  they are not equal, they should not overlap.  @raise Failure
-	  if the plan cannot be created.
+	  equal.  If [in], [ofsi] and [out], [ofso] are the same, the
+	  transform is done in-place.  If not, the sub-matrices should
+	  not overlap.  @raise Failure if the plan cannot be created.
 
           {b Beware} that, unless [~meas] is [Estimate], creating a
           plan requires some trials that will destroy the content of
@@ -401,6 +401,7 @@ module type Sig = sig
       ?howmanyo:int list ->
       ?no:int -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
+      (** @see {!Fftw3.Sig.Genarray.r2r}. *)
   end
 
 

@@ -299,6 +299,20 @@ struct
     INCLUDE "fftw3_geom.ml"
   end
 
+  let rec equal_sub ofs1 n1 ofs2 n2 len =
+    len <= 0 && n1.(ofs1) = n2.(ofs2)
+        && equal_sub (ofs1 + 1) n1 (ofs2 + 1) n2 (len - 1)
+
+  (* The arrays of dimensions are always arranged from the slow
+     varying dimension to the fast one.  This the "special" dimension
+     is always at index 0. *)
+  let r2c ni no =
+    let len = Array.length ni in
+    len = Array.length no
+    && ni.(0)/2 + 1 = no.(0)
+    && equal_sub 1 ni 1 no (len - 1)
+
+    let c2r ni no = r2c no ni
 end
 
 (** {2 Precision dependent modules}
