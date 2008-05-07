@@ -144,6 +144,15 @@ module type Sig = sig
       ?no: int -> ?ofso: int -> ?inco: int -> 'l complex_array
       -> r2c plan
 
+    val c2r : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: int list ->
+      ?ni: int -> ?ofsi: int -> ?inci: int -> 'l complex_array ->
+      ?howmanyo: int list ->
+      ?no: int -> ?ofso: int -> ?inco: int -> 'l float_array
+      -> c2r plan
+
     val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
