@@ -225,6 +225,17 @@ module Array1 = struct
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
 
+  let r2c_name = FFTW ^ "Array1.r2c"
+  let r2c ?(meas=Measure) ?(normalize=false)
+      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l float_array)
+      ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l complex_array) =
+    let gi = genarray_of_array1 i
+    and go = genarray_of_array1 o in
+    apply r2c_name
+      (guru_r2c gi go (flags meas unaligned preserve_input))
+      howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
+
   let r2r_name = FFTW ^ "Array1.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
