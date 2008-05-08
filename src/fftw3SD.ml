@@ -121,7 +121,7 @@ module Genarray = struct
 
   (* Layout independent function *)
   let apply name mk_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  nmz
-      ~same_dims =
+      ~different_dims =
     let make offseti offseto ni stridei strideo hm_ni hm_stridei hm_strideo =
       let p = (mk_plan offseti offseto ni stridei strideo
                  hm_ni hm_stridei hm_strideo) in
@@ -136,14 +136,14 @@ module Genarray = struct
         normalize_factor = factor;
       } in
     (if is_c_layout i then Geom.C.apply else Geom.F.apply) name make
-      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o ~same_dims
+      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o ~different_dims
 
   let dft_name = FFTW ^ "Genarray.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
-    apply dft_name ~same_dims:( = )
+    apply dft_name ~different_dims:( <> )
       (guru_dft i o (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize
 
@@ -154,7 +154,7 @@ module Genarray = struct
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
-    apply r2c_name ~same_dims:Geom.r2c
+    apply r2c_name ~different_dims:Geom.r2c
       (guru_r2c i o (flags meas unaligned preserve_input))
       howmany_n  howmanyi ofsi ?ni inci i  howmanyo ?no ofso inco o  normalize
 
@@ -164,7 +164,7 @@ module Genarray = struct
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
     (* FIXME:  Are the checks of apply appropriate here? *)
-    apply c2r_name ~same_dims:Geom.c2r
+    apply c2r_name ~different_dims:Geom.c2r
       (guru_c2r i o (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize
 
@@ -175,7 +175,7 @@ module Genarray = struct
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
     (* FIXME: must check [kind] has the right length/order?? *)
     let kind = Array.map int_of_r2r_kind kind in
-    apply r2r_name ~same_dims:( = )
+    apply r2r_name ~different_dims:( <> )
       (guru_r2r i o kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize
 (*       (\* howmany_rank: *\)(Some(Genarray.num_dims i - Array.length kind)) *)
@@ -204,7 +204,7 @@ module Array1 = struct
 
 
   let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o nmz
-      ~same_dims =
+      ~different_dims =
     let hmi = List.map (fun v -> [| v |]) hmi in
     let ni = option_map (fun n -> [| n |]) ni in
     let ofsi = option_map (fun n -> [| n |]) ofsi in
@@ -214,7 +214,7 @@ module Array1 = struct
     let ofso = option_map (fun n -> [| n |]) ofso in
     let inco = Some [| inco |] in
     Genarray.apply name make_plan
-      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  nmz ~same_dims
+      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  nmz ~different_dims
 
   let dft_name = FFTW ^ "Array1.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
@@ -223,9 +223,9 @@ module Array1 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l complex_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    apply dft_name ~same_dims:( = )
+    apply dft_name ~different_dims:( <> )
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
-      howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
+      howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
   let r2c_name = FFTW ^ "Array1.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
@@ -234,7 +234,7 @@ module Array1 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l complex_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    apply r2c_name ~same_dims:Geom.r2c
+    apply r2c_name ~different_dims:Geom.r2c
       (guru_r2c gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
 
@@ -245,7 +245,7 @@ module Array1 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l float_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    apply c2r_name ~same_dims:Geom.c2r
+    apply c2r_name ~different_dims:Geom.c2r
       (guru_c2r gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
 
@@ -257,7 +257,7 @@ module Array1 = struct
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
     let kind = [| int_of_r2r_kind kind |] in
-    apply r2r_name ~same_dims:( = )
+    apply r2r_name ~different_dims:( <> )
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 end
@@ -276,7 +276,7 @@ module Array2 = struct
   type coord = int * int
 
   let apply name make_plan hm_n  hmi ?ni ofsi (inci1,inci2) i
-      hmo ?no ofso (inco1,inco2) o  normalize ~same_dims =
+      hmo ?no ofso (inco1,inco2) o  normalize ~different_dims =
     let hmi = List.map (fun (d1,d2) -> [| d1; d2 |]) hmi in
     let ni = option_map (fun (n1,n2) -> [| n1; n2 |]) ni in
     let ofsi = option_map (fun (n1,n2) -> [| n1; n2 |]) ofsi in
@@ -286,7 +286,7 @@ module Array2 = struct
     let ofso = option_map (fun (n1,n2) -> [| n1; n2 |]) ofso in
     let inco = Some [| inco1; inco2 |] in
     Genarray.apply name make_plan
-      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~same_dims
+      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~different_dims
 
   let dft_name = FFTW ^ "Array2.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
@@ -295,7 +295,7 @@ module Array2 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1)) (o: 'l complex_array) =
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
-    apply dft_name ~same_dims:( = )
+    apply dft_name ~different_dims:( <> )
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
@@ -307,7 +307,7 @@ module Array2 = struct
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
     let kind = [| int_of_r2r_kind kind1; int_of_r2r_kind kind2 |] in
-    apply r2r_name ~same_dims:( = )
+    apply r2r_name ~different_dims:( <> )
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 end
@@ -326,7 +326,7 @@ module Array3 = struct
   type coord = int * int * int
 
   let apply name make_plan hm_n  hmi ?ni ofsi (inci1,inci2,inci3) i
-      hmo ?no ofso (inco1,inco2,inco3) o  normalize ~same_dims =
+      hmo ?no ofso (inco1,inco2,inco3) o  normalize ~different_dims =
     let hmi = List.map (fun (d1,d2,d3) -> [| d1; d2; d3 |]) hmi in
     let ni = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) ni in
     let ofsi = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) ofsi in
@@ -336,7 +336,7 @@ module Array3 = struct
     let ofso = option_map (fun (n1,n2,n3) -> [| n1; n2; n3 |]) ofso in
     let inco = Some [| inco1; inco2; inco3 |] in
     Genarray.apply name make_plan
-      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~same_dims
+      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~different_dims
 
   let dft_name = FFTW ^ "Array3.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
@@ -345,7 +345,7 @@ module Array3 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1,1)) (o: 'l complex_array) =
     let gi = genarray_of_array3 i
     and go = genarray_of_array3 o in
-    apply dft_name ~same_dims:( = )
+    apply dft_name ~different_dims:( <> )
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 

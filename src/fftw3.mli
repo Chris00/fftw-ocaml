@@ -196,10 +196,10 @@ module type Sig = sig
       ?howmanyo: coord list ->
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
-      (** [dft dir in out] returns a plan for computing the FFT in the
-	  direction [dir] from [in] to [out].  [in] and [out] must
-	  have the same number of (logical) dimensions and may be
-	  equal.  If [in], [ofsi] and [out], [ofso] are the same, the
+      (** [dft dir i o] returns a plan for computing the FFT in the
+	  direction [dir] from [i] to [o].  [i] and [o] must have the
+	  same number of (logical) dimensions and may be equal.  If
+	  [i], [ofsi] and [o], [ofso] are respectively the same, the
 	  transform is done in-place.  If not, the sub-matrices should
 	  not overlap.  @raise Failure if the plan cannot be created.
 
@@ -294,10 +294,10 @@ module type Sig = sig
       ?howmanyo: coord list ->
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> r2c plan
-      (** [r2c in out] returns a plan for computing the {i forward}
-          transform
-
-          - [n] is the array of {i logical} sizes of the transform.
+      (** [r2c i o] returns a plan for computing the {i forward}
+          transform from [i] to [o].  Note that the last (for the C
+          layout, or first for the fortran layout) dimension of [o]
+          must be d/2+1 where d denotes the last dimension of [i].
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
@@ -310,12 +310,10 @@ module type Sig = sig
       ?howmanyo: coord list ->
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> c2r plan
-      (** [c2r in out] returns a plan for computing the {i backward}
+      (** [c2r i o] returns a plan for computing the {i backward}
           transform
 
           destroy its input
-
-          - [n] is the array of {i logical} sizes of the transform.
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
