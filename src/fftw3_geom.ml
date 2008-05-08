@@ -125,7 +125,7 @@ let get_geom name ofsname ofs incname inc nname n mat =
           end;
           pdim := !pdim * dimk;
          );
-  DEBUG(eprintf "%s: n_log=%s (rank=%i); stride=%s\n%!" name
+  DEBUG(eprintf "DEBUG: %s: n_log=%s (rank=%i); stride=%s\n%!" name
           (string_of_array n_log) !rank (string_of_array stride));
   !offset, (Array.sub n_log 0 !rank), stride, low, up
 ;;
@@ -197,7 +197,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
                       name i hmname);
       hm_stride.(i) <- !hm_s;
     end;
-    DEBUG(eprintf "%s: hm_n=%s; hm_stride=%s\n%!" name
+    DEBUG(eprintf "DEBUG: %s: hm_n=%s; hm_stride=%s\n%!" name
             (string_of_array hm_n) (string_of_array hm_stride));
     hm_n, hm_stride
   end
@@ -209,7 +209,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
    time.  There may be more input (resp. output) arrays than [i]
    (resp. [o]) but these must have the same dimensions. *)
 let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
-    ~same_dims =
+    ~different_dims =
   let num_dims = Genarray.num_dims i in
   if num_dims <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
@@ -218,9 +218,9 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
     get_geom name "ofsi" ofsi "inci" inci "n" ni i
   and offseto, no, strideo, lowo, upo =
     get_geom name "ofso" ofso "inco" inco "n" no o in
-  if same_dims ni no then
-    invalid_arg (sprintf "%s: dim input = %s <> dim ouput = %s" name
-                   (string_of_array ni) (string_of_array no));
+  if different_dims ni no then
+    invalid_arg (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
+                   name (string_of_array ni) (string_of_array no));
   let hm_stridei, hm_ni =
     get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  "n" ni lowi upi i
   and hm_strideo, hm_no =
