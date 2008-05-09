@@ -62,6 +62,8 @@ module type Sig = sig
     | RODFT01
     | RODFT11
 
+  exception Failure of string
+
   val exec : 'a plan -> unit
 
   module Guru : sig
