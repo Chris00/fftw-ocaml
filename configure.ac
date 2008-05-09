@@ -163,14 +163,15 @@ AC_DEFUN([OCAML_LIB],[
 	  AC_MSG_RESULT($ocaml_lib_path)
 	  $2
         else	 
-          AC_MSG_RESULT(not found)
+          AC_MSG_RESULT(not found $3)
         fi
       fi
     fi
   fi
 ])
 
-OCAML_LIB(lacaml, [LACAML_PATH=$ocaml_lib_path], [])
+OCAML_LIB(lacaml, [LACAML_PATH=$ocaml_lib_path],
+		  [(Some examples will not be compiled.)])
 
 
 
