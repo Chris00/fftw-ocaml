@@ -55,7 +55,7 @@ type measure = Estimate | Measure | Patient | Exhaustive
 type r2r_kind =
     | R2HC | HC2R | DHT | REDFT00
     | REDFT10 | REDFT01 | REDFT11 | RODFT00 | RODFT10 | RODFT01 | RODFT11
-
+exception Failure of string             (* Localizing the Failure exn *)
 
 let sign_of_dir = function
   | Forward -> -1

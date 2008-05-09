@@ -23,8 +23,7 @@
    @author Christophe Troestler <chris_77\@users.sourceforge.net>
    @version 0.5.1
 *)
-(**
-    We advise against opening this module as it contains submodules with
+(** We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
     {[
       module FFT = Fftw3.D 						]}
@@ -40,6 +39,7 @@
       let plan = FFT.Array1.dft FFT.Forward x y
       (* fill x and y *)
       FFT.exec plan (* perform the DFT *) 				]}
+    The plan creation function will raise [FFT.Failure] in case of problems.
     The last line can be repeated as many times as needed to compute the
     FFT of [x] into [y].  {b Beware} that creating the plan usually
     destroys the content of [x] and [y], so only fill them afterwards.
@@ -118,6 +118,10 @@ module type Sig = sig
     | RODFT11 (** real-odd DFT; odd around j=-0.5 and even around j=n-0.5 *)
 
 
+  exception Failure of string
+    (** Exception raised to indicate that a plan could not be
+        created. *)
+
   (** {2 Executing plans} *)
 
   val exec : 'a plan -> unit
@@ -125,20 +129,21 @@ module type Sig = sig
         creation of this plan.  This is the normal way to execute any
         kind of plan.
 
-        This function is thread safe.  *)
+        This function is thread safe (and may run the actual
+        computation on a different core than the main program).  *)
 
   (** Guru execution of plans.
 
-    If you want to transform other arrays than those specified in the
-    plan, you are advised to create a new plan -- it won't be too
-    expensive if the wisdom can be reused.  To transform a known bunch
-    of arrays of the same size, you should {b not} use the following
-    functions but instead create a plan with [?howmany] set
-    appropriately.
+      If you want to transform other arrays than those specified in the
+      plan, you are advised to create a new plan -- it won't be too
+      expensive if the wisdom can be reused.  To transform a known bunch
+      of arrays of the same size, you should {b not} use the following
+      functions but instead create a plan with [?howmany] set
+      appropriately.
 
-    These functions are thread safe.  You can even execute the {i same
-    plan} in parallel by multiple threads by providing different
-    arrays than the ones with which the plan was created.
+      These functions are thread safe.  You can even execute the {i same
+      plan} in parallel by multiple threads by providing different
+      arrays than the ones with which the plan was created.
   *)
   module Guru : sig
     (*
@@ -201,14 +206,13 @@ module type Sig = sig
 	  same number of (logical) dimensions and may be equal.  If
 	  [i], [ofsi] and [o], [ofso] are respectively the same, the
 	  transform is done in-place.  If not, the sub-matrices should
-	  not overlap.  @raise Failure if the plan cannot be created.
+	  not overlap.  Raises {!Fftw3.Sig.Failure} if the plan cannot be
+	  created.
 
-          {b Beware} that, unless [~meas] is [Estimate], creating a
-          plan requires some trials that will destroy the content of
-          the arrays.
-
-	  - [meas] controls how much time is dedicated to the
-	  creation of the plan.  Default: [Measure]
+	  - [meas] controls how much time is dedicated to the creation
+	  of the plan.  Default: [Measure].  {b Beware} that, unless
+	  [~meas] is [Estimate], creating a plan requires some trials
+	  that will destroy the content of the arrays.
 
 	  - [normalize] if [true], divide the result by sqrt(n), where n
 	  is the size of the FFT vector -- the product of the logical
@@ -327,7 +331,7 @@ module type Sig = sig
       ?howmanyo: coord list ->
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
-      (** [r2r kind in out]
+      (** [r2r kind i o]
 
           See {!Fftw3.Sig.Genarray.dft} for the meaning of optional
           parameters. *)
