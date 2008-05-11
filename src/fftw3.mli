@@ -299,9 +299,10 @@ module type Sig = sig
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> r2c plan
       (** [r2c i o] returns a plan for computing the {i forward}
-          transform from [i] to [o].  Note that the last (for the C
-          layout, or first for the fortran layout) dimension of [o]
-          must be d/2+1 where d denotes the last dimension of [i].
+          transform from the real array [i] to the complex array [o].
+          Note that the last (for the C layout, or first for the
+          fortran layout) dimension of [o] must be d/2+1 where d
+          denotes the last dimension of [i].
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
@@ -315,9 +316,12 @@ module type Sig = sig
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> c2r plan
       (** [c2r i o] returns a plan for computing the {i backward}
-          transform
-
-          destroy its input
+          transform from the complex array [i] to the complex array
+          [o].  Note that, by default, executing the plan returned by
+          [c2r] destroys the input array [i].  You can use
+          [preserve_input=true] to generate a plan that does not
+          modify [i] at the expense of being slower -- if no such plan
+          can be created, {!Fftw3.Sig.Failure} is raised.
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
