@@ -314,7 +314,17 @@ struct
     || ni.(0)/2 + 1 <> no.(0)
     || different_sub 1 ni 1 no (len - 1)
 
-    let c2r ni no = r2c no ni
+  let logical_c2c ni no msg =
+    if ni <> no then invalid_arg msg;
+    ni
+
+  let logical_r2r = logical_c2c
+
+  let logical_r2c ni no msg =
+    if r2c ni no then invalid_arg msg;
+    ni
+
+  let logical_c2r ni no msg = logical_r2c no ni msg
 end
 
 (** {2 Precision dependent modules}

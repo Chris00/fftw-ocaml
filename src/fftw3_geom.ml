@@ -209,7 +209,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
    time.  There may be more input (resp. output) arrays than [i]
    (resp. [o]) but these must have the same dimensions. *)
 let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
-    ~different_dims =
+    ~logical_dims =
   let num_dims = Genarray.num_dims i in
   if num_dims <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
@@ -218,9 +218,10 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
     get_geom name "ofsi" ofsi "inci" inci "n" ni i
   and offseto, no, strideo, lowo, upo =
     get_geom name "ofso" ofso "inco" inco "n" no o in
-  if different_dims ni no then
-    invalid_arg (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
-                   name (string_of_array ni) (string_of_array no));
+  let n =                               (* or raise invalid_arg *)
+    logical_dims ni no
+      (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
+         name (string_of_array ni) (string_of_array no)) in
   let hm_stridei, hm_ni =
     get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  "n" ni lowi upi i
   and hm_strideo, hm_no =
@@ -228,4 +229,4 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
   if hm_ni <> hm_no then
     invalid_arg(sprintf "%s: howmany dim input = %s <> howmany dim output = %s"
                   name (string_of_array hm_ni) (string_of_array hm_no));
-  make_plan offseti offseto ni stridei strideo  hm_ni hm_stridei hm_strideo
+  make_plan offseti offseto n stridei strideo  hm_ni hm_stridei hm_strideo

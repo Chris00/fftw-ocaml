@@ -93,7 +93,7 @@ external guru_c2r :
   (* flags *) int ->
   (* input offset *) int ->
   (* output offset *) int ->
-  (* n (transform dimensions) *) int array ->
+  (* n (transform LOGICAL dimensions) *) int array ->
   (* istride (same length as [n]) *) int array ->
   (* ostride (same length as [n]) *) int array ->
   (* howmany (multiplicity dimensions) *) int array ->
