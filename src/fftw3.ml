@@ -235,17 +235,18 @@ let option_map f = function Some v -> Some(f v) | None -> None
 
 (** Return a string showing the content of the array *)
 let string_of_array a =
-  assert(Array.length a >= 1);
-  let b = Buffer.create 80 in
-  Buffer.add_string b "[|";
-  Buffer.add_string b (string_of_int a.(0));
-  for i = 1 to Array.length a - 1 do
-    Buffer.add_string b "; ";
-    Buffer.add_string b (string_of_int a.(i));
-  done;
-  Buffer.add_string b "|]";
-  Buffer.contents b
-
+  if Array.length a = 0 then "[| |]"
+  else begin
+    let b = Buffer.create 80 in
+    Buffer.add_string b "[|";
+    Buffer.add_string b (string_of_int a.(0));
+    for i = 1 to Array.length a - 1 do
+      Buffer.add_string b "; ";
+      Buffer.add_string b (string_of_int a.(i));
+    done;
+    Buffer.add_string b "|]";
+    Buffer.contents b
+  end
 
 let is_c_layout m =
   (Genarray.layout m = (Obj.magic c_layout : 'a layout))
