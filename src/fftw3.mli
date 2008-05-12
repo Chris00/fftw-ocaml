@@ -242,9 +242,11 @@ module type Sig = sig
           of [i].  [ni.(k)] indicates how many increments [inci.(k)]
           we want to consider in the dimension [k].  Of course, the
           [ni.(k)] must be small enough so that the the subarrays fits
-          in [i].  If [ni.(k) = 0], it means that we want the larger
-          dimension [ni.(k)] that the choice of [ofsi.(k)] and
-          [inci.(k)] allow.  Note that [ni.(k) = 1] means that the
+          in [i], i.e., for all [k], [ofsi.(k) + (ni.(k) - 1)
+          abs(inc.(k))] must be [< dim i k] (c_layout) or [<= dim i k]
+          (fortran_layout).  If [ni.(k) = 0], it means that we want
+          the larger dimension [ni.(k)] that the choice of [ofsi.(k)]
+          and [inci.(k)] allow.  Note that [ni.(k) = 1] means that the
           direction [k] is to be ignored (i.e. the [k]th index is
           constant with value [ofsi.(k)]).
 
@@ -253,11 +255,12 @@ module type Sig = sig
 
           - [inci] an array of increments for each (physical)
           dimension of the input array [i].  [inci.(k)] can be
-          negative, indicating that we are going backward from
-          [ofs.(k)].  If the increment [inci.(k) = 0], that means that
-          the dimension [k] must be ignored (i.e. the index in
-          dimension [k] is constant with value [ofsi.(k)]).  Default:
-          [[|1;...;1|]].
+          negative, indicating that the range [ofsi.(k)] .. [ofsi.(k)
+          + (ni.(k) - 1) abs(inc.(k))] is traversed backward.  This is
+          the same behavior is as lacaml (LAPACK).  If the increment
+          [inci.(k) = 0], that means that the dimension [k] must be
+          ignored (i.e. the index in dimension [k] is constant with
+          value [ofsi.(k)]).  Default: [[|1;...;1|]].
 
           - [no] same as [ni] but for output.  [no] must denote a
           transform of the same dimensions as [ni] i.e., neglecting
