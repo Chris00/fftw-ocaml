@@ -55,8 +55,8 @@ external guru_dft :
   (* out *) 'l complex_array ->
   (* sign (forward/backward) *) int ->
   (* flags (GOOD: they do not use the 32th bit) *) int ->
-  (* input offset ([in] as 1D array) *) int ->
-  (* output offset ([out] as 1D array) *) int ->
+  (* input offset ([in] as 1D array, C layout) *) int ->
+  (* output offset ([out] as 1D array, C layout) *) int ->
   (* n (transform dimensions; its length = transform rank) *) int array ->
   (* istride (same length as [n]) *) int array ->
   (* ostride (same length as [n]) *) int array ->

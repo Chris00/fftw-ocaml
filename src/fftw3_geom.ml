@@ -112,10 +112,10 @@ let get_geom name ofsname ofs incname inc nname n mat =
               set_n_sub n.(k);
               low.(k) <- last;
             )
-            else (* n.(k) = 1 means: ignore this dimension *)
+            else (* n.(k) = 1 => ignore this dimension *)
               low.(k) <- ofs.(k)
           end
-          else begin (* inc.(k) = 0 =>  dimension ignored for the transform. *)
+          else begin (* inc.(k) = 0 => dimension ignored for the transform. *)
             if ofs.(k) < FIRST_INDEX || ofs.(k) > LAST_INDEX(dimk) then
               invalid_arg(sprintf "%s: %s.(%i) = %i not in [%i, %i] (%s)"
                             name ofsname k ofs.(k) FIRST_INDEX
@@ -125,8 +125,8 @@ let get_geom name ofsname ofs incname inc nname n mat =
           end;
           pdim := !pdim * dimk;
          );
-  DEBUG(eprintf "DEBUG: %s: n_sub=%s (rank=%i); stride=%s\n%!" name
-          (string_of_array n_sub) !rank (string_of_array stride));
+  DEBUG(eprintf "DEBUG: %s: n_sub=%s (rank=%i); offset=%i stride=%s\n%!" name
+          (string_of_array n_sub) !rank !offset (string_of_array stride));
   !offset, (Array.sub n_sub 0 !rank), stride, low, up
 ;;
 
