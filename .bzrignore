@@ -21,3 +21,4 @@ src/fftw3S_external.ml
 examples/mem
 examples/delta
 examples/henon
+configure-chris

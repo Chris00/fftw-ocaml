@@ -156,15 +156,7 @@ AC_DEFUN([OCAML_LIB],[
 	AC_MSG_RESULT($ocaml_lib_path)
         $2
       else
-        # Look in the user HOME directory (slow but avoids tricks)
-        ocaml_lib=`find $HOME -name $1.cma | head -n 1`
-        if test "$ocaml_lib" != "" ; then
-          ocaml_lib_path=`dirname $ocaml_lib`
-	  AC_MSG_RESULT($ocaml_lib_path)
-	  $2
-        else	 
-          AC_MSG_RESULT(not found $3)
-        fi
+	AC_MSG_RESULT(not found; use --with-$1=PATH to indicate its location $3)
       fi
     fi
   fi
