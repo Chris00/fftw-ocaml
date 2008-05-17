@@ -19,8 +19,8 @@ external normalize :
 
 external fftw_exec : 'a fftw_plan -> unit = "fftw_ocaml_execute" "noalloc"
 
-external exec_dft : c2c fftw_plan -> 'l complex_array -> 'l complex_array -> unit
-  = "fftw_ocaml_execute_dft" "noalloc"
+external exec_dft : c2c fftw_plan -> 'l complex_array -> 'l complex_array
+  -> unit = "fftw_ocaml_execute_dft" "noalloc"
 external exec_split_dft : c2c fftw_plan -> 'l float_array -> 'l float_array ->
   'l float_array -> 'l float_array -> unit
   = "fftw_ocaml_execute_split_dft" "noalloc"

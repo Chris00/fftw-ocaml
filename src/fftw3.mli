@@ -438,6 +438,26 @@ module type Sig = sig
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
+    val r2c : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
+      -> r2c plan
+      (** See {!Fftw3.Sig.Genarray.r2c}. *)
+
+    val c2r : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
+      -> c2r plan
+      (** See {!Fftw3.Sig.Genarray.c2r}. *)
+
     val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
@@ -474,6 +494,36 @@ module type Sig = sig
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
+
+    val r2c : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
+      -> r2c plan
+      (** See {!Fftw3.Sig.Genarray.r2c}. *)
+
+    val c2r : ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
+      -> c2r plan
+      (** See {!Fftw3.Sig.Genarray.c2r}. *)
+
+    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+      ?preserve_input:bool -> ?unaligned:bool ->
+      ?howmany_n:int array ->
+      ?howmanyi: coord list ->
+      ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
+      ?howmanyo: coord list ->
+      ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
+      -> r2r plan
+      (** See {!Fftw3.Sig.Genarray.r2r}. *)
   end
 end
 
