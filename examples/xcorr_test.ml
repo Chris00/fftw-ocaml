@@ -20,7 +20,7 @@ open Format
 open Xcorr
 
 let () =
-  Lacaml.Io.pp_float_el_default := (fun ppf el -> fprintf ppf "%.f" el)
+  Lacaml.Io.pp_float_el_default := (fun ppf el -> fprintf ppf "%.4g" el)
 
 let pp_fvec ?(nl=true) xname x =
   printf "@[<2>%s = [" xname;
@@ -60,6 +60,13 @@ let () =
   pp_fvec "y" y;
   test "xcorr x x" (xcorr x x)
     (Vec.of_array [| 4.; 11.; 20.; 30.; 20.; 11.; 4. |]);
+  test "xcorr x x ~scale:Biased" (xcorr x x ~scale:Biased)
+    (Vec.of_array [| 1.; 2.75; 5.; 7.5; 5.; 2.75; 1. |]);
+  test "xcorr x x ~scale:Unbiased" (xcorr x x ~scale:Unbiased)
+    (Vec.of_array [| 4.; 5.5; 20. /. 3.; 7.5; 20. /. 3.; 5.5; 4. |]);
+  let rep = Vec.of_array [| 0.4; 1.1; 2.; 3.; 2.; 1.1; 0.4 |] in
+  scal (1. /. 3.) rep;
+  test "xcorr x x ~scale:Coeff" (xcorr x x ~scale:Coeff) rep;
   test "xcorr x x ~maxlag:5" (xcorr x x ~maxlag:5)
     (Vec.of_array [| 0.; 0.; 4.; 11.; 20.; 30.; 20.; 11.;  4.; 0.; 0. |]);
   test "xcorr x x ~maxlag:2" (xcorr x x ~maxlag:2)
@@ -72,6 +79,13 @@ let () =
     (Vec.of_array [| 0.; 2.; 5.; 8.; 11. |]);
   test "xcorr y x" (xcorr y x)
     (Vec.of_array [| 4.; 11.; 8.; 5.; 2.; 0.; 0. |]);
-(*   let z = D.Vec.init 25 (fun i -> float i) in *)
-(*   pp_fvec "z" z; *)
-(*   pp_fvec "xcorr(z,y)" (xcorr z y); *)
+  let z = D.Vec.init 25 (fun i -> float i) in
+  pp_fvec "z" z;
+  let rep = Vec.of_array
+    [| 0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.;
+       0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.;
+       0.; 0.; 0.; 4.; 11.; 20.; 30.; 40.; 50.;
+       60.; 70.; 80.; 90.; 100.; 110.; 120.; 130.; 140.;
+       150.; 160.; 170.; 180.; 190.; 200.; 210.; 220.; 230.;
+       240.; 146.;  74.;  25. |] in
+  test "xcorr z x" (xcorr z x) rep;
