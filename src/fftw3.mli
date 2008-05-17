@@ -1,4 +1,4 @@
-(*pp camlp4o pa_macro.cmo $FFTW3F_EXIST *)
+(*pp camlp4o pa_macro.cmo $FFTW3F_EXISTS *)
 (* File: fftw3.mli
 
    Copyright (C) 2008
@@ -483,7 +483,7 @@ module D : Sig
   with type float_elt = Bigarray.float64_elt
   and type complex_elt = Bigarray.complex64_elt
 
-IFDEF FFTW3F_EXIST THEN
+IFDEF FFTW3F_EXISTS THEN
 (** Single precision FFTW.  This is only available if the single
     precision FFTW3 library was available when this module was
     compiled. *)

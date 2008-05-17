@@ -187,7 +187,7 @@ value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 #undef FLOAT
 #undef FFTW
 
-#ifdef FFTW3F_EXIST
+#ifdef FFTW3F_EXISTS
 #define FFTW(name) fftwf_ ## name
 #define FLOAT float
 #define PREC "S"
