@@ -1,14 +1,21 @@
 #							-*-makefile-gmake-*-
 export OCAMLMAKEFILE = ../OCamlMakefile
 export ANNOTATE := yes
-export OCAMLNCFLAGS := -inline 3
+export OCAMLNCFLAGS = -inline 10
 
 export INCDIRS = ../src @INC@
-export LIBS = bigarray fftw3
+export LIBS = bigarray fftw3 unix
 export LACAML_PATH = @LACAML_PATH@
 export GNUPLOT_PATH = @GNUPLOT_PATH@
+
+ifneq ($(strip $(LACAML_PATH)),)
+  export INCDIRS += $(LACAML_PATH)
+  export LIBS += lacaml
+endif
 ifneq ($(strip $(GNUPLOT_PATH)),)
   export GNUPLOT_EXISTS=-DGNUPLOT_EXISTS
+  export INCDIRS += $(GNUPLOT_PATH)
+  export LIBS += gnuplot
 else
   export GNUPLOT_EXISTS=
 endif
@@ -16,8 +23,6 @@ endif
 define PROJ_mem
   SOURCES = mem.ml
   RESULT  = mem
-  INCDIRS += $(LACAML_PATH)
-  LIBS += lacaml
 endef
 export PROJ_mem
 
@@ -30,15 +35,12 @@ export PROJ_delta
 define PROJ_henon
   SOURCES = henon.ml
   RESULT  = henon
-  LIBS += unix
 endef
 export PROJ_henon
 
 define PROJ_xcorr
   SOURCES = xcorr.ml xcorr_test.ml
   RESULT  = xcorr
-  INCDIRS += $(LACAML_PATH)
-  LIBS += lacaml
 endef
 export PROJ_xcorr
 
