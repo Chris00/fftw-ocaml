@@ -34,6 +34,16 @@ library was discovered by the configure script.  See the mli file for
 more details.
 
 
+EXAMPLES
+
+Some examples need additional libraries:
+- Lacaml : http://ocaml.info/home/ocaml_sources.html#toc15
+- Gnuplot : http://sourceforge.net/projects/ocaml-gnuplot
+
+If these are not detected by the configure script, the corresponding
+examples will not be compiled or will have less features.
+
+
 BUGS
 
 To report bugs, send an email to <chris_77@users.sourceforge.net>.
