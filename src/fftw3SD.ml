@@ -163,7 +163,6 @@ module Genarray = struct
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
-    (* FIXME:  Are the checks of apply appropriate here? *)
     apply c2r_name ~logical_dims:Geom.logical_c2r
       (guru_c2r i o (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize

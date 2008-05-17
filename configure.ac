@@ -171,8 +171,10 @@ OCAML_LIB(gnuplot, [GNUPLOT_PATH=$ocaml_lib_path],
 
 if test "$OCAMLOPT" = no ; then
     BEST=byte
+    ALL=byte
 else
-    BEST="byte opt"
+    BEST=opt
+    ALL="byte opt"
 fi
 
 # substitutions to perform
@@ -189,6 +191,7 @@ AC_SUBST(OCAMLFIND)
 AC_SUBST(OCAMLFIND_LDCONF)
 AC_SUBST(OCAMLCP)
 AC_SUBST(BEST)
+AC_SUBST(ALL)
 AC_SUBST(INC)
 AC_SUBST(CLIBS)
 AC_SUBST(CFLAGS)

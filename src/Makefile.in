@@ -2,7 +2,6 @@
 OCAMLMAKEFILE = ../OCamlMakefile
 ANNOTATE := yes
 #USE_CAMLP4 := yes
-export OCAMLNCFLAGS := -inline 3
 
 PRE_TARGETS := fftw3S_external.ml
 SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
@@ -16,7 +15,7 @@ CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@
 export FFTW3F_EXISTS := @FFTW3F_EXISTS@
 
 .PHONY: all byte opt install uninstall update
-all: @BEST@
+all: @ALL@
 byte: byte-code-library
 opt: native-code-library
 
