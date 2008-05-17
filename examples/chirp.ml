@@ -1,4 +1,7 @@
-(* FFT analysis of a "chirp" signal.  *)
+(* FFT analysis of a "chirp" signal.
+
+   Inspired from
+   http://ccrma.stanford.edu/~jos/sasp/Computational_Examples_Matlab.html *)
 
 open Bigarray
 module FFT = Fftw3.D
@@ -67,5 +70,5 @@ let () =
   let y = FFT.Array1.create FFT.float fortran_layout (len/2+1) in
   for i = 1 to Array1.dim y do y.{i} <- Complex.norm x'.{i} done;
   G.pen g 3;
-  G.xy g t y;
+  G.x g y;
   G.close g
