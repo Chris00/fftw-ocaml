@@ -91,7 +91,7 @@ module type Sig = sig
                   at the expense of several times longer planning
                   time. *)
     | Exhaustive (** Like [Patient], but considers an even wider range
-                     of algorithms, including many that we think are
+                     of algorithms, including many that are thought
                      unlikely to be fast, to produce the most optimal
                      plan but with a substantially increased planning
                      time. *)
