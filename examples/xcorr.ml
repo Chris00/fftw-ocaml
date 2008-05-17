@@ -24,10 +24,10 @@ let copy0 ?n ?ofsx (x:D.vec) ?(ofsy=1) (y:D.vec) =
 
     [xcorr a b], where [a] and [b] are two vectors, returns
     cross-correlation sequence of length [2*m - 1] where [m = max
-    (dim a) (dim b)].  If [a == b], then the result is the
-    auto-correlation sequence.  The zeroth lag of the output
-    correlation is in the middle of the sequence, at element
-    [maxlag+1] ([= m] by default).
+    (dim a) (dim b)].  If [a == b] (e.g. if you use [xcorr(a,a)]),
+    then the result is the auto-correlation sequence.  The zeroth lag
+    of the output correlation is in the middle of the sequence, at
+    element [maxlag+1] ([= m] by default).
 
     @raise Invalid_argument if [a] and [b] are of different length.
 
