@@ -1,5 +1,4 @@
 open Bigarray
-open Format
 module FFT = Fftw3.D
 module D = Lacaml.Impl.D
 module Z = Lacaml.Impl.Z
@@ -19,16 +18,6 @@ let copy0 ?n ?ofsx (x:D.vec) ?(ofsy=1) (y:D.vec) =
   for i = 1 to ofsy - 1 do y.{i} <- 0. done;
   ignore(D.copy ~n ?ofsx x ~ofsy ~y);
   for i = ofsy + n to Array1.dim y do y.{i} <- 0. done
-
-let pp_fvec xname x =
-  printf "@[<2> %s = [" xname;
-  Lacaml.Io.pp_rfvec std_formatter x;
-  printf "]@]@\n"
-
-let pp_cvec xname x =
-  printf "@[<2> %s = [" xname;
-  Lacaml.Io.pp_rcvec std_formatter x;
-  printf "]@]@\n"
 
 (** Cross-correlation function estimates.  This example is based on
     the Matlab® xcorr.m function and tries to respect its behavior.
@@ -72,7 +61,7 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
   if dima < 1 || dimb < 1 then invalid_arg "xcorr: array size < 1";
   let m = max dima dimb in
   let maxlag = match maxlag with Some i -> i | None -> m - 1 in
-  let ilag0 = maxlag + 1 in             (* index of 0-lag *)
+  let ilag0 = maxlag + 1 in             (* index of 0-lag in the final vec. *)
   let dim_xcorr = 2 * maxlag + 1 in     (* dim of final vector *)
   (* We will allocate a vector of size [2*m-1] (to contain all lags)
      or [dim_xcorr] (the requested lags), whichever is greater. *)
@@ -108,7 +97,7 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
     end
     else begin
       (* Cross correlation *)
-      if false && dima < 10 * dimb && dimb < 10 * dima then (
+      if dima < 10 * dimb && dimb < 10 * dima then (
         (* Direct method: ifft(fft(a) .* conj(fft(b))) *)
         let n = minpow2 dim_correlation in
         let n_complex = n / 2 + 1 in
@@ -157,7 +146,7 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
            real, one just need to add each segment correlation in
            reverse in case [a] and [b] have been permuted. *)
         let inc_seg = if permuted then -1 else 1 in
-        (* Having to flip the result left-right also influence the
+        (* Having to flip the result left-right also influences the
            index of the 1st correlation segment [idx_seg] in [c] as
            well as the direction of the steps in [c]. *)
         let idx_seg = if permuted then idx0 -l + 2 else idx0 - dimb in
@@ -168,11 +157,12 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
         and fft_yx = FFT.Array1.c2r y x in
         let i = ref 1 in
         while !i <= dima do
-          copy0 ~n:(min l (dima - !i + 1)) ~ofsx:!i a ~ofsy:dimb x;
+          let l' = min l (dima - !i + 1) in
+          copy0 ~n:l' ~ofsx:!i a ~ofsy:dimb x;
           FFT.exec fft_xy;
           ignore(Z.Vec.mul y b' ~z:y);
           FFT.exec fft_yx;
-          D.axpy ~x c ~ofsy:(shift_seg !i) ~incy:inc_seg ~n:lcorr;
+          D.axpy ~x c ~ofsy:(shift_seg !i) ~incy:inc_seg ~n:(l' + dimb - 1);
           i := !i + l;
         done;
         D.scal (1. /. float n) c;       (* ifft normalization *)
@@ -186,19 +176,14 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
    | Some Biased ->
        D.scal (1. /. float m) xcorr
    | Some Unbiased ->
-       (* FIXME:  *)
-       if maxlag < m then
-         for i = 1 to Array1.dim xcorr do
-           xcorr.{i} <- xcorr.{i} /. float(i - maxlag - 1)
-         done
-       else
-         for i = 1 to Array1.dim xcorr do
-           xcorr.{i} <- xcorr.{i} /. float(i - maxlag - 1)
-         done
+       let l = min (m-1) maxlag in
+       for i = ilag0 - l to ilag0 + l do
+         xcorr.{i} <- xcorr.{i} /. float(m - abs(ilag0 - i))
+       done
    | Some Coeff ->
        if a == b then
          (* Auto-correlation, normalize by c(0) = nrm2(a)^2 *)
-         D.scal (1. /. xcorr.{maxlag+1}) xcorr
+         D.scal (1. /. xcorr.{ilag0}) xcorr
        else
          (* Cross correlation *)
          D.scal (1. /. (D.nrm2 a *. D.nrm2 b)) xcorr
