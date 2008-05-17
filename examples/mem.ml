@@ -1,9 +1,9 @@
+(*pp camlp4o pa_macro.cmo $GNUPLOT_EXISTS *)
 (** Maximum entropy method.
 
     Example demonstrating the "Maximum Entropy Method" as explained in
     the book "OCaml for Scientists" by Dr Jon D Harrop.  Although the
-    ideas are those of the book, the code has been completely
-    rewritten.
+    ideas are those of the book, the code has been completely rewritten.
 
     Required modules: Lacaml
 *)
@@ -13,6 +13,10 @@ open Scanf
 open Bigarray
 open Lacaml.Impl.D
 module FFT = Fftw3.D
+
+IFDEF GNUPLOT_EXISTS THEN
+module G = Gnuplot.Bigarray
+ENDIF;;
 
 let delta = sqrt epsilon_float
 
@@ -70,7 +74,9 @@ let mem (consts:vec) n =
   if n <= d then invalid_arg(sprintf "mem: 'n' is too small, pick n > %i" d);
   let x = create n
   and y = create n (* Fourier variables *) in
-  let ffst = FFT.Array1.r2r FFT.RODFT10 x y in
+  (* We will spend a lot of time doing FFT so it is worth making sure
+     a good plan is generated: *)
+  let ffst = FFT.Array1.r2r FFT.RODFT10 x y ~meas:FFT.Patient in
   ignore(copy consts ~y:x); (* first components of [x] are [const] *)
   let vars = Array1.sub x (d + 1) (n - d) (* last components of [x] to set *) in
   let entropy (v:vec) =
@@ -85,13 +91,17 @@ let mem (consts:vec) n =
 	h := !h +. yk *. log yk; (* y=0 => y *. log y = 0 *)
       end
     done;
+    (* Given the discussion in Jon D Harrop book, the term [!h] of the
+       entropy should be divided by [!s] (this is a mistake in the
+       book).  However, this gives non-physical results which is the
+       reason why I left it commented here.  *)
     log !s -. !h (* /. !s *)
   in
   let v = Vec.make0 (n-d) (* starting point *) in
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
               Format.eprintf
-                "%2i: l = %-.4g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                "%3i: l = %#-6.g  x = %#-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
                 i l (nrm2 x) h h');
   Array1.blit v vars;
   x (* return [const] followed by the optimal [vars]. *)
@@ -134,7 +144,7 @@ let mem_harrop (consts: vec) n =
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
               Format.eprintf
-                "%-2i: l = %-.5g  x = %.5g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                "%3i: l = %#-6.g  x = %#-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
                 i l (nrm2 x) h h');
   let x = copy consts ~y:(create n) (* first components of [x] are [const] *) in
   ignore(copy v ~y:x ~ofsy:(d + 1));
@@ -166,7 +176,7 @@ let print_vec fh (x:vec) =
 
 let () =
   let input = ref "" in
-  let n = ref 1000 in
+  let n = ref 1200 in
   let output = ref "" in
   let usage = sprintf "Usage: %s" Sys.argv.(0) in
   let args = Arg.align [
@@ -175,14 +185,29 @@ let () =
     ("--input", Arg.Set_string input, "fname input file.  Expected to contain \
 	a string of the form {f1,...,fN} (N < n).");
     ("--output", Arg.Set_string output,
-     "fname output file (default: standard output)");
+     "fname output file (default: standard output or graphical display \
+      if gnuplot is found).");
   ] in
   Arg.parse args (fun s -> raise(Arg.Bad "no anonymous argument")) usage;
   if !input = "" then (Arg.usage args usage; exit 1);
 
   let consts = read_consts (Scanning.from_file !input) in
   let x = mem consts !n in
-  if !output = "" then print_vec Format.std_formatter x
+  if !output = "" then begin
+    IFDEF GNUPLOT_EXISTS THEN
+      (* Plot the graph of the result, indicating what is extended *)
+      let g = G.init G.X in
+      G.box g;
+      G.pen g 1;
+      G.x g ~n0:(Vec.dim consts) x ~ofsx:(Vec.dim consts);
+      G.pen g 2;
+      G.x g consts;
+      G.close g;
+    ELSE
+      (* Spit out the result on the standard output *)
+      print_vec Format.std_formatter x
+    ENDIF
+  end
   else begin
     let fh = open_out !output in
     fprintf fh "# Maximum Entropy Method (#const=%i, n=%i)\n"
