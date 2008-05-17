@@ -8,13 +8,12 @@ PRE_TARGETS := fftw3S_external.ml
 SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
 RESULT  = fftw3
 INCDIRS = @INC@
-#LIBS = @all_requires@
 CLIBS = @CLIBS@
-CFLAGS = @CFLAGS@ @FFTW3F_EXIST@
+CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@
 #CFLAGS += -DWANT_DEBUG
 
 # Environment variable passed to camlp4
-export FFTW3F_EXIST := @FFTW3F_EXIST@
+export FFTW3F_EXISTS := @FFTW3F_EXISTS@
 
 .PHONY: all byte opt install uninstall update
 all: @BEST@

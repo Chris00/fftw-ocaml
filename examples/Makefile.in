@@ -6,6 +6,12 @@ export OCAMLNCFLAGS := -inline 3
 export INCDIRS = ../src @INC@
 export LIBS = bigarray fftw3
 export LACAML_PATH = @LACAML_PATH@
+export GNUPLOT_PATH = @GNUPLOT_PATH@
+ifneq ($(strip $(GNUPLOT_PATH)),)
+  export GNUPLOT_EXISTS=-DGNUPLOT_EXISTS
+else
+  export GNUPLOT_EXISTS=
+endif
 
 define PROJ_mem
   SOURCES = mem.ml

@@ -115,7 +115,7 @@ AC_TRY_LINK([#include <fftw3.h>],
 	    fftwf_complex in[10], out[10];
 	    fftwf_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);],
             [AC_MSG_RESULT([ok]); CLIBS="$CLIBS fftw3f";
-	     FFTW3F_EXIST="-DFFTW3F_EXIST"],
+	     FFTW3F_EXISTS="-DFFTW3F_EXISTS"],
             [AC_MSG_RESULT(
 	      [failed, the single precision module will be disabled])])
 
@@ -164,6 +164,8 @@ AC_DEFUN([OCAML_LIB],[
 
 OCAML_LIB(lacaml, [LACAML_PATH=$ocaml_lib_path],
 		  [(Some examples will not be compiled.)])
+OCAML_LIB(gnuplot, [GNUPLOT_PATH=$ocaml_lib_path],
+		   [(Examples will not produce graphics.)])
 
 
 
@@ -192,8 +194,9 @@ AC_SUBST(CLIBS)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
-AC_SUBST(FFTW3F_EXIST)
+AC_SUBST(FFTW3F_EXISTS)
 AC_SUBST(LACAML_PATH)
+AC_SUBST(GNUPLOT_PATH)
 
 # Finally create the Makefile and samples (read only to avoid changing
 # them by mistake)
