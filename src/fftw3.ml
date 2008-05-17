@@ -20,7 +20,7 @@
 *)
 
 DEFINE DEBUG(expr) = expr;;
-(* DEFINE DEBUG(expr) = ();; *)
+DEFINE DEBUG(expr) = ();;
 
 open Bigarray
 open Printf
