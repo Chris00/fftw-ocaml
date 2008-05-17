@@ -11,6 +11,7 @@
 ._bcdi/
 ._d/
 ._ncdi/
+configure-chris
 autom4te.cache/
 config.log
 config.status
@@ -21,4 +22,4 @@ src/fftw3S_external.ml
 examples/mem
 examples/delta
 examples/henon
-configure-chris
+examples/xcorr
