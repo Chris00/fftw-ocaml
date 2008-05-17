@@ -54,8 +54,8 @@ let test text a rep =
   )
 
 let () =
-  let x = D.Vec.of_array [| 1.; 2.; 3.; 4. |]
-  and y = D.Vec.of_array [| 1.; 2. |] in
+  let x = Vec.of_array [| 1.; 2.; 3.; 4. |]
+  and y = Vec.of_array [| 1.; 2. |] in
   pp_fvec "x" x;
   pp_fvec "y" y;
   test "xcorr x x" (xcorr x x)
@@ -79,7 +79,7 @@ let () =
     (Vec.of_array [| 0.; 2.; 5.; 8.; 11. |]);
   test "xcorr y x" (xcorr y x)
     (Vec.of_array [| 4.; 11.; 8.; 5.; 2.; 0.; 0. |]);
-  let z = D.Vec.init 25 (fun i -> float i) in
+  let z = Vec.init 25 (fun i -> float i) in
   pp_fvec "z" z;
   let rep = Vec.of_array
     [| 0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.; 0.;
