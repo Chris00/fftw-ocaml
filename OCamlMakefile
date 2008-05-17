@@ -353,7 +353,7 @@ export OCAMLMAKEFILE
 
 ifndef OCAMLLIBPATH
   OCAMLLIBPATH := \
-    $(shell $(OCAMLC) 2>/dev/null -where || echo /usr/local/lib/ocaml)
+    $(shell $(OCAMLC) 2>/dev/null -where || echo /usr/lib/ocaml)
 endif
 export OCAMLLIBPATH
 
@@ -523,7 +523,7 @@ endif
 
 ifdef USE_CAMLP4
   CAMLP4PATH := \
-    $(shell $(CAMLP4) -where 2>/dev/null || echo /usr/local/lib/camlp4)
+    $(shell $(CAMLP4) -where 2>/dev/null || echo /usr/lib/camlp4)
   INCFLAGS := -I $(CAMLP4PATH)
   CINCFLAGS := -I$(CAMLP4PATH)
 endif
@@ -655,6 +655,11 @@ else
     PLDFLAGS := -p
   endif
 
+  ifndef LIB_PACK_NAME
+    SPECIAL_OCAMLFLAGS := $(OCAMLNCFLAGS)
+  else	
+    SPECIAL_OCAMLFLAGS := -for-pack $(LIB_PACK_NAME) $(OCAMLNCFLAGS)
+  endif
   REAL_IMPL := $(IMPL_CMX)
   REAL_IMPL_INTF := $(IMPLX_INTF)
   IMPL_SUF := .cmx
@@ -954,9 +959,12 @@ $(RESULT).cma:		$(REAL_IMPL_INTF) $(MAKEDLL) $(EXTRADEPS) $(RESULTDEPS)
 $(RESULT).cmxa $(RESULT).$(EXT_LIB):	$(REAL_IMPL_INTF) $(EXTRADEPS) $(RESULTDEPS)
 			$(REAL_OCAMLFIND) $(OCAMLOPT) -a $(ALL_LDFLAGS) $(OBJS_LIBS) -o $@ $(REAL_IMPL)
 else
+# Packing a bytecode library
 ifdef BYTE_OCAML
 $(LIB_PACK_NAME).cmi $(LIB_PACK_NAME).cmo: $(REAL_IMPL_INTF)
 			$(REAL_OCAMLFIND) $(REAL_OCAMLC) -pack -o $(LIB_PACK_NAME).cmo $(OCAMLLDFLAGS) $(REAL_IMPL)
+# Packing into a unit which can be transformed into a library
+# Remember the .ml's must have been compiled with -for-pack $(LIB_PACK_NAME)
 else
 $(LIB_PACK_NAME).cmi $(LIB_PACK_NAME).cmx: $(REAL_IMPL_INTF)
 			$(REAL_OCAMLFIND) $(OCAMLOPT) -pack -o $(LIB_PACK_NAME).cmx  $(OCAMLLDFLAGS) $(REAL_IMPL)
