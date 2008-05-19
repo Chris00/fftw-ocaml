@@ -63,19 +63,15 @@ let scal s (x:vec) =
     x.{i} <- { Complex.re = s *. xi.Complex.re; im = s *. xi.Complex.im }
   done
 
-(** [filter b ?a x] returns [y] the data in vector [x] filtered with
-    the filter described by vectors [a] and [b].  The filter
-    implements of the standard difference equation:
+(** [filter b x] returns [y] the data in vector [x] filtered with the
+    FIR filter described by vector [b].  The filter implements of the
+    standard difference equation:
     {v
-    a(1)*y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb)
-                          - a(2)*y(n-1) - ... - a(na+1)*y(n-na)
+    y(n) = b(1)*x(n) + b(2)*x(n-1) + ... + b(nb+1)*x(n-nb)
     v}
     for n = 1,..., [Array1.dim x].  *)
-let filter (b:vec) ?a (x:vec) =
-  let a, a_provided = match a with
-    | None -> create FFT.complex 0, false
-    | Some a -> a, true in
-  let n = max (Array1.dim a) (Array1.dim b) + Array1.dim x - 1 in
+let filter (b:vec) (x:vec) =
+  let n = Array1.dim b + Array1.dim x - 1 in
   let y = create FFT.complex n
   and b' = create FFT.complex n in
   let fftb = FFT.Array1.dft FFT.Forward y b' in
@@ -85,36 +81,10 @@ let filter (b:vec) ?a (x:vec) =
   let iffty = FFT.Array1.dft FFT.Backward y' y in
   copy0 b y;  FFT.exec fftb;
   copy0 x y;  FFT.exec fftx;
-  if a_provided then (
-    let a' = create FFT.complex n in
-    let ffta = FFT.Array1.dft FFT.Forward y a' in
-    copy0 a y;  FFT.exec ffta;
-    (* FIXME: not correct: *)
-    for i = 1 to n do
-      y'.{i} <- Complex.div (Complex.mul b'.{i} x'.{i}) a'.{i}
-    done;
-  )
-  else
-    (* Consider a.{1} = 1 and a.{i} = 0 for i > 1 *)
-    for i = 1 to n do y'.{i} <- Complex.mul b'.{i} x'.{i} done;
+  for i = 1 to n do y'.{i} <- Complex.mul b'.{i} x'.{i} done;
   FFT.exec iffty;
   scal (1. /. float n) y;              (* normalize ifft *)
   Array1.sub y 1 (Array1.dim x)
-;;
-
-let () =
-  let cpl x = {Complex.re = x; Complex.im = 0.} in
-  let of_array a =
-    Array1.of_array FFT.complex fortran_layout (Array.map cpl a) in
-  let a = of_array [| 1.;2. |] in
-  let b = of_array [| 1.; 1.; 1. |] in
-  let x = create FFT.complex 20 in
-  for i = 1 to Array1.dim x do x.{i} <- cpl(float i) done;
-  let y  = filter ~a b x in
-  for i = 1 to Array1.dim y do
-    Printf.printf "%g " y.{i}.Complex.re
-  done;
-  Printf.printf "\n%!";
 ;;
 
 let () =
