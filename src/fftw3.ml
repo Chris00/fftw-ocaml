@@ -48,19 +48,10 @@ module type Sig = sig
     | Patient
     | Exhaustive
 
-
   type r2r_kind =
-    | R2HC
-    | HC2R
-    | DHT
-    | REDFT00
-    | REDFT10
-    | REDFT01
-    | REDFT11
-    | RODFT00
-    | RODFT10
-    | RODFT01
-    | RODFT11
+    | R2HC | HC2R | DHT
+    | REDFT00 | REDFT01 | REDFT10 | REDFT11
+    | RODFT00 | RODFT01 | RODFT10 | RODFT11
 
   exception Failure of string
 
@@ -247,7 +238,8 @@ module type Sig = sig
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> c2r plan
 
-    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+    val r2r : r2r_kind * r2r_kind * r2r_kind ->
+      ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->

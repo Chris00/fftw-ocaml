@@ -105,7 +105,7 @@ external guru_c2r :
 external guru_r2r :
   (* in *) 'l float_array ->
   (* out *) 'l float_array ->
-  (* kind (same length as [n]) *) int array ->
+  (* kind (same length as [n]) *) r2r_kind array ->
   (* flags *) int ->
   (* input offset *) int ->
   (* output offset *) int ->

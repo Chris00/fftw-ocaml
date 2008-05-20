@@ -25,6 +25,14 @@ type r2c
 type c2r
 type r2r
 
+type dir = Forward | Backward
+type measure = Estimate | Measure | Patient | Exhaustive
+type r2r_kind =
+    | R2HC | HC2R | DHT
+    | REDFT00 | REDFT01 | REDFT10 | REDFT11
+    | RODFT00 | RODFT01 | RODFT10 | RODFT11
+exception Failure of string             (* Localizing the Failure exn *)
+
 IFDEF SINGLE_PREC THEN
 INCLUDE "fftw3S_external.ml"
 ELSE
@@ -50,13 +58,6 @@ type 'a plan = {
   normalize_factor : float; (* multiplication factor to normalize *)
 }
 
-type dir = Forward | Backward
-type measure = Estimate | Measure | Patient | Exhaustive
-type r2r_kind =
-    | R2HC | HC2R | DHT | REDFT00
-    | REDFT10 | REDFT01 | REDFT11 | RODFT00 | RODFT10 | RODFT01 | RODFT11
-exception Failure of string             (* Localizing the Failure exn *)
-
 let sign_of_dir = function
   | Forward -> -1
   | Backward -> 1
@@ -70,20 +71,6 @@ let flags meas unaligned preserve_input : int =
     | Estimate -> 64 (* 1U lsl 6 *) in
   let f = if unaligned then f lor 2 (* 1U lsl 1 *) else f in
   if preserve_input then f lor 16 (* 1U lsl 4 *) else f lor 1 (* 1U lsl 0 *)
-
-(* WARNING: keep in sync with fftw3.h *)
-let int_of_r2r_kind = function
-  | R2HC    -> 0
-  | HC2R    -> 1
-  | DHT     -> 2
-  | REDFT00 -> 3
-  | REDFT01 -> 4
-  | REDFT10 -> 5
-  | REDFT11 -> 6
-  | RODFT00 -> 7
-  | RODFT01 -> 8
-  | RODFT10 -> 9
-  | RODFT11 -> 10
 
 
 (** {2 Execution of plans}
@@ -173,13 +160,9 @@ module Genarray = struct
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
     (* FIXME: must check [kind] has the right length/order?? *)
-    let kind = Array.map int_of_r2r_kind kind in
     apply r2r_name ~logical_dims:Geom.logical_r2r
       (guru_r2r i o kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize
-(*       (\* howmany_rank: *\)(Some(Genarray.num_dims i - Array.length kind)) *)
-
-
 end
 
 
@@ -255,7 +238,7 @@ module Array1 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l float_array) =
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
-    let kind = [| int_of_r2r_kind kind |] in
+    let kind = [| kind |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
@@ -327,7 +310,7 @@ module Array2 = struct
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1)) (o: 'l float_array) =
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
-    let kind = [| int_of_r2r_kind kind1; int_of_r2r_kind kind2 |] in
+    let kind = [| kind1; kind2 |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
@@ -393,13 +376,13 @@ module Array3 = struct
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
   let r2r_name = FFTW ^ "Array3.r2r"
-  let r2r (kind1,kind2) ?(meas=Measure) ?(normalize=false)
+  let r2r (kind1,kind2,kind3) ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l float_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1,1)) (o: 'l float_array) =
     let gi = genarray_of_array3 i
     and go = genarray_of_array3 o in
-    let kind = [| int_of_r2r_kind kind1; int_of_r2r_kind kind2 |] in
+    let kind = [| kind1; kind2; kind3 |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
       (guru_r2r gi go kind (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
