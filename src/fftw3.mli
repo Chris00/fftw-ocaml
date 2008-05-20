@@ -109,12 +109,12 @@ module type Sig = sig
     | HC2R (** halfcomplex to real *)
     | DHT  (** discrete Hartley Transform *)
     | REDFT00 (** real-even DFT: even around j=0 and even around j=n-1 *)
-    | REDFT10 (** real-even DFT: even around j=-0.5 and even around j=n-0.5 *)
     | REDFT01 (** real-even DFT: even around j=0 and odd around j=n *)
+    | REDFT10 (** real-even DFT: even around j=-0.5 and even around j=n-0.5 *)
     | REDFT11 (** real-even DFT: even around j=-0.5 and odd around j=n-0.5 *)
     | RODFT00 (** real-odd DFT; odd around j=-1 and odd around j=n *)
-    | RODFT10 (** real-odd DFT; odd around j=-0.5 and odd around j=n-0.5 *)
     | RODFT01 (** real-odd DFT; odd around j=-1 and even around j=n-1 *)
+    | RODFT10 (** real-odd DFT; odd around j=-0.5 and odd around j=n-0.5 *)
     | RODFT11 (** real-odd DFT; odd around j=-0.5 and even around j=n-0.5 *)
 
 
@@ -270,27 +270,55 @@ module type Sig = sig
 
           - [inco] same as [inci] but for output.
 
+          For example, if one wants the submatrix indicated by the
+          stars of the following (C layout) matrix:
+          {v
+            a = [[x x x x x x     one sets:  ofs = [|1; 1|]
+                  x * x * x x                inc = [|1; 2|]
+ 	          x * x * x x	             dim = [|2; 2|]
+	          x x x x x x ]]
+          v}
+          The slice represented by the stars
+          {v
+            a = [[x * x x x
+                  x * x x x
+                  x * x x x ]]
+          v}
+          is defined by [ofs = [|0; 1|]] and [inc = [|1; 0|]]
+
           {9 Multiple transforms}
 
-          FFTW allows to compute several transforms at once.  This is
-          more efficient than to create a different plan for each
+          FFTW allows to compute several transforms at once by
+          specifying submatrices of [i] and [o].  This is more
+          efficient than to create a different plan for each
           transform.  It is your responsability to ensure that the
           many submatrices do not overlap.
 
 	  - [howmany_n] is an array of the (logical) dimensions of the
           array indexing the many transforms.  Default: [[| |]],
-          i.e. single transform.  If [howmanyi] is given but no
-          [howmany_n], then the maximum dimensions possible by the
-          dimensions of [i] (resp. [o]) are used.  A value of [0] for
-          a dimension also means to make it as large as possible.
+          i.e. only a single transform is performed.  If [howmanyi] is
+          given but no [howmany_n], then the maximum dimensions
+          possible by the dimensions of [i] (resp. [o]) are used.  A
+          value of [0] for a dimension also means to make it as large
+          as possible.
 
           - [howmanyi] is a list of vectors [[v1;...;vp]] generating
           the lattice of multiple arrays.  In other words, if [a] is
-          an element of index [k] in the "first" array, then the same
-          element in the other arrays is at indexes [k + i1 * v1 +
-          ... + ip * vp].
+          an element of (vector) index [k] in the "first" array, then
+          the same element in the other arrays is at indexes [k + i1 *
+          v1 + ... + ip * vp].
 
           - [howmanyo] same as [howmanyi] but for output.
+
+          For example, for the two subarrays are identified by * and +
+          {v
+            a = [[x * + * +
+                  x x x x x
+                  x * + * +
+                  x x x x x ]]
+          v}
+          one sets: [ofs = [|0; 1|]], [inc = [|2; 2|]] and [howmany =
+          [ [|0; 1|] ]].
       *)
 
     val r2c : ?meas:measure -> ?normalize:bool ->
@@ -338,7 +366,11 @@ module type Sig = sig
       ?howmanyo: coord list ->
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l float_array
       -> r2r plan
-      (** [r2r kind i o]
+      (** [r2r kind i o] returns a plan for computing the transform
+          from the complex array [i] to the complex array [o].  The
+          type of transform along the dimension [k] is given by
+          [kind.(k)] (you must give as many kinds as there are
+          dimensions).
 
           See {!Fftw3.Sig.Genarray.dft} for the meaning of optional
           parameters. *)
@@ -515,7 +547,8 @@ module type Sig = sig
       -> c2r plan
       (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
-    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+    val r2r : r2r_kind * r2r_kind * r2r_kind ->
+      ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
