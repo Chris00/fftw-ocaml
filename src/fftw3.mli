@@ -370,7 +370,7 @@ module type Sig = sig
           from the complex array [i] to the complex array [o].  The
           type of transform along the dimension [k] is given by
           [kind.(k)] (you must give as many kinds as there are
-          dimensions).
+          dimensions to the input array [i]).
 
           See {!Fftw3.Sig.Genarray.dft} for the meaning of optional
           parameters. *)
