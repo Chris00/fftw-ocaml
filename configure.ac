@@ -108,6 +108,23 @@ AC_TRY_LINK([#include <fftw3.h>],
             [AC_MSG_RESULT([ok]); CLIBS="$CLIBS fftw3"],
             [AC_MSG_ERROR([Check for fftw3 (double precision) failed.])])
 
+# Keep the order of "type r2r_kind" in fftw3SD.ml in sync with fftw3.h values
+AC_TRY_RUN([#include <fftw3.h>
+            int main(void) {
+              if(FFTW_R2HC==0 && FFTW_HC2R==1 && FFTW_DHT==2 &&
+                 FFTW_REDFT00==3 && FFTW_REDFT01==4 && FFTW_REDFT10==5 &&
+                 FFTW_REDFT11==6 && FFTW_RODFT00==7 && FFTW_RODFT01==8 &&
+                 FFTW_RODFT10==9 && FFTW_RODFT11==10)
+                return(0);
+              else
+                return(1);
+            }],
+	[],
+	[AC_MSG_FAILURE([The values of the fields FFTW_R2HC,... in fftw3.h has
+           changed. Please use a newer version of the OCaml-fftw3 library
+           or contact AC_PACKAGE_BUGREPORT to report the issue.])])
+
+
 AC_MSG_CHECKING([for libfftw3f (single precision)])
 LIBS="$LIBS -lfftw3f"
 AC_TRY_LINK([#include <fftw3.h>],

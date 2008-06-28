@@ -28,9 +28,11 @@ type r2r
 type dir = Forward | Backward
 type measure = Estimate | Measure | Patient | Exhaustive
 type r2r_kind =
-    | R2HC | HC2R | DHT
-    | REDFT00 | REDFT01 | REDFT10 | REDFT11
-    | RODFT00 | RODFT01 | RODFT10 | RODFT11
+    (* Keep the order in sync with fftw3.h and the test in
+       configure.ac (affects code in fftw3SD_stubs.c). *)
+  | R2HC | HC2R | DHT
+  | REDFT00 | REDFT01 | REDFT10 | REDFT11
+  | RODFT00 | RODFT01 | RODFT10 | RODFT11
 exception Failure of string             (* Localizing the Failure exn *)
 
 IFDEF SINGLE_PREC THEN
