@@ -11,7 +11,7 @@
 open Printf
 open Scanf
 open Bigarray
-open Lacaml.Impl.D
+open Lacaml.D
 module FFT = Fftw3.D
 
 IFDEF GNUPLOT_EXISTS THEN

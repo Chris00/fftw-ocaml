@@ -15,7 +15,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details. *)
 
-open Lacaml.Impl.D
+open Lacaml.D
 open Format
 open Xcorr
 
