@@ -15,7 +15,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details. *)
 
-open Lacaml.Impl.D
+open Lacaml.D
 
 (** Cross-correlation function estimates.  This example is based on
     the Matlab® xcorr.m function and tries to respect its behavior.

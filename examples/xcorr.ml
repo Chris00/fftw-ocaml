@@ -1,7 +1,7 @@
 open Bigarray
 module FFT = Fftw3.D
-module D = Lacaml.Impl.D
-module Z = Lacaml.Impl.Z
+module D = Lacaml.D
+module Z = Lacaml.Z
 
 let create kind n = FFT.Array1.create kind fortran_layout n
 
