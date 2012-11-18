@@ -22,3 +22,5 @@ examples/delta
 examples/henon
 examples/xcorr
 examples/chirp
+*.tar.gz
+
