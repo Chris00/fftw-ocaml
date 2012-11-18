@@ -1,9 +1,9 @@
 (* File: fftw3SD.ml
 
-   Copyright (C) 2006-2008
+   Copyright (C) 2006-
 
-     Christophe Troestler <chris_77@users.sourceforge.net>
-     WWW: http://math.umh.ac.be/an/software/
+     Christophe Troestler <Christophe.Troestler@umons.ac.be>
+     WWW: https://math.umons.ac.be/anum/software/
 
    This library is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2.1 or
