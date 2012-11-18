@@ -3,10 +3,10 @@
 
    Objective Caml interface for FFTW.
 
-   Copyright (C) 2005-2008
+   Copyright (C) 2005-
 
-     Christophe Troestler <chris_77@users.sourceforge.net>
-     WWW: http://www.umh.ac.be/math/an/software/
+     Christophe Troestler <Christophe.Troestler@umons.ac.be>
+     WWW: https://math.umons.ac.be/anum/software/
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public License

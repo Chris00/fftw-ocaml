@@ -1,10 +1,10 @@
 (*pp camlp4o pa_macro.cmo $FFTW3F_EXISTS *)
 (* File: fftw3.mli
 
-   Copyright (C) 2008
+   Copyright (C) 2008-
 
-     Christophe Troestler <chris_77@users.sourceforge.net>
-     WWW: http://math.umh.ac.be/an/software/
+     Christophe Troestler <Christophe.Troestler@umons.ac.be>
+     WWW: https://math.umons.ac.be/anum/software/
 
    This library is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2.1 or
@@ -20,8 +20,8 @@
 
 (** Interface for FFTW version 3.
 
-   @author Christophe Troestler <chris_77\@users.sourceforge.net>
-   @version 0.5.1
+   @author Christophe Troestler <Christophe.Troestler\@umons.ac.be>
+   @version 0.5.2
 *)
 (** We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
