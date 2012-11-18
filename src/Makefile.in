@@ -14,10 +14,10 @@ CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@
 # Environment variable passed to camlp4
 export FFTW3F_EXISTS := @FFTW3F_EXISTS@
 
-.PHONY: all byte opt install uninstall update
+.PHONY: all byte opt native install uninstall update
 all: @ALL@
 byte: byte-code-library
-opt: native-code-library
+opt native: native-code-library
 
 install: libinstall
 uninstall: libuninstall
