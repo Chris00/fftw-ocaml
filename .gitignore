@@ -1,11 +1,9 @@
 *~
-*.cmi
-*.cmo
-*.cma
-*.cmx
+*.cm[ioax]
 *.cmxa
 *.annot
-*.o
+*.[oa]
+*.so
 *.exe
 *.com
 ._bcdi/
