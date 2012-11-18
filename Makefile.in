@@ -1,6 +1,6 @@
 
 PKG_NAME := ocaml-fftw3
-DISTFILES := ChangeLog INSTALL LICENSE README \
+DISTFILES := ChangeLog LICENSE README \
 	bootstrap configure.ac configure Makefile.in OCamlMakefile \
 	src/*.ml src/*.mli src/*.c src/Makefile.in src/META.in \
 	examples/*.ml examples/*.txt examples/Makefile.in
@@ -27,7 +27,7 @@ pnc:
 	$(MAKE) -C examples -B pnc
 
 
-.PHONY: dist doc
+.PHONY: tar dist doc
 doc:
 	$(MAKE) -C src htdoc
 	mkdir -p doc
@@ -35,7 +35,7 @@ doc:
 	mv src/doc/fftw3/html doc
 	$(RM) -r src/doc
 
-dist:
+tar dist:
 	-$(RM) -r $(PKG_NAME)-$(VERSION)
 	mkdir $(PKG_NAME)-$(VERSION)
 	cp -r --preserve --parents $(DISTFILES) $(PKG_NAME)-$(VERSION)
