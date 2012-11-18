@@ -1,6 +1,6 @@
 
 PKG_NAME := ocaml-fftw3
-DISTFILES := ChangeLog LICENSE README \
+DISTFILES := LICENSE README.md \
 	bootstrap configure.ac configure Makefile.in OCamlMakefile \
 	src/*.ml src/*.mli src/*.c src/Makefile.in src/META.in \
 	examples/*.ml examples/*.txt examples/Makefile.in
