@@ -33,6 +33,10 @@ echo "ocaml version is $OCAML_VERSION"
 OCAMLLIBPATH=`$OCAMLC -where`
 echo "ocaml library path is $OCAMLLIBPATH"
 
+if test -f "$OCAMLLIBPATH/caml/hash.h"; then
+  HASH_EXISTS=-DHASH_EXISTS
+fi
+
 # We look for ocamlopt; if not present, we issue a warning
 # if the version is not the same, we also discard it
 # we set OCAMLBEST to "opt" or "byte", whether ocamlopt is available or not
@@ -201,6 +205,7 @@ AC_SUBST(OCAMLOPT)
 AC_SUBST(OCAMLDEP)
 AC_SUBST(OCAMLBEST)
 AC_SUBST(OCAML_VERSION)
+AC_SUBST(HASH_EXISTS)
 AC_SUBST(OCAMLLIBPATH)
 AC_SUBST(OCAMLBIN)
 AC_SUBST(OCAMLDOC)

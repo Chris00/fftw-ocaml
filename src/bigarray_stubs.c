@@ -6,6 +6,15 @@
 /* From ocaml/byterun/compare.h */
 CAMLextern int caml_compare_unordered;
 
+/* From bigarray.h in latest versions of OCaml */
+#ifndef SIZEOF_BA_ARRAY
+#if (__STDC_VERSION__ >= 199901L)
+#define SIZEOF_BA_ARRAY sizeof(struct caml_ba_array)
+#else
+#define SIZEOF_BA_ARRAY (sizeof(struct caml_ba_array) - sizeof(intnat))
+#endif
+#endif /* SIZEOF_BA_ARRAY */
+
 
 static uintnat caml_ba_num_elts(struct caml_bigarray * b)
 {
@@ -16,14 +25,8 @@ static uintnat caml_ba_num_elts(struct caml_bigarray * b)
   return num_elts;
 }
 
-static int caml_ba_element_size[] =
-{ 4 /*FLOAT32*/, 8 /*FLOAT64*/,
-  1 /*SINT8*/, 1 /*UINT8*/,
-  2 /*SINT16*/, 2 /*UINT16*/,
-  4 /*INT32*/, 8 /*INT64*/,
-  sizeof(value) /*CAML_INT*/, sizeof(value) /*NATIVE_INT*/,
-  8 /*COMPLEX32*/, 16 /*COMPLEX64*/
-};
+CAMLextern int caml_ba_element_size[];
+
 
 static uintnat
 caml_ba_multov(uintnat a, uintnat b, int * overflow)
@@ -65,16 +68,21 @@ caml_ba_multov(uintnat a, uintnat b, int * overflow)
 }
 
 
-#define CAML_BA_MAX_MEMORY 256*1024*1024
+#define CAML_BA_MAX_MEMORY 1024*1024*1024
 
 
 static int caml_ba_compare(value v1, value v2)
 {
-  struct caml_bigarray * b1 = Bigarray_val(v1);
-  struct caml_bigarray * b2 = Bigarray_val(v2);
+  struct caml_ba_array * b1 = Caml_ba_array_val(v1);
+  struct caml_ba_array * b2 = Caml_ba_array_val(v2);
   uintnat n, num_elts;
+  intnat flags1, flags2;
   int i;
 
+  /* Compare kind & layout in case the arguments are of different types */
+  flags1 = b1->flags & (CAML_BA_KIND_MASK | CAML_BA_LAYOUT_MASK);
+  flags2 = b2->flags & (CAML_BA_KIND_MASK | CAML_BA_LAYOUT_MASK);
+  if (flags1 != flags2) return flags2 - flags1;
   /* Compare number of dimensions */
   if (b1->num_dims != b2->num_dims) return b2->num_dims - b1->num_dims;
   /* Same number of dimensions: compare dimensions lexicographically */
@@ -102,7 +110,7 @@ static int caml_ba_compare(value v1, value v2)
       if (e1 < e2) return -1; \
       if (e1 > e2) return 1; \
       if (e1 != e2) { \
-        compare_unordered = 1; \
+        caml_compare_unordered = 1; \
         if (e1 == e1) return 1; \
         if (e2 == e2) return -1; \
       } \
@@ -110,26 +118,26 @@ static int caml_ba_compare(value v1, value v2)
     return 0; \
   }
 
-  switch (b1->flags & BIGARRAY_KIND_MASK) {
-  case BIGARRAY_COMPLEX32:
+  switch (b1->flags & CAML_BA_KIND_MASK) {
+  case CAML_BA_COMPLEX32:
     num_elts *= 2; /*fallthrough*/
-  case BIGARRAY_FLOAT32:
+  case CAML_BA_FLOAT32:
     DO_FLOAT_COMPARISON(float);
-  case BIGARRAY_COMPLEX64:
+  case CAML_BA_COMPLEX64:
     num_elts *= 2; /*fallthrough*/
-  case BIGARRAY_FLOAT64:
+  case CAML_BA_FLOAT64:
     DO_FLOAT_COMPARISON(double);
-  case BIGARRAY_SINT8:
+  case CAML_BA_SINT8:
     DO_INTEGER_COMPARISON(int8);
-  case BIGARRAY_UINT8:
+  case CAML_BA_UINT8:
     DO_INTEGER_COMPARISON(uint8);
-  case BIGARRAY_SINT16:
+  case CAML_BA_SINT16:
     DO_INTEGER_COMPARISON(int16);
-  case BIGARRAY_UINT16:
+  case CAML_BA_UINT16:
     DO_INTEGER_COMPARISON(uint16);
-  case BIGARRAY_INT32:
+  case CAML_BA_INT32:
     DO_INTEGER_COMPARISON(int32);
-  case BIGARRAY_INT64:
+  case CAML_BA_INT64:
 #ifdef ARCH_INT64_TYPE
     DO_INTEGER_COMPARISON(int64);
 #else
@@ -144,8 +152,8 @@ static int caml_ba_compare(value v1, value v2)
       return 0;
     }
 #endif
-  case BIGARRAY_CAML_INT:
-  case BIGARRAY_NATIVE_INT:
+  case CAML_BA_CAML_INT:
+  case CAML_BA_NATIVE_INT:
     DO_INTEGER_COMPARISON(intnat);
   default:
     Assert(0);
@@ -157,9 +165,99 @@ static int caml_ba_compare(value v1, value v2)
 
 /* Hashing of a bigarray */
 
+#ifdef HASH_EXISTS
+#include <caml/hash.h>
+
 static intnat caml_ba_hash(value v)
 {
-  struct caml_bigarray * b = Bigarray_val(v);
+  struct caml_ba_array * b = Caml_ba_array_val(v);
+  intnat num_elts, n;
+  uint32 h, w;
+  int i;
+
+  num_elts = 1;
+  for (i = 0; i < b->num_dims; i++) num_elts = num_elts * b->dim[i];
+  h = 0;
+
+  switch (b->flags & CAML_BA_KIND_MASK) {
+  case CAML_BA_SINT8:
+  case CAML_BA_UINT8: {
+    uint8 * p = b->data;
+    if (num_elts > 256) num_elts = 256;
+    for (n = 0; n + 4 <= num_elts; n += 4, p += 4) {
+      w = p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+      h = caml_hash_mix_uint32(h, w);
+    }
+    w = 0;
+    switch (num_elts & 3) {
+    case 3: w  = p[2] << 16;    /* fallthrough */
+    case 2: w |= p[1] << 8;     /* fallthrough */
+    case 1: w |= p[0];
+            h = caml_hash_mix_uint32(h, w);
+    }
+    break;
+  }
+  case CAML_BA_SINT16:
+  case CAML_BA_UINT16: {
+    uint16 * p = b->data;
+    if (num_elts > 128) num_elts = 128;
+    for (n = 0; n + 2 <= num_elts; n += 2, p += 2) {
+      w = p[0] | (p[1] << 16);
+      h = caml_hash_mix_uint32(h, w);
+    }
+    if ((num_elts & 1) != 0)
+      h = caml_hash_mix_uint32(h, p[0]);
+    break;
+  }
+  case CAML_BA_INT32:
+  {
+    uint32 * p = b->data;
+    if (num_elts > 64) num_elts = 64;
+    for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_uint32(h, *p);
+    break;
+  }
+  case CAML_BA_CAML_INT:
+  case CAML_BA_NATIVE_INT:
+  {
+    intnat * p = b->data;
+    if (num_elts > 64) num_elts = 64;
+    for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_intnat(h, *p);
+    break;
+  }
+  case CAML_BA_INT64:
+  {
+    int64 * p = b->data;
+    if (num_elts > 32) num_elts = 32;
+    for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_int64(h, *p);
+    break;
+  }
+  case CAML_BA_COMPLEX32:
+    num_elts *= 2;              /* fallthrough */
+  case CAML_BA_FLOAT32:
+  {
+    float * p = b->data;
+    if (num_elts > 64) num_elts = 64;
+    for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_float(h, *p);
+    break;
+  }
+  case CAML_BA_COMPLEX64:
+    num_elts *= 2;              /* fallthrough */
+  case CAML_BA_FLOAT64:
+  {
+    double * p = b->data;
+    if (num_elts > 32) num_elts = 32;
+    for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_double(h, *p);
+    break;
+  }
+  }
+  return h;
+}
+
+#else /* <caml/hash.h> does not exist, use 3.12 hash function */
+
+static intnat caml_ba_hash(value v)
+{
+  struct caml_ba_array * b = Caml_ba_array_val(v);
   intnat num_elts, n, h;
   int i;
 
@@ -170,37 +268,37 @@ static intnat caml_ba_hash(value v)
 
 #define COMBINE(h,v) ((h << 4) + h + (v))
 
-  switch (b->flags & BIGARRAY_KIND_MASK) {
-  case BIGARRAY_SINT8:
-  case BIGARRAY_UINT8: {
+  switch (b->flags & CAML_BA_KIND_MASK) {
+  case CAML_BA_SINT8:
+  case CAML_BA_UINT8: {
     uint8 * p = b->data;
     for (n = 0; n < num_elts; n++) h = COMBINE(h, *p++);
     break;
   }
-  case BIGARRAY_SINT16:
-  case BIGARRAY_UINT16: {
+  case CAML_BA_SINT16:
+  case CAML_BA_UINT16: {
     uint16 * p = b->data;
     for (n = 0; n < num_elts; n++) h = COMBINE(h, *p++);
     break;
   }
-  case BIGARRAY_FLOAT32:
-  case BIGARRAY_COMPLEX32:
-  case BIGARRAY_INT32:
+  case CAML_BA_FLOAT32:
+  case CAML_BA_COMPLEX32:
+  case CAML_BA_INT32:
 #ifndef ARCH_SIXTYFOUR
-  case BIGARRAY_CAML_INT:
-  case BIGARRAY_NATIVE_INT:
+  case CAML_BA_CAML_INT:
+  case CAML_BA_NATIVE_INT:
 #endif
   {
     uint32 * p = b->data;
     for (n = 0; n < num_elts; n++) h = COMBINE(h, *p++);
     break;
   }
-  case BIGARRAY_FLOAT64:
-  case BIGARRAY_COMPLEX64:
-  case BIGARRAY_INT64:
+  case CAML_BA_FLOAT64:
+  case CAML_BA_COMPLEX64:
+  case CAML_BA_INT64:
 #ifdef ARCH_SIXTYFOUR
-  case BIGARRAY_CAML_INT:
-  case BIGARRAY_NATIVE_INT:
+  case CAML_BA_CAML_INT:
+  case CAML_BA_NATIVE_INT:
 #endif
 #ifdef ARCH_SIXTYFOUR
   {
@@ -226,6 +324,9 @@ static intnat caml_ba_hash(value v)
   return h;
 }
 
+#endif /* HASH_EXISTS */
+
+
 static void caml_ba_serialize_longarray(void * data,
                                         intnat num_elts,
                                         intnat min_val, intnat max_val)
@@ -237,15 +338,16 @@ static void caml_ba_serialize_longarray(void * data,
     if (*p < min_val || *p > max_val) { overflow_32 = 1; break; }
   }
   if (overflow_32) {
-    serialize_int_1(1);
-    serialize_block_8(data, num_elts);
+    caml_serialize_int_1(1);
+    caml_serialize_block_8(data, num_elts);
   } else {
-    serialize_int_1(0);
-    for (n = 0, p = data; n < num_elts; n++, p++) serialize_int_4((int32) *p);
+    caml_serialize_int_1(0);
+    for (n = 0, p = data; n < num_elts; n++, p++)
+      caml_serialize_int_4((int32) *p);
   }
 #else
-  serialize_int_1(0);
-  serialize_block_4(data, num_elts);
+  caml_serialize_int_1(0);
+  caml_serialize_block_4(data, num_elts);
 #endif
 }
 
@@ -253,64 +355,68 @@ static void caml_ba_serialize(value v,
                               uintnat * wsize_32,
                               uintnat * wsize_64)
 {
-  struct caml_bigarray * b = Bigarray_val(v);
+  struct caml_ba_array * b = Caml_ba_array_val(v);
   intnat num_elts;
   int i;
 
   /* Serialize header information */
-  serialize_int_4(b->num_dims);
-  serialize_int_4(b->flags & (BIGARRAY_KIND_MASK | BIGARRAY_LAYOUT_MASK));
-  for (i = 0; i < b->num_dims; i++) serialize_int_4(b->dim[i]);
+  caml_serialize_int_4(b->num_dims);
+  caml_serialize_int_4(b->flags & (CAML_BA_KIND_MASK | CAML_BA_LAYOUT_MASK));
+  /* On a 64-bit machine, if any of the dimensions is >= 2^32,
+     the size of the marshaled data will be >= 2^32 and
+     extern_value() will fail.  So, it is safe to write the dimensions
+     as 32-bit unsigned integers. */
+  for (i = 0; i < b->num_dims; i++) caml_serialize_int_4(b->dim[i]);
   /* Compute total number of elements */
   num_elts = 1;
   for (i = 0; i < b->num_dims; i++) num_elts = num_elts * b->dim[i];
   /* Serialize elements */
-  switch (b->flags & BIGARRAY_KIND_MASK) {
-  case BIGARRAY_SINT8:
-  case BIGARRAY_UINT8:
-    serialize_block_1(b->data, num_elts); break;
-  case BIGARRAY_SINT16:
-  case BIGARRAY_UINT16:
-    serialize_block_2(b->data, num_elts); break;
-  case BIGARRAY_FLOAT32:
-  case BIGARRAY_INT32:
-    serialize_block_4(b->data, num_elts); break;
-  case BIGARRAY_COMPLEX32:
-    serialize_block_4(b->data, num_elts * 2); break;
-  case BIGARRAY_FLOAT64:
-  case BIGARRAY_INT64:
-    serialize_block_8(b->data, num_elts); break;
-  case BIGARRAY_COMPLEX64:
-    serialize_block_8(b->data, num_elts * 2); break;
-  case BIGARRAY_CAML_INT:
+  switch (b->flags & CAML_BA_KIND_MASK) {
+  case CAML_BA_SINT8:
+  case CAML_BA_UINT8:
+    caml_serialize_block_1(b->data, num_elts); break;
+  case CAML_BA_SINT16:
+  case CAML_BA_UINT16:
+    caml_serialize_block_2(b->data, num_elts); break;
+  case CAML_BA_FLOAT32:
+  case CAML_BA_INT32:
+    caml_serialize_block_4(b->data, num_elts); break;
+  case CAML_BA_COMPLEX32:
+    caml_serialize_block_4(b->data, num_elts * 2); break;
+  case CAML_BA_FLOAT64:
+  case CAML_BA_INT64:
+    caml_serialize_block_8(b->data, num_elts); break;
+  case CAML_BA_COMPLEX64:
+    caml_serialize_block_8(b->data, num_elts * 2); break;
+  case CAML_BA_CAML_INT:
     caml_ba_serialize_longarray(b->data, num_elts, -0x40000000, 0x3FFFFFFF);
     break;
-  case BIGARRAY_NATIVE_INT:
+  case CAML_BA_NATIVE_INT:
     caml_ba_serialize_longarray(b->data, num_elts, -0x80000000, 0x7FFFFFFF);
     break;
   }
-  /* Compute required size in Caml heap.  Assumes struct caml_bigarray
+  /* Compute required size in OCaml heap.  Assumes struct caml_ba_array
      is exactly 4 + num_dims words */
-  Assert(sizeof(struct caml_bigarray) == 5 * sizeof(value));
+  Assert(SIZEOF_BA_ARRAY == 4 * sizeof(value));
   *wsize_32 = (4 + b->num_dims) * 4;
   *wsize_64 = (4 + b->num_dims) * 8;
 }
 
-
 static void caml_ba_deserialize_longarray(void * dest, intnat num_elts)
 {
-  int sixty = deserialize_uint_1();
+  int sixty = caml_deserialize_uint_1();
 #ifdef ARCH_SIXTYFOUR
   if (sixty) {
-    deserialize_block_8(dest, num_elts);
+    caml_deserialize_block_8(dest, num_elts);
   } else {
     intnat * p, n;
-    for (n = 0, p = dest; n < num_elts; n++, p++) *p = deserialize_sint_4();
+    for (n = 0, p = dest; n < num_elts; n++, p++)
+      *p = caml_deserialize_sint_4();
   }
 #else
   if (sixty)
-    deserialize_error("input_value: cannot read bigarray "
-                      "with 64-bit Caml ints");
-  deserialize_block_4(dest, num_elts);
+    caml_deserialize_error("input_value: cannot read bigarray "
+                      "with 64-bit OCaml ints");
+  caml_deserialize_block_4(dest, num_elts);
 #endif
 }

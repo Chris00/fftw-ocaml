@@ -8,7 +8,7 @@ SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
 RESULT  = fftw3
 INCDIRS = @INC@
 CLIBS = @CLIBS@
-CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@
+CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@ @HASH_EXISTS@
 #CFLAGS += -DWANT_DEBUG
 
 # Environment variable passed to camlp4

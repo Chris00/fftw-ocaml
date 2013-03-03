@@ -54,55 +54,56 @@ static void fftw3_caml_ba_finalize(value v)
   } else {
     if (-- b->proxy->refcount == 0) {
       fftw_free(b->proxy->data);
-      stat_free(b->proxy);
+      caml_stat_free(b->proxy);
     }
   }
 }
 
 static unsigned long fftw3_caml_ba_deserialize(void * dst)
 {
-  struct caml_bigarray * b = dst;
+  struct caml_ba_array * b = dst;
   int i, elt_size;
-  unsigned long num_elts;
+  uintnat num_elts;
 
   /* Read back header information */
-  b->num_dims = deserialize_uint_4();
-  b->flags = deserialize_uint_4() | BIGARRAY_MANAGED;
+  b->num_dims = caml_deserialize_uint_4();
+  b->flags = caml_deserialize_uint_4() | CAML_BA_MANAGED;
   b->proxy = NULL;
-  for (i = 0; i < b->num_dims; i++) b->dim[i] = deserialize_uint_4();
+  for (i = 0; i < b->num_dims; i++) b->dim[i] = caml_deserialize_uint_4();
   /* Compute total number of elements */
   num_elts = caml_ba_num_elts(b);
   /* Determine element size in bytes */
-  if ((b->flags & BIGARRAY_KIND_MASK) > BIGARRAY_COMPLEX64)
-    deserialize_error("input_value: bad bigarray kind");
-  elt_size = caml_ba_element_size[b->flags & BIGARRAY_KIND_MASK];
+  if ((b->flags & CAML_BA_KIND_MASK) > CAML_BA_COMPLEX64)
+    caml_deserialize_error("input_value: bad bigarray kind");
+  elt_size = caml_ba_element_size[b->flags & CAML_BA_KIND_MASK];
   /* Allocate room for data */
   b->data = fftw_malloc(elt_size * num_elts);
   if (b->data == NULL)
-    deserialize_error("input_value: out of memory for bigarray");
+    caml_deserialize_error("input_value: out of memory for bigarray");
   /* Read data */
-  switch (b->flags & BIGARRAY_KIND_MASK) {
-  case BIGARRAY_SINT8:
-  case BIGARRAY_UINT8:
-    deserialize_block_1(b->data, num_elts); break;
-  case BIGARRAY_SINT16:
-  case BIGARRAY_UINT16:
-    deserialize_block_2(b->data, num_elts); break;
-  case BIGARRAY_FLOAT32:
-  case BIGARRAY_INT32:
-    deserialize_block_4(b->data, num_elts); break;
-  case BIGARRAY_COMPLEX32:
-    deserialize_block_4(b->data, num_elts * 2); break;
-  case BIGARRAY_FLOAT64:
-  case BIGARRAY_INT64:
-    deserialize_block_8(b->data, num_elts); break;
-  case BIGARRAY_COMPLEX64:
-    deserialize_block_8(b->data, num_elts * 2); break;
-  case BIGARRAY_CAML_INT:
-  case BIGARRAY_NATIVE_INT:
+  switch (b->flags & CAML_BA_KIND_MASK) {
+  case CAML_BA_SINT8:
+  case CAML_BA_UINT8:
+    caml_deserialize_block_1(b->data, num_elts); break;
+  case CAML_BA_SINT16:
+  case CAML_BA_UINT16:
+    caml_deserialize_block_2(b->data, num_elts); break;
+  case CAML_BA_FLOAT32:
+  case CAML_BA_INT32:
+    caml_deserialize_block_4(b->data, num_elts); break;
+  case CAML_BA_COMPLEX32:
+    caml_deserialize_block_4(b->data, num_elts * 2); break;
+  case CAML_BA_FLOAT64:
+  case CAML_BA_INT64:
+    caml_deserialize_block_8(b->data, num_elts); break;
+  case CAML_BA_COMPLEX64:
+    caml_deserialize_block_8(b->data, num_elts * 2); break;
+  case CAML_BA_CAML_INT:
+  case CAML_BA_NATIVE_INT:
     caml_ba_deserialize_longarray(b->data, num_elts); break;
   }
-  return sizeof(struct caml_bigarray) + (b->num_dims - 1) * sizeof(intnat);
+  /* PR#5516: use C99's flexible array types if possible */
+  return SIZEOF_BA_ARRAY + b->num_dims * sizeof(intnat);
 }
 
 static struct custom_operations fftw3_caml_ba_ops = {
