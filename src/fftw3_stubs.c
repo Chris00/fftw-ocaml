@@ -121,11 +121,11 @@ static struct custom_operations fftw3_caml_ba_ops = {
 static value fftw3_caml_ba_alloc(int flags, int num_dims, long * dim)
 {
   void * data;
-  unsigned long num_elts, size;
+  unsigned long num_elts, asize, size;
   int overflow, i;
   value res;
   struct caml_bigarray * b;
-  long dimcopy[MAX_NUM_DIMS];
+  long dimcopy[CAML_BA_MAX_NUM_DIMS];
 
   for (i = 0; i < num_dims; i++) dimcopy[i] = dim[i];
   size = 0;
@@ -143,11 +143,9 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, long * dim)
   if (data == NULL && size != 0) raise_out_of_memory();
   flags |= BIGARRAY_MANAGED;
 
-  res = alloc_custom(&fftw3_caml_ba_ops,
-                     sizeof(struct caml_ba_array)
-                     + (num_dims - 1) * sizeof(intnat),
-                     size, CAML_BA_MAX_MEMORY);
-  b = Bigarray_val(res);
+  asize = SIZEOF_BA_ARRAY + num_dims * sizeof(intnat);
+  res = alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);
+  b = Caml_ba_array_val(res);
   b->data = data;
   b->num_dims = num_dims;
   b->flags = flags;
