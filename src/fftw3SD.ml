@@ -20,6 +20,11 @@
 open Bigarray
 open Fftw3_utils
 
+type float_elt = floatXX_elt
+type complex_elt = complexXX_elt
+let float = floatXX
+let complex = complexXX
+
 type 'a fftw_plan (* single and double precision plans are different *)
 
 (* Types of plans *)

@@ -33,12 +33,16 @@ let transform fin fout tr =
 let () =
   transform "fftw3SD.ml" "fftw3D.ml"
             ["floatXX_elt", "Bigarray.float64_elt";
+             "floatXX", "Bigarray.float64";
              "complexXX_elt", "Bigarray.complex64_elt";
+             "complexXX", "Bigarray.complex64";
              "$FFTW", "Fftw3.D"];
   transform "fftw3SD.ml" "fftw3S.ml"
             ["fftw_ocaml", "fftwf_ocaml"; (* C stubs *)
              "floatXX_elt", "Bigarray.float32_elt";
+             "floatXX", "Bigarray.float32";
              "complexXX_elt", "Bigarray.complex32_elt";
+             "complexXX", "Bigarray.complex32";
              "$FFTW", "Fftw3.S"]
 
 let () =

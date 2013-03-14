@@ -251,23 +251,9 @@ end
 (** {2 Precision dependent modules}
  ***********************************************************************)
 
-module D =
-struct
-  type float_elt = Bigarray.float64_elt
-  type complex_elt = Bigarray.complex64_elt
-  let float = Bigarray.float64
-  let complex = Bigarray.complex64
-  include Fftw3D
-end
+module D = Fftw3D
 
-module S =
-struct
-  type float_elt = Bigarray.float32_elt
-  type complex_elt = Bigarray.complex32_elt
-  let float = Bigarray.float32
-  let complex = Bigarray.complex32
-  include Fftw3S
-end
+module S = Fftw3S
 
 
 module Wisdom =
