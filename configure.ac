@@ -19,6 +19,11 @@ fi
 # Check for Ocaml compilers
 
 # we first look for ocamlc in the path; if not present, we fail
+AC_PATH_PROG(OCAML,ocaml,no)
+if test "$OCAML" = no ; then
+	AC_MSG_ERROR(Cannot find ocaml.)
+fi
+
 AC_PATH_PROG(OCAMLC,ocamlc,no)
 if test "$OCAMLC" = no ; then
 	AC_MSG_ERROR(Cannot find ocamlc.)
@@ -199,7 +204,9 @@ else
 fi
 
 # substitutions to perform
+AC_SUBST(PACKAGE_NAME)
 AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(OCAML)
 AC_SUBST(OCAMLC)
 AC_SUBST(OCAMLOPT)
 AC_SUBST(OCAMLDEP)

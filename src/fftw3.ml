@@ -19,9 +19,6 @@
    LICENSE for more details.
 *)
 
-DEFINE DEBUG(expr) = expr;;
-DEFINE DEBUG(expr) = ();;
-
 open Bigarray
 open Printf
 
@@ -251,119 +248,6 @@ module type Sig = sig
 end
 
 
-(** {2 Helper funs}
- ***********************************************************************)
-
-(* specialized for speed *)
-let min i j = if (i:int) < j then i else j
-
-module List =
-struct
-  include List
-
-  let rec list_iteri_loop f i = function
-    | [] -> ()
-    | a :: tl -> f i a; list_iteri_loop f (succ i) tl
-
-  let iteri ~(f: int -> _ -> unit) l = list_iteri_loop f 0 l
-end
-
-let option_map f = function Some v -> Some(f v) | None -> None
-
-(** Return a string showing the content of the array *)
-let string_of_array a =
-  if Array.length a = 0 then "[| |]"
-  else begin
-    let b = Buffer.create 80 in
-    Buffer.add_string b "[|";
-    Buffer.add_string b (string_of_int a.(0));
-    for i = 1 to Array.length a - 1 do
-      Buffer.add_string b "; ";
-      Buffer.add_string b (string_of_int a.(i));
-    done;
-    Buffer.add_string b "|]";
-    Buffer.contents b
-  end
-
-let is_c_layout m =
-  (Genarray.layout m = (Obj.magic c_layout : 'a layout))
-
-(** [get_rank default m] returns the length of by the first array in
-    the list of options [m]. *)
-let rec get_rank default = function
-  | [] -> default
-  | None :: t -> get_rank default t
-  | Some m :: _ -> Array.length m
-
-let get_mat_rank name rank default = function
-  | None -> Array.make rank default (* Create matrix with default value *)
-  | Some m ->
-      if Array.length m <> rank then
-        invalid_arg(sprintf "%s: expected length=%i, got=%i"
-                      name rank (Array.length m));
-      m
-
-
-(** {2 Geometry checks}
- ***********************************************************************)
-
-(* This module perform some checks on the dimensions and howmany
-   specifications that depend on the layout but not on the
-   precision.  *)
-module Geom =
-struct
-  (* C layout *)
-  module C =
-  struct
-    DEFINE LAYOUT = "c_layout";;
-    DEFINE FIRST_INDEX = 0;;
-    DEFINE LAST_INDEX(dim) = dim - 1;;
-    DEFINE FOR_DIM(k, ndims, expr) = for k = ndims - 1 downto 0 do expr done;;
-    DEFINE FOR_HM(k, ndims, expr) = for k = 0 to ndims - 1 do expr done;;
-    DEFINE LT_DIM_SYM = "<";;
-    DEFINE GE_DIM_SYM = ">=";;
-    INCLUDE "fftw3_geom.ml"
-  end
-
-  (* FORTRAN layout *)
-  module F =
-  struct
-    DEFINE FORTRAN (* BEWARE it is still defined after this module! *)
-    DEFINE LAYOUT = "fortran_layout";;
-    DEFINE FIRST_INDEX = 1;;
-    DEFINE LAST_INDEX(dim) = dim;;
-    DEFINE FOR_DIM(k, ndims, expr) = for k = 0 to ndims - 1 do expr done;;
-    DEFINE FOR_HM(k, ndims, expr) = for k = ndims - 1 downto 0 do expr done;;
-    DEFINE LT_DIM_SYM = "<=";;
-    DEFINE GE_DIM_SYM = ">";;
-    INCLUDE "fftw3_geom.ml"
-  end
-
-  let rec different_sub ofs1 n1 ofs2 n2 len =
-    len > 0 && (n1.(ofs1) <> n2.(ofs2)
-                || different_sub (ofs1 + 1) n1 (ofs2 + 1) n2 (len - 1))
-
-  (* The arrays of dimensions are always arranged from the slow
-     varying dimension to the fast one.  This the "special" dimension
-     is always at index 0. *)
-  let r2c ni no =
-    let len = Array.length ni in
-    len <> Array.length no
-    || ni.(0)/2 + 1 <> no.(0)
-    || different_sub 1 ni 1 no (len - 1)
-
-  let logical_c2c ni no msg =
-    if ni <> no then invalid_arg msg;
-    ni
-
-  let logical_r2r = logical_c2c
-
-  let logical_r2c ni no msg =
-    if r2c ni no then invalid_arg msg;
-    ni
-
-  let logical_c2r ni no msg = logical_r2c no ni msg
-end
 
 (** {2 Precision dependent modules}
  ***********************************************************************)
@@ -374,9 +258,7 @@ struct
   type complex_elt = Bigarray.complex64_elt
   let float = Bigarray.float64
   let complex = Bigarray.complex64
-  ;;
-  DEFINE FFTW = "Fftw3.D.";;
-  INCLUDE "fftw3SD.ml"
+  include Fftw3D
 end
 
 IFDEF FFTW3F_EXISTS THEN
@@ -386,10 +268,7 @@ struct
   type complex_elt = Bigarray.complex32_elt
   let float = Bigarray.float32
   let complex = Bigarray.complex32
-  ;;
-  DEFINE SINGLE_PREC;;
-  DEFINE FFTW = "Fftw3.S.";;
-  INCLUDE "fftw3SD.ml"
+  include Fftw3S
 end
 ENDIF
 

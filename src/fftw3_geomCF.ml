@@ -1,4 +1,4 @@
-(* File: fftw3_geom.ml
+(* File: fftw3_geomCF.ml
 
    Copyright (C) 2008-
 
@@ -19,6 +19,9 @@
     through macros (for the bigarray interface).  Does not depend on
     the precision of the arrays. *)
 
+open Printf
+open Bigarray
+open Fftw3_utils
 
 (* Check whether the matrix given by [ofs], [inc], [n] is a valid
    submatrix of [mat].  Return the (C) offset, stride array and
@@ -53,7 +56,7 @@ let get_geom name ofsname ofs incname inc nname n mat =
       if nk > 1 then set_n_sub nk
       else if nk < 1 then
         invalid_arg(sprintf "%s: dim %i empty; no n >= 1 s.t. %i\
-	            %+i*(n-1) %s %i" name k ofs.(k) inc.(k) LT_DIM_SYM dimk);
+	            %+i*(n-1) $LT %i" name k ofs.(k) inc.(k) dimk);
       ofs.(k) + (nk - 1) * abs_inck;
     end
     else if n.(k) > 1 then begin
@@ -61,9 +64,10 @@ let get_geom name ofsname ofs incname inc nname n mat =
       let last = ofs.(k) + (n.(k) - 1) * abs_inck in
       if last > LAST_INDEX(dimk) then
         invalid_arg(sprintf "%s: %s.(%i) + (%s.(%i) - 1) * abs %s.(%i) \
-	              = %i %s %i (%s) where %s.(%i) = %i is the physical dim"
-                      name ofsname k nname k incname k last GE_DIM_SYM dimk
-                      LAYOUT nname k n.(k));
+	                     = %i $GE %i ($LAYOUT) where %s.(%i) = %i \
+                             is the physical dim"
+                            name ofsname k nname k incname k last dimk
+                            nname k n.(k));
       set_n_sub n.(k);
       last;
     end
@@ -74,13 +78,13 @@ let get_geom name ofsname ofs incname inc nname n mat =
   and offset = ref 0 (* external functions use the C layout *)
   and stride = Array.make num_dims 0 in
   (* C: decreasing order of k; FORTRAN: increasing order of k *)
-  FOR_DIM(k, num_dims,
+  for FOR_DIM(k, num_dims) do
           let dimk = Genarray.nth_dim mat k in
           if n.(k) < 0 then
             invalid_arg(sprintf "%s: %s.(%i) < 0" name nname k);
           if ofs.(k) < FIRST_INDEX then
-            invalid_arg(sprintf "%s: %s.(%i) < %i (%s)"
-                          name ofsname k FIRST_INDEX LAYOUT);
+            invalid_arg(sprintf "%s: %s.(%i) < FIRST_INDEX ($LAYOUT)"
+                                name ofsname k);
           stride.(!rank) <- inc.(k) * !pdim;
           if inc.(k) > 0 then (
             up.(k) <- upper_bound k inc.(k) dimk;
@@ -92,15 +96,15 @@ let get_geom name ofsname ofs incname inc nname n mat =
           )
           else ( (* inc.(k) = 0 => dimension ignored for the transform. *)
             if ofs.(k) > LAST_INDEX(dimk) then
-              invalid_arg(sprintf "%s: %s.(%i) = %i %s %i (%s)"
-                            name ofsname k ofs.(k) GE_DIM_SYM dimk LAYOUT);
+              invalid_arg(sprintf "%s: %s.(%i) = %i $GE %i ($LAYOUT)"
+                                  name ofsname k ofs.(k) dimk);
             up.(k) <- ofs.(k);
             offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
           );
           pdim := !pdim * dimk;
-         );
-  DEBUG(eprintf "DEBUG: %s: n_sub=%s (rank=%i); offset=%i stride=%s\n%!" name
-          (string_of_array n_sub) !rank !offset (string_of_array stride));
+  done;
+  DEBUG{eprintf "DEBUG: %s: n_sub=%s (rank=%i); offset=%i stride=%s\n%!" name
+                (string_of_array n_sub) !rank !offset (string_of_array stride)};
   !offset, (Array.sub n_sub 0 !rank), stride, ofs, up
 ;;
 
@@ -149,7 +153,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
       if hm_n.(i) = 0 then (
         (* Dimension for [i]th "howmany vector" [v] to determine *)
         let ni = ref max_int in
-        FOR_HM(k, num_dims,
+        for FOR_HM(k, num_dims) do
                let dimk = Genarray.nth_dim mat k in
                if v.(k) > 0 then
                  (* max{j | up.(k) + v.(k)*(j-1) <= LAST_INDEX(dimk)} *)
@@ -158,12 +162,12 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
                  (* max{j | low.(k) + v.(k)*(j-1) >= FIRST_INDEX} *)
                  ni := min !ni (1 + (FIRST_INDEX - low.(k)) / v.(k));
                hm_s := !hm_s * dimk + v.(k); (* Horner *)
-              );
+        done;
         hm_n.(i) <- !ni
       )
       else (
         (* dimension [hm_n.(i)] provided; bound check *)
-        FOR_HM(k, num_dims,
+        for FOR_HM(k, num_dims) do
                let dimk = Genarray.nth_dim mat k in
                if (v.(k) > 0 && up.(k) + v.(k)*(hm_n.(i)-1) > LAST_INDEX(dimk))
                  || (v.(k) < 0 && low.(k) + v.(k)*(hm_n.(i)-1) < FIRST_INDEX)
@@ -172,15 +176,15 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
 			       vector %s of %s exceeds the %ith dim bounds"
                                name hm_n.(i) i (string_of_array v) hmname k);
                hm_s := !hm_s * dimk + v.(k); (* Horner *)
-              );
+        done;
       );
       if !hm_s = 0 then
         invalid_arg(sprintf "%s: %ith element of %s = [|0.;...;0.|]"
                       name i hmname);
       hm_stride.(i) <- !hm_s;
     end;
-    DEBUG(eprintf "DEBUG: %s: hm_n=%s; hm_stride=%s\n%!" name
-            (string_of_array hm_n) (string_of_array hm_stride));
+    DEBUG{eprintf "DEBUG: %s: hm_n=%s; hm_stride=%s\n%!" name
+                  (string_of_array hm_n) (string_of_array hm_stride)};
     hm_n, hm_stride
   end
 

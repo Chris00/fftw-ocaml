@@ -3,8 +3,8 @@ OCAMLMAKEFILE = ../OCamlMakefile
 ANNOTATE := yes
 #USE_CAMLP4 := yes
 
-PRE_TARGETS := fftw3S_external.ml
-SOURCES = fftw3.ml fftw3.mli fftw3_stubs.c
+PRE_TARGETS := fftw3_geomC.ml fftw3_geomF.ml fftw3D.ml fftw3S.ml
+SOURCES = fftw3_utils.ml $(PRE_TARGETS) fftw3.ml fftw3.mli fftw3_stubs.c
 RESULT  = fftw3
 INCDIRS = @INC@
 CLIBS = @CLIBS@
@@ -23,14 +23,10 @@ install: libinstall
 uninstall: libuninstall
 update: uninstall install
 
-# Building single precision by text substitution (OCaml macros require
-# code duplication which we'd rather avoid).
-fftw3S_external.ml: fftw3D_external.ml
-	@-$(RM) $@
-	@echo "(* AUTOMATICALLY GENERATED FROM $< *)" > $@
-	sed -e "s/fftw_ocaml/fftwf_ocaml/" $< >> $@
-	@chmod a-w $@
+$(PRE_TARGETS): fftw3SD.ml fftw3_geomCF.ml
+	$(OCAML) make_prec_dep.ml
 
+OCAML           = @OCAML@
 OCAMLC		= @OCAMLC@
 OCAMLOPT	= @OCAMLOPT@
 OCAMLDEP	= @OCAMLDEP@

@@ -17,6 +17,9 @@
 
 (* FFTW3 interface for Single/Double precision *)
 
+open Bigarray
+open Fftw3_utils
+
 type 'a fftw_plan (* single and double precision plans are different *)
 
 (* Types of plans *)
@@ -35,12 +38,132 @@ type r2r_kind =
   | RODFT00 | RODFT01 | RODFT10 | RODFT11
 exception Failure of string             (* Localizing the Failure exn *)
 
-IFDEF SINGLE_PREC THEN
-INCLUDE "fftw3S_external.ml"
-ELSE
-INCLUDE "fftw3D_external.ml"
-ENDIF
-;;
+let is_c_layout m =
+  (Genarray.layout m = (Obj.magic c_layout : 'a layout))
+
+
+(** External declarations
+ ***********************************************************************)
+
+(* The types for Array1,... can be converted to this at no cost. *)
+type 'l complex_array = (Complex.t, complexXX_elt, 'l) Genarray.t
+type 'l float_array   = (float, floatXX_elt, 'l) Genarray.t
+
+(* Execution of plans
+ ***********************************************************************)
+
+external normalize :
+  (* array *) (_,_,_) Genarray.t ->
+  (* C offset *) int ->
+  (* strides *) int array ->
+  (* dimensions *) int array ->
+  (* multiply all entries by this number *) float -> unit
+  = "fftw_ocaml_normalize" "noalloc"
+
+external fftw_exec : 'a fftw_plan -> unit = "fftw_ocaml_execute" "noalloc"
+
+external exec_dft : c2c fftw_plan -> 'l complex_array -> 'l complex_array
+  -> unit = "fftw_ocaml_execute_dft" "noalloc"
+external exec_split_dft : c2c fftw_plan -> 'l float_array -> 'l float_array ->
+  'l float_array -> 'l float_array -> unit
+  = "fftw_ocaml_execute_split_dft" "noalloc"
+
+external exec_dft_r2c : r2c fftw_plan -> 'l float_array -> 'l complex_array
+  -> unit
+  = "fftw_ocaml_execute_dft_r2c" "noalloc"
+external exec_split_dft_r2c : r2c fftw_plan -> 'l float_array ->
+  'l float_array -> 'l float_array -> unit
+  = "fftw_ocaml_execute_split_dft_r2c" "noalloc"
+
+external exec_dft_c2r : c2r fftw_plan -> 'l complex_array -> 'l float_array
+  -> unit
+  = "fftw_ocaml_execute_dft_c2r" "noalloc"
+external exec_split_dft_c2r : c2r fftw_plan -> 'l float_array -> 'l float_array
+  -> 'l float_array -> unit
+  = "fftw_ocaml_execute_split_dft_c2r" "noalloc"
+
+external exec_r2r : r2r fftw_plan -> 'l float_array -> 'l float_array
+  -> unit
+  = "fftw_ocaml_execute_r2r" "noalloc"
+
+
+(* Creating plans
+ ***********************************************************************)
+
+(* BEWARE: wrapper functions are just thin wrappers around their C
+   counterpart.  In particular, their arguments must be thought for
+   the C layout. *)
+external guru_dft :
+  (* in *)  'l complex_array ->
+  (* out *) 'l complex_array ->
+  (* sign (forward/backward) *) int ->
+  (* flags (GOOD: they do not use the 32th bit) *) int ->
+  (* input offset ([in] as 1D array, C layout) *) int ->
+  (* output offset ([out] as 1D array, C layout) *) int ->
+  (* n (transform dimensions; its length = transform rank) *) int array ->
+  (* istride (same length as [n]) *) int array ->
+  (* ostride (same length as [n]) *) int array ->
+  (* howmany (multiplicity dimensions; its length=howmany_rank) *) int array ->
+  (* howmany input strides (same length as [howmany]) *) int array ->
+  (* howmany output strides (same length as [howmany]) *) int array
+  -> c2c fftw_plan
+  = "fftw_ocaml_guru_dft_bc" "fftw_ocaml_guru_dft"
+  (* Wrapper of fftw_plan_guru_dft.  No coherence check is done in the
+     C code.  @raise Failure if the plan cannot be created.
+
+     The [istride] and [ostride] parameters can be longer than [n]
+     without harm (but only the [Array.length n] first entries will be
+     used).  The same applies for the "howmany" parameters. *)
+
+external guru_r2c :
+  (* in *) 'l float_array ->
+  (* out *) 'l complex_array ->
+  (* flags *) int ->
+  (* input offset *) int ->
+  (* output offset *) int ->
+  (* n (transform dimensions) *) int array ->
+  (* istride (same length as [n]) *) int array ->
+  (* ostride (same length as [n]) *) int array ->
+  (* howmany (multiplicity dimensions) *) int array ->
+  (* howmany input strides (same length as [howmany]) *) int array ->
+  (* howmany output strides (same length as [howmany]) *) int array
+  -> r2c fftw_plan
+  = "fftw_ocaml_guru_r2c_bc" "fftw_ocaml_guru_r2c"
+
+external guru_c2r :
+  (* in *) 'l complex_array ->
+  (* out *) 'l float_array ->
+  (* flags *) int ->
+  (* input offset *) int ->
+  (* output offset *) int ->
+  (* n (transform LOGICAL dimensions) *) int array ->
+  (* istride (same length as [n]) *) int array ->
+  (* ostride (same length as [n]) *) int array ->
+  (* howmany (multiplicity dimensions) *) int array ->
+  (* howmany input strides (same length as [howmany]) *) int array ->
+  (* howmany output strides (same length as [howmany]) *) int array
+  -> c2r fftw_plan
+  = "fftw_ocaml_guru_c2r_bc" "fftw_ocaml_guru_c2r"
+
+external guru_r2r :
+  (* in *) 'l float_array ->
+  (* out *) 'l float_array ->
+  (* kind (same length as [n]) *) r2r_kind array ->
+  (* flags *) int ->
+  (* input offset *) int ->
+  (* output offset *) int ->
+  (* n (transform dimensions) *) int array ->
+  (* istride (same length as [n]) *) int array ->
+  (* ostride (same length as [n]) *) int array ->
+  (* howmany (multiplicity dimensions) *) int array ->
+  (* howmany input strides (same length as [howmany]) *) int array ->
+  (* howmany output strides (same length as [howmany]) *) int array
+  -> r2r fftw_plan
+  = "fftw_ocaml_guru_r2r_bc" "fftw_ocaml_guru_r2r"
+
+
+(** Plans on the OCaml side
+ ***********************************************************************)
 
 type genarray
 external genarray : (_,_,_) Genarray.t -> genarray = "%identity"
@@ -104,8 +227,8 @@ module Genarray = struct
     int array -> ('a, 'b, 'c) Bigarray.Genarray.t
     = "fftw3_ocaml_ba_create"
 
-  type 'l complex_array = (Complex.t, complex_elt, 'l) Genarray.t
-  type 'l float_array   = (float, float_elt, 'l) Genarray.t
+  type 'l complex_array = (Complex.t, complexXX_elt, 'l) Genarray.t
+  type 'l float_array   = (float, floatXX_elt, 'l) Genarray.t
   type coord = int array
 
   (* Layout independent function *)
@@ -124,10 +247,10 @@ module Genarray = struct
         normalize = nmz;
         normalize_factor = factor;
       } in
-    (if is_c_layout i then Geom.C.apply else Geom.F.apply) name make
+    (if is_c_layout i then Fftw3_geomC.apply else Fftw3_geomF.apply) name make
       hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o ~logical_dims
 
-  let dft_name = FFTW ^ "Genarray.dft"
+  let dft_name =  "$FFTW.Genarray.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
@@ -138,7 +261,7 @@ module Genarray = struct
 
   (* At the moment, in place transforms are not possible but they may
      be if OCaml bug 0004333 is resolved. *)
-  let r2c_name = FFTW ^ "Genarray.r2c"
+  let r2c_name = "$FFTW.Genarray.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
@@ -147,7 +270,7 @@ module Genarray = struct
       (guru_r2c i o (flags meas unaligned preserve_input))
       howmany_n  howmanyi ofsi ?ni inci i  howmanyo ?no ofso inco o  normalize
 
-  let c2r_name = FFTW ^ "Genarray.c2r"
+  let c2r_name = "$FFTW.Genarray.c2r"
   let c2r ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
@@ -156,7 +279,7 @@ module Genarray = struct
       (guru_c2r i o (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o  normalize
 
-  let r2r_name = FFTW ^ "Genarray.r2r"
+  let r2r_name = "$FFTW.Genarray.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
@@ -183,8 +306,8 @@ module Array1 = struct
     ba
 
 
-  type 'l complex_array = (Complex.t, complex_elt, 'l) Array1.t
-  type 'l float_array   = (float, float_elt, 'l) Array1.t
+  type 'l complex_array = (Complex.t, complexXX_elt, 'l) Array1.t
+  type 'l float_array   = (float, floatXX_elt, 'l) Array1.t
 
 
   let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o nmz
@@ -200,7 +323,7 @@ module Array1 = struct
     Genarray.apply name make_plan
       hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  nmz ~logical_dims
 
-  let dft_name = FFTW ^ "Array1.dft"
+  let dft_name = "$FFTW.Array1.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l complex_array)
@@ -211,7 +334,7 @@ module Array1 = struct
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let r2c_name = FFTW ^ "Array1.r2c"
+  let r2c_name = "$FFTW.Array1.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l float_array)
@@ -222,7 +345,7 @@ module Array1 = struct
       (guru_r2c gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
 
-  let c2r_name = FFTW ^ "Array1.c2r"
+  let c2r_name = "$FFTW.Array1.c2r"
   let c2r ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l complex_array)
@@ -233,7 +356,7 @@ module Array1 = struct
       (guru_c2r gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go  normalize
 
-  let r2r_name = FFTW ^ "Array1.r2r"
+  let r2r_name = "$FFTW.Array1.r2r"
   let r2r kind ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l float_array)
@@ -255,8 +378,8 @@ module Array2 = struct
   let create kind layout dim1 dim2 =
     array2_of_ba(Genarray.create kind layout [|dim1; dim2|])
 
-  type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
-  type 'l float_array   = (float, float_elt, 'l) Array2.t
+  type 'l complex_array = (Complex.t, complexXX_elt, 'l) Array2.t
+  type 'l float_array   = (float, floatXX_elt, 'l) Array2.t
   type coord = int * int
 
   let apply name make_plan hm_n  hmi ?ni ofsi (inci1,inci2) i
@@ -272,7 +395,7 @@ module Array2 = struct
     Genarray.apply name make_plan
       hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~logical_dims
 
-  let dft_name = FFTW ^ "Array2.dft"
+  let dft_name = "$FFTW.Array2.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l complex_array)
@@ -283,7 +406,7 @@ module Array2 = struct
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let r2c_name = FFTW ^ "Array2.r2c"
+  let r2c_name = "$FFTW.Array2.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l float_array)
@@ -294,7 +417,7 @@ module Array2 = struct
       (guru_r2c gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let c2r_name = FFTW ^ "Array2.c2r"
+  let c2r_name = "$FFTW.Array2.c2r"
   let c2r ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l complex_array)
@@ -305,7 +428,7 @@ module Array2 = struct
       (guru_c2r gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let r2r_name = FFTW ^ "Array2.r2r"
+  let r2r_name = "$FFTW.Array2.r2r"
   let r2r (kind1,kind2) ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l float_array)
@@ -327,8 +450,8 @@ module Array3 = struct
   let create kind layout dim1 dim2 dim3 =
     array3_of_ba(Genarray.create kind layout [|dim1; dim2; dim3|])
 
-  type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
-  type 'l float_array   = (float, float_elt, 'l) Array3.t
+  type 'l complex_array = (Complex.t, complexXX_elt, 'l) Array3.t
+  type 'l float_array   = (float, floatXX_elt, 'l) Array3.t
   type coord = int * int * int
 
   let apply name make_plan hm_n  hmi ?ni ofsi (inci1,inci2,inci3) i
@@ -344,7 +467,7 @@ module Array3 = struct
     Genarray.apply name make_plan
       hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o  normalize ~logical_dims
 
-  let dft_name = FFTW ^ "Array3.dft"
+  let dft_name = "$FFTW.Array3.dft"
   let dft dir ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l complex_array)
@@ -355,7 +478,7 @@ module Array3 = struct
       (guru_dft gi go (sign_of_dir dir) (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let r2c_name = FFTW ^ "Array3.r2c"
+  let r2c_name = "$FFTW.Array3.r2c"
   let r2c ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l float_array)
@@ -366,7 +489,7 @@ module Array3 = struct
       (guru_r2c gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let c2r_name = FFTW ^ "Array3.c2r"
+  let c2r_name = "$FFTW.Array3.c2r"
   let c2r ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l complex_array)
@@ -377,7 +500,7 @@ module Array3 = struct
       (guru_c2r gi go (flags meas unaligned preserve_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go  normalize
 
-  let r2r_name = FFTW ^ "Array3.r2r"
+  let r2r_name = "$FFTW.Array3.r2r"
   let r2r (kind1,kind2,kind3) ?(meas=Measure) ?(normalize=false)
       ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l float_array)

@@ -16,7 +16,10 @@ config.status
 configure
 Makefile
 src/META
-src/fftw3S_external.ml
+src/fftw3D.ml
+src/fftw3S.ml
+src/fftw3_geomC.ml
+src/fftw3_geomF.ml
 examples/mem
 examples/delta
 examples/henon

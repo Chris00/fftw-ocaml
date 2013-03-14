@@ -1,5 +1,5 @@
 
-PKG_NAME := ocaml-fftw3
+PKG_NAME := @PACKAGE_NAME@
 DISTFILES := LICENSE README.md \
 	bootstrap configure.ac configure Makefile.in OCamlMakefile \
 	src/*.ml src/*.mli src/*.c src/Makefile.in src/META.in \
