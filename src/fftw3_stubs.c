@@ -177,23 +177,36 @@ value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 /* FFTW3 stubs
  ***********************************************************************/
 
+#define FFTW_RAISE_NO_FFTWF
+
 #define FFTW(name) fftw_ ## name
+#define FFTW_OCAML(name) fftw_ocaml_ ## name
 #define FLOAT double
 #define PREC "D"
 #include "fftw3SD_stubs.c"
 #undef PREC
 #undef FLOAT
+#undef FFTW_OCAML
 #undef FFTW
 
 #ifdef FFTW3F_EXISTS
 #define FFTW(name) fftwf_ ## name
+#else
+/* Single precision version not present.  Use the double precision (to
+   type check) but raise an exception when calling any FFTW function */
+#define FFTW(name) fftw_ ## name
+#define FFTW_RAISE_NO_FFTWF \
+  caml_failwith("Fftw3.S: single precision C fftwf library not present")
+#endif /* FFTW3F_EXISTS */
+
+#define FFTW_OCAML(name) fftwf_ocaml_ ## name /* single precision stubs */
 #define FLOAT float
 #define PREC "S"
 #include "fftw3SD_stubs.c"
 #undef PREC
 #undef FLOAT
+#undef FFTW_OCAML
 #undef FFTW
-#endif
 
 /* Wisdom
  ***********************************************************************/

@@ -3,16 +3,16 @@
 #define PLAN_VAL(v) (* (FFTW(plan) *) Data_custom_val(v))
 
 #define ALLOC_PLAN()                                            \
-  alloc_custom(&FFTW(caml_plan_ops), sizeof(FFTW(plan)),        \
+  alloc_custom(&FFTW_OCAML(plan_ops), sizeof(FFTW(plan)),       \
                sizeof(FFTW(plan)), 500 * sizeof(FFTW(plan)))
 
 
-static void FFTW(caml_plan_finalize)(value v)
+static void FFTW_OCAML(plan_finalize)(value v)
 {
   FFTW(destroy_plan)(PLAN_VAL(v));
 }
 
-static int FFTW(caml_plan_compare)(value v1, value v2)
+static int FFTW_OCAML(plan_compare)(value v1, value v2)
 {
   CAMLparam2(v1, v2);
   /* fftw_plan is a pointer, just compare those of v1 and v2 */
@@ -22,7 +22,7 @@ static int FFTW(caml_plan_compare)(value v1, value v2)
 }
 
 /* compare v1 v2 = 0 ==> hash(v1) = hash(v2) */
-static long FFTW(caml_plan_hash)(value plan)
+static long FFTW_OCAML(plan_hash)(value plan)
 {
   CAMLparam1(plan);
   /* We do not know much about the plan internals, just return the
@@ -31,11 +31,11 @@ static long FFTW(caml_plan_hash)(value plan)
 }
 
 
-static struct custom_operations FFTW(caml_plan_ops) = {
+static struct custom_operations FFTW_OCAML(plan_ops) = {
   "fftw3_plan", /* identifier for serialization and deserialization */
-  &(FFTW(caml_plan_finalize)),
-  &(FFTW(caml_plan_compare)),
-  &(FFTW(caml_plan_hash)),
+  &(FFTW_OCAML(plan_finalize)),
+  &(FFTW_OCAML(plan_compare)),
+  &(FFTW_OCAML(plan_hash)),
   custom_serialize_default,
   custom_deserialize_default
 };
@@ -44,29 +44,33 @@ static struct custom_operations FFTW(caml_plan_ops) = {
 /* Executing plans
  ***********************************************************************/
 
-CAMLexport value FFTW(ocaml_execute)(value p)
+CAMLexport value FFTW_OCAML(execute)(value p)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute)(PLAN_VAL(p));
   leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
-CAMLexport value FFTW(ocaml_execute_dft)(value p, value i, value o)
+CAMLexport value FFTW_OCAML(execute_dft)(value p, value i, value o)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
-  FFTW(execute_dft)(PLAN_VAL(p), Data_bigarray_val(i), Data_bigarray_val(o));
+  FFTW(execute_dft)(PLAN_VAL(p), Data_bigarray_val(i),
+                    Data_bigarray_val(o));
   leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
-CAMLexport value FFTW(ocaml_execute_split_dft)(value p,
+CAMLexport value FFTW_OCAML(execute_split_dft)(value p,
                                                value ri, value ii,
                                                value ro, value io)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft)(PLAN_VAL(p),
                           Data_bigarray_val(ri), Data_bigarray_val(ii),
@@ -76,9 +80,10 @@ CAMLexport value FFTW(ocaml_execute_split_dft)(value p,
 }
 
 
-CAMLexport value FFTW(ocaml_execute_dft_r2c)(value p, value i, value o)
+CAMLexport value FFTW_OCAML(execute_dft_r2c)(value p, value i, value o)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_dft_r2c)(PLAN_VAL(p), Data_bigarray_val(i),
                         Data_bigarray_val(o));
@@ -86,11 +91,12 @@ CAMLexport value FFTW(ocaml_execute_dft_r2c)(value p, value i, value o)
   return(Val_unit);
 }
 
-CAMLexport value FFTW(ocaml_execute_split_dft_r2c)(value p,
+CAMLexport value FFTW_OCAML(execute_split_dft_r2c)(value p,
                                                    value i,
                                                    value ro, value io)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft_r2c)(PLAN_VAL(p),
                               Data_bigarray_val(i),
@@ -100,9 +106,10 @@ CAMLexport value FFTW(ocaml_execute_split_dft_r2c)(value p,
 }
 
 
-CAMLexport value FFTW(ocaml_execute_dft_c2r)(value p, value i, value o)
+CAMLexport value FFTW_OCAML(execute_dft_c2r)(value p, value i, value o)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_dft_c2r)(PLAN_VAL(p), Data_bigarray_val(i),
                         Data_bigarray_val(o));
@@ -110,11 +117,12 @@ CAMLexport value FFTW(ocaml_execute_dft_c2r)(value p, value i, value o)
   return(Val_unit);
 }
 
-CAMLexport value FFTW(ocaml_execute_split_dft_c2r)(value p,
+CAMLexport value FFTW_OCAML(execute_split_dft_c2r)(value p,
                                                    value ri, value ii,
                                                    value o)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft_c2r)(PLAN_VAL(p),
                               Data_bigarray_val(ri), Data_bigarray_val(ii),
@@ -124,9 +132,10 @@ CAMLexport value FFTW(ocaml_execute_split_dft_c2r)(value p,
 }
 
 
-CAMLexport value FFTW(ocaml_execute_r2r)(value p, value i, value o)
+CAMLexport value FFTW_OCAML(execute_r2r)(value p, value i, value o)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   FFTW(execute_r2r)(PLAN_VAL(p), Data_bigarray_val(i), Data_bigarray_val(o));
   leave_blocking_section();  /* Disallow other threads */
@@ -138,11 +147,12 @@ CAMLexport value FFTW(ocaml_execute_r2r)(value p, value i, value o)
  ***********************************************************************/
 
 CAMLexport
-value FFTW(ocaml_normalize)(value va, /* array */
+value FFTW_OCAML(normalize)(value va, /* array */
                             value vofs, value vstride, value vdim,
                             value vfactor)
 {
   /* noalloc */
+  FFTW_RAISE_NO_FFTWF;
   FFTW(complex) *a = Data_bigarray_val(va) + Int_val(vofs);
   
   enter_blocking_section();  /* Allow other threads */
@@ -176,7 +186,7 @@ value FFTW(ocaml_normalize)(value va, /* array */
   }
 
 CAMLexport
-value FFTW(ocaml_guru_dft)(value vi, value vo,  value sign, value flags,
+value FFTW_OCAML(guru_dft)(value vi, value vo,  value sign, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
                            value vhowmany, value vhowmanyi, value vhowmanyo)
@@ -190,6 +200,7 @@ value FFTW(ocaml_guru_dft)(value vi, value vo,  value sign, value flags,
   FFTW(complex) *o = Data_bigarray_val(vo);
   MAKE_DIMS();
   
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft)(rank, dims,
                           howmany_rank, howmany_dims,
@@ -205,16 +216,16 @@ value FFTW(ocaml_guru_dft)(value vi, value vo,  value sign, value flags,
 }
 
 CAMLexport
-value FFTW(ocaml_guru_dft_bc)(value * argv, int argn)
+value FFTW_OCAML(guru_dft_bc)(value * argv, int argn)
 {
-  return FFTW(ocaml_guru_dft)(argv[0], argv[1], argv[2], argv[3], argv[4],
+  return FFTW_OCAML(guru_dft)(argv[0], argv[1], argv[2], argv[3], argv[4],
                               argv[5], argv[6], argv[7], argv[8], argv[9],
                               argv[10], argv[11]);
 }
 
 
 CAMLexport
-value FFTW(ocaml_guru_r2c)(value vi, value vo, value flags,
+value FFTW_OCAML(guru_r2c)(value vi, value vo, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
                            value vhowmany, value vhowmanyi, value vhowmanyo)
@@ -228,6 +239,7 @@ value FFTW(ocaml_guru_r2c)(value vi, value vo, value flags,
   FFTW(complex) *o = Data_bigarray_val(vo);
   MAKE_DIMS();
   
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft_r2c)(rank, dims,
                               howmany_rank, howmany_dims,
@@ -243,9 +255,9 @@ value FFTW(ocaml_guru_r2c)(value vi, value vo, value flags,
 }
 
 CAMLexport
-value FFTW(ocaml_guru_r2c_bc)(value * argv, int argn)
+value FFTW_OCAML(guru_r2c_bc)(value * argv, int argn)
 {
-  return FFTW(ocaml_guru_r2c)(argv[0], argv[1], argv[2], argv[3], argv[4],
+  return FFTW_OCAML(guru_r2c)(argv[0], argv[1], argv[2], argv[3], argv[4],
                               argv[5], argv[6], argv[7], argv[8], argv[9],
                               argv[10]);
 }
@@ -253,7 +265,7 @@ value FFTW(ocaml_guru_r2c_bc)(value * argv, int argn)
 
 
 CAMLexport
-value FFTW(ocaml_guru_c2r)(value vi, value vo, value flags,
+value FFTW_OCAML(guru_c2r)(value vi, value vo, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
                            value vhowmany, value vhowmanyi, value vhowmanyo)
@@ -267,6 +279,7 @@ value FFTW(ocaml_guru_c2r)(value vi, value vo, value flags,
   FLOAT *o = Data_bigarray_val(vo);
   MAKE_DIMS();
   
+  FFTW_RAISE_NO_FFTWF;
   enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft_c2r)(rank, dims,
                               howmany_rank, howmany_dims,
@@ -282,16 +295,16 @@ value FFTW(ocaml_guru_c2r)(value vi, value vo, value flags,
 }
 
 CAMLexport
-value FFTW(ocaml_guru_c2r_bc)(value * argv, int argn)
+value FFTW_OCAML(guru_c2r_bc)(value * argv, int argn)
 {
-  return FFTW(ocaml_guru_c2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
+  return FFTW_OCAML(guru_c2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
                               argv[5], argv[6], argv[7], argv[8], argv[9],
                               argv[10]);
 }
 
 
 CAMLexport
-value FFTW(ocaml_guru_r2r)(value vi, value vo, value vkind, value flags,
+value FFTW_OCAML(guru_r2r)(value vi, value vo, value vkind, value flags,
                            value vofsi, value vofso,
                            value vn, value vistride, value vostride,
                            value vhowmany, value vhowmanyi, value vhowmanyo)
@@ -306,6 +319,7 @@ value FFTW(ocaml_guru_r2r)(value vi, value vo, value vkind, value flags,
   FFTW(r2r_kind) kind[MAX_NUM_DIMS];
   MAKE_DIMS();
 
+  FFTW_RAISE_NO_FFTWF;
   for(k = 0; k < rank; k++)
     /* OK because the order of "type r2r_kind" in fftw3SD.ml is in
      * sync with fftw3.h (see configure.ac). */
@@ -326,9 +340,9 @@ value FFTW(ocaml_guru_r2r)(value vi, value vo, value vkind, value flags,
 }
 
 CAMLexport
-value FFTW(ocaml_guru_r2r_bc)(value * argv, int argn)
+value FFTW_OCAML(guru_r2r_bc)(value * argv, int argn)
 {
-  return FFTW(ocaml_guru_r2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
+  return FFTW_OCAML(guru_r2r)(argv[0], argv[1], argv[2], argv[3], argv[4],
                               argv[5], argv[6], argv[7], argv[8], argv[9],
                               argv[10], argv[11]);
 }

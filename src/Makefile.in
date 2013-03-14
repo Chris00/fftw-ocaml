@@ -11,9 +11,6 @@ CLIBS = @CLIBS@
 CFLAGS = @CFLAGS@ @FFTW3F_EXISTS@ @HASH_EXISTS@
 #CFLAGS += -DWANT_DEBUG
 
-# Environment variable passed to camlp4
-export FFTW3F_EXISTS := @FFTW3F_EXISTS@
-
 .PHONY: all byte opt native install uninstall update
 all: @ALL@
 byte: byte-code-library
