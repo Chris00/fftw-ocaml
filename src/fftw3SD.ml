@@ -58,7 +58,7 @@ type 'l float_array   = (float, floatXX_elt, 'l) Genarray.t
  ***********************************************************************)
 
 external normalize :
-  (* array *) (_,_,_) Genarray.t ->
+  (* array (only float & complex) *) (_,_,_) Genarray.t ->
   (* C offset *) int ->
   (* strides *) int array ->
   (* dimensions *) int array ->
@@ -173,7 +173,7 @@ external guru_r2r :
 type genarray
 external genarray : (_,_,_) Genarray.t -> genarray = "%identity"
     (* Since we want the FFT functions to be polymorphic in the layout
-       of the arrays, some back magic is unavoidable.  This one way
+       of the arrays, some black magic is unavoidable.  This one way
        conversion is actually safe, it is the use of [genarray] by C
        functions that must be taken care of. *)
 
@@ -207,10 +207,9 @@ let flags meas unaligned preserve_input : int =
  ***********************************************************************)
 
 let exec p =
-  fftw_exec p.plan;
-(*   if p.normalize then *)
-(*     normalize p.o p.offseto p.strideo p.no p.normalize_factor *)
-;;
+  fftw_exec p.plan
+  (* if p.normalize then *)
+  (*   normalize p.o p.offseto p.strideo p.no p.normalize_factor *)
 
 module Guru = struct
 
@@ -242,7 +241,7 @@ module Genarray = struct
     let make offseti offseto n stridei strideo hm_ni hm_stridei hm_strideo =
       let p = (mk_plan offseti offseto n stridei strideo
                  hm_ni hm_stridei hm_strideo) in
-      let factor = 1. /. (float_of_int(Array.fold_left ( * ) 1 n)) in
+      let factor = sqrt(1. /. (float_of_int(Array.fold_left ( * ) 1 n))) in
       { plan = p;
         i = genarray i;
         offseto = offseto;

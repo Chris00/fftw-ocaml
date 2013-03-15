@@ -146,6 +146,50 @@ CAMLexport value FFTW_OCAML(execute_r2r)(value p, value i, value o)
 /* Normalizing transforms
  ***********************************************************************/
 
+#define NORMALIZE(name, ty)                                             \
+  static void normalize_ ## name(value va,                              \
+                                 int ofs, value vstride, value vdim,    \
+                                 ty factor)                             \
+  {                                                                     \
+    /* noalloc */                                                       \
+    ty *a = Data_bigarray_val(va) + ofs;                                \
+    ty temp;                                                            \
+    int rank = Wosize_val(vstride);                                     \
+    int num_dims = Bigarray_val(v)->num_dims;                           \
+    int stride[MAX_NUM_DIMS], dim[MAX_NUM_DIMS];                        \
+    int i, j, k, e0;                                                    \
+                                                                        \
+    for(k = 0; k < ; k++) {                                             \
+      stride[k] = Int_val(Field(vstride, k));                           \
+      dim[k] = Int_val(Field(vdim, k));                                 \
+    }                                                                   \
+    enter_blocking_section();  /* Allow other threads */                \
+    switch(num_dims) {                                                  \
+      /* FIXME: some dimensions my be used for "howmany" */             \
+    case 1:                                                             \
+      e0 = dim[0] * stride[0];                                          \
+      for(i=0; i < e0; i += stride[0]) {                                \
+        MUL_BY(a[i], factor);                                           \
+      }                                                                 \
+      break;                                                            \
+    case 2:                                                             \
+                                                                        \
+      break;                                                            \
+    default:                                                            \
+      /* FIXME: code missing */                                         \
+      caml_failwith("Fftw3." PREC ": normalize not yet implemented");   \
+    }                                                                   \
+    leave_blocking_section();  /* Disallow other threads */             \
+  }
+
+#define MUL_BY(x, a) x *= a
+NORMALIZE(float, FLOAT)
+#define ASSIGN_MUL(x, a)            \
+  temp = x[0] * a[0] - x[1] * a[1]; \
+  x[1] = x[0] * a[1] + x[1] * a[0]; \
+  x[0] = temp
+NORMALIZE(complex, FFTW(complex))
+
 CAMLexport
 value FFTW_OCAML(normalize)(value va, /* array */
                             value vofs, value vstride, value vdim,
@@ -153,11 +197,19 @@ value FFTW_OCAML(normalize)(value va, /* array */
 {
   /* noalloc */
   FFTW_RAISE_NO_FFTWF;
-  FFTW(complex) *a = Data_bigarray_val(va) + Int_val(vofs);
-  
-  enter_blocking_section();  /* Allow other threads */
-/* FIXME: code missing */
-  leave_blocking_section();  /* Disallow other threads */
+  switch (Bigarray_val(va)->flags & BIGARRAY_KIND_MASK) {
+  case BIGARRAY_FLOAT64:
+  case BIGARRAY_FLOAT32:
+    normalize_float(va, Int_val(vofs), vstride, vdim, Double_val(vfactor));
+    break;
+  case BIGARRAY_COMPLEX64:
+  case BIGARRAY_COMPLEX32:
+    normalize_complex(va, Int_val(vofs), vstride, vdim, vfactor);
+    break;
+  default:
+    caml_failwith("Fftw3." PREC ".normalize: wrong kind of bigarray. "
+                  "Please report this bug.");
+  }
   return(Val_unit);  
 }
 
