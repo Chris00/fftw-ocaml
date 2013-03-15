@@ -208,6 +208,12 @@ module type Sig = sig
 	  not overlap.  Raises {!Fftw3.Sig.Failure} if the plan cannot be
 	  created.
 
+          Note that FFTW computes an unnormalized DFT: computing a
+          forward followed by a backward transform (or vice versa)
+          results in the original array scaled by N, the product of
+          the lofical dimensions [Array.fold_left ( * ) 1 ni
+          = Array.fold_left ( * ) 1 no].
+
 	  - [meas] controls how much time is dedicated to the creation
 	  of the plan.  Default: [Measure].  {b Beware} that, unless
 	  [~meas] is [Estimate], creating a plan requires some trials
@@ -215,7 +221,7 @@ module type Sig = sig
 
 	  - [preserve_input] specifies that an out-of-place transform
 	  must {i not change its input} array.  Default: [true] except for
-	  c2r and HC2R. FIXME: [false] means that... (??)
+	  c2r and HC2R.
 
           - [unaligned] specifies that the algorithm may not impose
           any alignment requirements.  You normally do not need this
@@ -313,7 +319,7 @@ module type Sig = sig
           v}
           one sets: [ofs = [|0; 1|]], [inc = [|2; 2|]] and [howmany =
           [ [|0; 1|] ]].
-      *)
+       *)
 
     val r2c : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
