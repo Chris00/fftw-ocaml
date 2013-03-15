@@ -1,6 +1,6 @@
 
 # Keep the version in sync with src/fftw3.mli
-AC_INIT(ocaml-fftw3, 0.5.3, chris_77@users.sourceforge.net)
+AC_INIT(fftw3-ocaml, 0.5.4, Christophe.Troestler@umons.ac.be)
 
 AC_MSG_RESULT([configuring $PACKAGE_STRING])
 

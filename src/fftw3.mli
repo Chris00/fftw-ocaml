@@ -20,7 +20,7 @@
 (** Interface for FFTW version 3.
 
    @author Christophe Troestler <Christophe.Troestler\@umons.ac.be>
-   @version 0.5.2
+   @version 0.5.4
 *)
 (** We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
@@ -191,7 +191,8 @@ module type Sig = sig
             (therefore the length of such an array of coordinates must
             be equal to the number of dimensions of the matrix). *)
 
-    val dft : dir ->
+    val dft :
+      dir ->
       ?meas:measure -> ?normalize:bool ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
