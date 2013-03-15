@@ -39,7 +39,7 @@ Examples
 --------
 
 Some examples need additional libraries:
-- [Lacaml](http://ocaml.info/home/ocaml_sources.html#toc15)
+- [Lacaml](https://bitbucket.org/mmottl/lacaml)
 - [Gnuplot](http://sourceforge.net/projects/ocaml-gnuplot)
 
 If these are not detected by the configure script, the corresponding
