@@ -1,4 +1,4 @@
-(*pp camlp4o pa_macro.cmo $GNUPLOT_EXISTS *)
+(*pp camlp4o pa_macro.cmo $ARCHIMEDES_EXISTS *)
 (** Fourier Transform of the 2D Henon map orbits.
 
     "A two-dimensional mapping with a strange attractor", M. Hénon,
@@ -9,8 +9,8 @@ open Printf
 open Bigarray
 module FFT = Fftw3.D
 
-IFDEF GNUPLOT_EXISTS THEN
-module G = Gnuplot.Bigarray
+IFDEF ARCHIMEDES_EXISTS THEN
+module A = Archimedes
 ENDIF;;
 
 type mat = c_layout FFT.Array2.float_array
@@ -71,20 +71,23 @@ let () =
   Arg.parse args (fun _ -> raise(Arg.Bad "no anonymous argument")) usage;
 
   let (xy, fftxy) = henon_fft !n in
-  IFDEF GNUPLOT_EXISTS THEN (
+  IFDEF ARCHIMEDES_EXISTS THEN (
     (* Plot the Henon map and its Fourier transform *)
-    let g = G.init G.X ~xsize:1000. ~ysize:500. ~nxsub:2 in
-    G.box g;
-    G.pen g 1;
-    G.xy g (Array2.slice_left xy 0) (Array2.slice_left xy 1) ~style:G.Dots;
-    G.adv g;
-    G.pen g 0;
-    G.box g;
-    G.pen g 1;
-    G.x g (Array2.slice_left fftxy 0) ~label:"fft(x)";
-    G.pen g 3;
-    G.x g (Array2.slice_left fftxy 1) ~label:"fft(y)" ~style:G.Dots;
-    G.close g
+    let vp0 = A.init [] ~w:1000. ~h:500. in
+    let vp = A.Viewport.columns vp0 2 in
+    A.Axes.box vp.(0);
+    A.Viewport.set_mark_size vp.(0) 3.;
+    A.set_color vp.(0) A.Color.red;
+    A.CVec.xy vp.(0) (Array2.slice_left xy 0) (Array2.slice_left xy 1);
+    A.Axes.box vp.(1);
+    A.Viewport.set_mark_size vp.(0) 3.;
+    A.set_color vp.(1) A.Color.red;
+    A.CVec.y vp.(1) (Array2.slice_left fftxy 0) ~style:`Lines
+                    (* ~label:"fft(x)" *);
+    A.set_color vp.(1) A.Color.blue;
+    A.CVec.y vp.(1) (Array2.slice_left fftxy 1) ~style:`Lines
+                    (* ~label:"fft(y)" *);
+    A.close vp0
   ) ELSE (
     (* Output the data into a file *)
     let fh = open_out !fname in

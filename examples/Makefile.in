@@ -4,18 +4,17 @@ export ANNOTATE := yes
 export OCAMLNCFLAGS = -inline 10
 
 export INCDIRS = ../src @INC@
-export LIBS = bigarray fftw3 unix
+export PACKS = bigarray unix
+export LIBS = fftw3
 export LACAML_PATH = @LACAML_PATH@
-export GNUPLOT_PATH = @GNUPLOT_PATH@
+export ARCHIMEDES_PATH = @ARCHIMEDES_PATH@
 
 ifneq ($(strip $(LACAML_PATH)),)
-  export INCDIRS += $(LACAML_PATH)
-  export LIBS += lacaml
+  export PACKS += lacaml
 endif
-ifneq ($(strip $(GNUPLOT_PATH)),)
-  export GNUPLOT_EXISTS=-DGNUPLOT_EXISTS
-  export INCDIRS += $(GNUPLOT_PATH)
-  export LIBS += gnuplot
+ifneq ($(strip $(ARCHIMEDES_PATH)),)
+  export ARCHIMEDES_EXISTS=-DARCHIMEDES_EXISTS
+  export PACKS += archimedes
 else
   export GNUPLOT_EXISTS=
 endif
@@ -56,7 +55,7 @@ ifndef SUBPROJS
   ifneq ($(strip $(LACAML_PATH)),)
     SUBPROJS += mem xcorr
   endif
-  ifneq ($(strip $(GNUPLOT_PATH)),)
+  ifneq ($(strip $(ARCHIMEDES_PATH)),)
     SUBPROJS += chirp
   endif
   export SUBPROJS
@@ -68,10 +67,6 @@ all: @BEST@
 byte: byte-code
 opt: native-code
 
-export OCAMLC		= @OCAMLC@
-export OCAMLOPT		= @OCAMLOPT@
-export OCAMLDEP		= @OCAMLDEP@
-export OCAMLDOC		= @OCAMLDOC@
 export OCAMLFIND	= @OCAMLFIND@
 export OCAMLLIBPATH	= @OCAMLLIBPATH@
 

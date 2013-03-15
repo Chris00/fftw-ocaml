@@ -1,3 +1,4 @@
+(*pp camlp4o pa_macro.cmo $ARCHIMEDES_EXISTS *)
 (* FFT analysis of a "chirp" signal.
 
    Inspired by
@@ -7,9 +8,13 @@
    did not however to avoid this additional dependency.
 *)
 
+open Printf
 open Bigarray
 module FFT = Fftw3.D
-module G = Gnuplot.Bigarray
+
+IFDEF ARCHIMEDES_EXISTS THEN
+module A = Archimedes
+ENDIF;;
 
 type vec = fortran_layout FFT.Array1.complex_array
 
@@ -105,26 +110,27 @@ let () =
   let h = create FFT.complex n in
   Array1.fill h Complex.one;            (* h = [| 1.; ...; 1. |] *)
 
-  let g = G.init G.X ~xsize:1000. ~ysize:800. ~nysub:(n_graphs + 1) in
-  G.box g;
-  G.pen g 1;
-  G.xy g t x;
-  let xk = create FFT.complex (Array1.dim x) in
-  let y_re = create FFT.float (Array1.dim x) in
-  for k = 1 to n_graphs do
-    G.adv g;
-    G.pen g 0;
-    G.box g;
-    (* Modulation by the complex exponential i -> exp(-I*wk*i) *)
-    let wk = 2. *. pi *. float(k-1) /. float n in
-    for i = 1 to Array1.dim x do
-      let theta = -. wk *. float i in
-      xk.{i} <- { Complex.re = x.{i} *. cos theta; im = x.{i} *. sin theta }
+  IFDEF ARCHIMEDES_EXISTS THEN (
+    let vp0 = A.init [] ~w:1000. ~h:800. in
+    let vp = A.Viewport.rows vp0 (n_graphs + 1) in
+    A.Axes.box vp.(0);
+    A.set_color vp.(0) A.Color.red;
+    A.Vec.xy vp.(0) t x ~style:`Lines;
+    let xk = create FFT.complex (Array1.dim x) in
+    let y_re = create FFT.float (Array1.dim x) in
+    for k = 1 to n_graphs do
+      A.Axes.box vp.(k);
+      (* Modulation by the complex exponential i -> exp(-I*wk*i) *)
+      let wk = 2. *. pi *. float(k-1) /. float n in
+      for i = 1 to Array1.dim x do
+        let theta = -. wk *. float i in
+        xk.{i} <- { Complex.re = x.{i} *. cos theta; im = x.{i} *. sin theta }
+      done;
+      (* Filter and display the real part *)
+      let y = filter h xk in
+      for i = 1 to Array1.dim y do y_re.{i} <- y.{i}.Complex.re done;
+      A.set_color vp.(k) A.Color.blue;
+      A.Vec.xy vp.(k) t y_re ~style:`Lines
     done;
-    (* Filter and display the real part *)
-    let y = filter h xk in
-    for i = 1 to Array1.dim y do y_re.{i} <- y.{i}.Complex.re done;
-    G.pen g 3;
-    G.xy g t y_re
-  done;
-  G.close g
+    A.close vp0
+  ) END

@@ -190,8 +190,8 @@ AC_DEFUN([OCAML_LIB],[
 
 OCAML_LIB(lacaml, [LACAML_PATH=$ocaml_lib_path],
 		  [(Some examples will not be compiled.)])
-OCAML_LIB(gnuplot, [GNUPLOT_PATH=$ocaml_lib_path],
-		   [(Examples will not produce graphics.)])
+OCAML_LIB(archimedes, [ARCHIMEDES_PATH=$ocaml_lib_path],
+		      [(Examples will not produce graphics.)])
 
 
 
@@ -228,7 +228,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(FFTW3F_EXISTS)
 AC_SUBST(LACAML_PATH)
-AC_SUBST(GNUPLOT_PATH)
+AC_SUBST(ARCHIMEDES_PATH)
 
 # Finally create the Makefile and samples (read only to avoid changing
 # them by mistake)
