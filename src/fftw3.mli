@@ -44,9 +44,8 @@
     destroys the content of [x] and [y], so only fill them afterwards.
 
     HINT: Plan creation functions like {!Fftw3.Sig.Array1.dft} have
-    many optional arguments for maximum flexibility.  The two
-    important ones are [~meas] and [~normalize].  The other ones can
-    be ignored at first.
+    many optional arguments for maximum flexibility.  The
+    important one is [~meas].  The other ones can be ignored at first.
 *)
 
 
@@ -193,7 +192,7 @@ module type Sig = sig
 
     val dft :
       dir ->
-      ?meas:measure -> ?normalize:bool ->
+      ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -213,11 +212,6 @@ module type Sig = sig
 	  of the plan.  Default: [Measure].  {b Beware} that, unless
 	  [~meas] is [Estimate], creating a plan requires some trials
 	  that will destroy the content of the arrays.
-
-	  - [normalize] if [true], divide the result by sqrt(n), where n
-	  is the size of the FFT vector -- the product of the logical
-	  dimensions.  Forward and Backward normalized transforms are
-	  inverse of each other.  Default: [false].
 
 	  - [preserve_input] specifies that an out-of-place transform
 	  must {i not change its input} array.  Default: [true] except for
@@ -321,7 +315,7 @@ module type Sig = sig
           [ [|0; 1|] ]].
       *)
 
-    val r2c : ?meas:measure -> ?normalize:bool ->
+    val r2c : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -338,7 +332,7 @@ module type Sig = sig
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
 
-    val c2r : ?meas:measure -> ?normalize:bool ->
+    val c2r : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -358,7 +352,7 @@ module type Sig = sig
 	  optional parameters. *)
 
     val r2r : r2r_kind array ->
-      ?meas:measure -> ?normalize:bool ->
+      ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -393,7 +387,7 @@ module type Sig = sig
         (** Double precision float 1D array. *)
 
 
-    val dft : dir -> ?meas:measure -> ?normalize:bool ->
+    val dft : dir -> ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
@@ -404,8 +398,8 @@ module type Sig = sig
       (** [dft dir x y] returns a plan to compute the DFT of [x] and
           store it in [y].
 
-          The parameters [meas], [preserve_input], [unaligned],
-          [normalize] are as for {!Fftw3.Sig.Genarray.dft}.
+          The parameters [meas], [preserve_input], [unaligned]
+          are as for {!Fftw3.Sig.Genarray.dft}.
 
           @param n the logical length of the array.  If not provided, it
           is automatically computed from [ofsi], [inci] and [Array1.dim
@@ -414,7 +408,7 @@ module type Sig = sig
           Remark: If you want to transform several 1D arrays at once,
           use {!Fftw3.Sig.Array2.dft} with [~many:true]. *)
 
-    val r2c : ?meas:measure -> ?normalize:bool ->
+    val r2c : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
@@ -424,7 +418,7 @@ module type Sig = sig
       -> r2c plan
       (** @see {!Fftw3.Sig.Genarray.r2c}. *)
 
-    val c2r : ?meas:measure -> ?normalize:bool ->
+    val c2r : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
@@ -434,7 +428,7 @@ module type Sig = sig
       -> c2r plan
       (** @see {!Fftw3.Sig.Genarray.c2r}. *)
 
-    val r2r : r2r_kind -> ?meas:measure -> ?normalize:bool ->
+    val r2r : r2r_kind -> ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
@@ -460,7 +454,7 @@ module type Sig = sig
         (** Coordinates of emlements of the 2D array. *)
 
     val dft : dir ->
-      ?meas:measure -> ?normalize:bool ->
+      ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -470,7 +464,7 @@ module type Sig = sig
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
-    val r2c : ?meas:measure -> ?normalize:bool ->
+    val r2c : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -480,7 +474,7 @@ module type Sig = sig
       -> r2c plan
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
-    val c2r : ?meas:measure -> ?normalize:bool ->
+    val c2r : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -490,7 +484,7 @@ module type Sig = sig
       -> c2r plan
       (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
-    val r2r : r2r_kind * r2r_kind -> ?meas:measure -> ?normalize:bool ->
+    val r2r : r2r_kind * r2r_kind -> ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -517,7 +511,7 @@ module type Sig = sig
         (** Coordinates of emlements of the 3D array. *)
 
     val dft : dir ->
-      ?meas:measure -> ?normalize:bool ->
+      ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n: int array ->
       ?howmanyi: coord list ->
@@ -527,7 +521,7 @@ module type Sig = sig
       -> c2c plan
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
-    val r2c : ?meas:measure -> ?normalize:bool ->
+    val r2c : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -537,7 +531,7 @@ module type Sig = sig
       -> r2c plan
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
-    val c2r : ?meas:measure -> ?normalize:bool ->
+    val c2r : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
@@ -548,7 +542,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
     val r2r : r2r_kind * r2r_kind * r2r_kind ->
-      ?meas:measure -> ?normalize:bool ->
+      ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
