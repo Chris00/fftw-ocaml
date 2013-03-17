@@ -1,6 +1,8 @@
 Interface to FFTW, version 3
 ============================
 
+[![Build status](https://travis-ci.org/Chris00/fftw-ocaml.png)](https://travis-ci.org/Chris00/fftw-ocaml)
+
 Perquisites
 -----------
 
