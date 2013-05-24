@@ -79,29 +79,28 @@ let get_geom name ofsname ofs incname inc nname n mat =
   and stride = Array.make num_dims 0 in
   (* C: decreasing order of k; FORTRAN: increasing order of k *)
   for FOR_DIM(k, num_dims) do
-          let dimk = Genarray.nth_dim mat k in
-          if n.(k) < 0 then
-            invalid_arg(sprintf "%s: %s.(%i) < 0" name nname k);
-          if ofs.(k) < FIRST_INDEX then
-            invalid_arg(sprintf "%s: %s.(%i) < FIRST_INDEX ($LAYOUT)"
-                                name ofsname k);
-          stride.(!rank) <- inc.(k) * !pdim;
-          if inc.(k) > 0 then (
-            up.(k) <- upper_bound k inc.(k) dimk;
-            offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
-          )
-          else if inc.(k) < 0 then (
-            up.(k) <- upper_bound k (-inc.(k)) dimk;
-            offset := !offset + (up.(k) - FIRST_INDEX) * !pdim;
-          )
-          else ( (* inc.(k) = 0 => dimension ignored for the transform. *)
-            if ofs.(k) > LAST_INDEX(dimk) then
-              invalid_arg(sprintf "%s: %s.(%i) = %i $GE %i ($LAYOUT)"
-                                  name ofsname k ofs.(k) dimk);
-            up.(k) <- ofs.(k);
-            offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
-          );
-          pdim := !pdim * dimk;
+    let dimk = Genarray.nth_dim mat k in
+    if n.(k) < 0 then
+      invalid_arg(sprintf "%s: %s.(%i) < 0" name nname k);
+    if ofs.(k) < FIRST_INDEX then
+      invalid_arg(sprintf "%s: %s.(%i) < FIRST_INDEX ($LAYOUT)" name ofsname k);
+    stride.(!rank) <- inc.(k) * !pdim;
+    if inc.(k) > 0 then (
+      up.(k) <- upper_bound k inc.(k) dimk;
+      offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
+    )
+    else if inc.(k) < 0 then (
+      up.(k) <- upper_bound k (-inc.(k)) dimk;
+      offset := !offset + (up.(k) - FIRST_INDEX) * !pdim;
+    )
+    else ( (* inc.(k) = 0 => dimension ignored for the transform. *)
+      if ofs.(k) > LAST_INDEX(dimk) then
+        invalid_arg(sprintf "%s: %s.(%i) = %i $GE %i ($LAYOUT)"
+                            name ofsname k ofs.(k) dimk);
+      up.(k) <- ofs.(k);
+      offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
+    );
+    pdim := !pdim * dimk;
   done;
   DEBUG{eprintf "DEBUG: %s: n_sub=%s (rank=%i); offset=%i stride=%s\n%!" name
                 (string_of_array n_sub) !rank !offset (string_of_array stride)};
@@ -195,24 +194,24 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
    time.  There may be more input (resp. output) arrays than [i]
    (resp. [o]) but these must have the same dimensions. *)
 let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
-    ~logical_dims =
+          ~logical_dims =
   let num_dims = Genarray.num_dims i in
   if num_dims <> Genarray.num_dims o then
     invalid_arg(name ^ ": input and output arrays do not have the same \
-	NUMBER of dimensions");
+	                NUMBER of dimensions");
   let offseti, ni, stridei, lowi, upi =
     get_geom name "ofsi" ofsi "inci" inci "n" ni i
   and offseto, no, strideo, lowo, upo =
     get_geom name "ofso" ofso "inco" inco "n" no o in
   let n =                               (* or raise invalid_arg *)
     logical_dims ni no
-      (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
-         name (string_of_array ni) (string_of_array no)) in
+                 (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
+                          name (string_of_array ni) (string_of_array no)) in
   let hm_ni, hm_stridei =
     get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  "n" ni lowi upi i
   and hm_no, hm_strideo =
     get_geom_hm name "howmany_n" hm_n "howmanyo" hmo  "n" no lowo upo o  in
   if hm_ni <> hm_no then
     invalid_arg(sprintf "%s: howmany dim input = %s <> howmany dim output = %s"
-                  name (string_of_array hm_ni) (string_of_array hm_no));
+                        name (string_of_array hm_ni) (string_of_array hm_no));
   make_plan offseti offseto n stridei strideo  hm_ni hm_stridei hm_strideo
