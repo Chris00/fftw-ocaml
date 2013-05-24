@@ -15,8 +15,8 @@ SF_WEB		= /home/groups/o/oc/ocaml-fftw/htdocs
 all byte opt native install uninstall:
 	$(MAKE) -C src $@
 
-examples: all
-	$(MAKE) -C examples all
+tests examples: all
+	$(MAKE) -C $@ all
 
 distclean: clean
 	$(MAKE) -C examples clean

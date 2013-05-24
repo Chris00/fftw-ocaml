@@ -235,5 +235,6 @@ AC_SUBST(ARCHIMEDES_PATH)
 AC_CONFIG_FILES([Makefile],[chmod a-w Makefile])
 AC_CONFIG_FILES([src/META],[chmod a-w src/META])
 AC_CONFIG_FILES([src/Makefile],[chmod a-w src/Makefile])
+AC_CONFIG_FILES([tests/Makefile],[chmod a-w tests/Makefile])
 AC_CONFIG_FILES([examples/Makefile],[chmod a-w examples/Makefile])
 AC_OUTPUT

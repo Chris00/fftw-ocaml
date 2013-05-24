@@ -1,0 +1,35 @@
+#							-*-makefile-gmake-*-
+export OCAMLMAKEFILE = ../OCamlMakefile
+export ANNOTATE := yes
+
+export INCDIRS = ../src
+export PACKS = bigarray unix
+export LIBS = fftw3
+
+define PROJ_basic
+  SOURCES = basic.ml
+  RESULT  = basic
+endef
+export PROJ_basic
+
+
+# Use these, if the environment does not define subprojects to handle:
+ifndef SUBPROJS
+  SUBPROJS = basic
+  export SUBPROJS
+endif
+
+
+.PHONY: all byte opt
+all: @BEST@
+byte: byte-code
+opt: native-code
+
+export OCAMLFIND	= @OCAMLFIND@
+export OCAMLLIBPATH	= @OCAMLLIBPATH@
+
+export TRASH += $(wildcard *~)
+
+# Catch-all target will be applied to all subprojects automatically
+%:
+	@$(MAKE) -f $(OCAMLMAKEFILE) subprojs SUBTARGET=$@
