@@ -33,15 +33,17 @@
     easy to change the precision of the FFT sould it be necessary) and
     then use it as
     {[
-      let x = FFT.Array1.create FFT.complex c_layout dim
-      let y = FFT.Array1.create FFT.complex c_layout dim
-      let plan = FFT.Array1.dft FFT.Forward x y
-      (* fill x and y *)
-      FFT.exec plan (* perform the DFT *) 				]}
+      let input  = FFT.Array1.create FFT.complex Bigarray.c_layout dim in
+      let output = FFT.Array1.create FFT.complex Bigarray.c_layout dim in
+      let dft    = FFT.Array1.dft FFT.Forward input output in
+      (* code to initialize input and output arrays here *)
+      FFT.exec dft (* compute the DFT *) 	               	        ]}
     The plan creation function will raise [FFT.Failure] in case of problems.
     The last line can be repeated as many times as needed to compute the
-    FFT of [x] into [y].  {b Beware} that creating the plan usually
-    destroys the content of [x] and [y], so only fill them afterwards.
+    FFT of [input] into [output].
+    {b Beware} that creating the plan ([FFT.Array1.dft])
+    usually destroys the content of [input] and [output], so only fill them
+    afterwards.
 
     HINT: Plan creation functions like {!Fftw3.Sig.Array1.dft} have
     many optional arguments for maximum flexibility.  The
