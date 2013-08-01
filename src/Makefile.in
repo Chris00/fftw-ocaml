@@ -1,5 +1,6 @@
 #							-*-makefile-gmake-*-
-OCAMLMAKEFILE = ../OCamlMakefile
+ROOT = ..
+OCAMLMAKEFILE = $(ROOT)/OCamlMakefile
 ANNOTATE := yes
 #USE_CAMLP4 := yes
 

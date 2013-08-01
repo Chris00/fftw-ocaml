@@ -241,7 +241,7 @@ module type Sig = sig
           layout.)
 
           - [ni] is the array with an entry for each dimension [k]
-          of [i].  [ni.(k)] indicates how many increments [inci.(k)]
+          of [i].  [ni.(k)] indicates how many increments [inci.(k)]
           we want to consider in the dimension [k].  Of course, the
           [ni.(k)] must be small enough so that the the subarrays fits
           in [i], i.e., for all [k], [ofsi.(k) + (ni.(k) - 1)
@@ -257,8 +257,8 @@ module type Sig = sig
 
           - [inci] an array of increments for each (physical)
           dimension of the input array [i].  [inci.(k)] can be
-          negative, indicating that the range [ofsi.(k)] .. [ofsi.(k)
-          + (ni.(k) - 1) abs(inc.(k))] is traversed backward.  This is
+          negative, indicating that the range [ofsi.(k)] .. [ofsi.(k) +
+          (ni.(k) - 1) abs(inc.(k))] is traversed backward.  This is
           the same behavior is as lacaml (LAPACK).  If the increment
           [inci.(k) = 0], that means that the dimension [k] must be
           ignored (i.e. the index in dimension [k] is constant with
