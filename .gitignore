@@ -27,3 +27,4 @@ examples/xcorr
 examples/chirp
 *.tar.gz
 tests/basic
+doc/
