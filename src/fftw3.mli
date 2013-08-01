@@ -424,7 +424,7 @@ module type Sig = sig
       ?howmanyo: int list ->
       ?no: int -> ?ofso: int -> ?inco: int -> 'l complex_array
       -> r2c plan
-      (** @see {!Fftw3.Sig.Genarray.r2c}. *)
+      (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
@@ -434,7 +434,7 @@ module type Sig = sig
       ?howmanyo: int list ->
       ?no: int -> ?ofso: int -> ?inco: int -> 'l float_array
       -> c2r plan
-      (** @see {!Fftw3.Sig.Genarray.c2r}. *)
+      (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
     val r2r : r2r_kind -> ?meas:measure ->
       ?preserve_input:bool -> ?unaligned:bool ->
@@ -444,7 +444,7 @@ module type Sig = sig
       ?howmanyo:int list ->
       ?no:int -> ?ofso:int -> ?inco:int -> 'l float_array
       -> r2r plan
-      (** @see {!Fftw3.Sig.Genarray.r2r}. *)
+      (** See {!Fftw3.Sig.Genarray.r2r}. *)
   end
 
 
