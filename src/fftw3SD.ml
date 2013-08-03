@@ -164,10 +164,10 @@ external guru_r2r :
 
 type genarray
 external genarray : (_,_,_) Genarray.t -> genarray = "%identity"
-    (* Since we want the FFT functions to be polymorphic in the layout
-       of the arrays, some black magic is unavoidable.  This one way
-       conversion is actually safe, it is the use of [genarray] by C
-       functions that must be taken care of. *)
+(* Since we want the FFT functions to be polymorphic in the layout of
+   the arrays, some black magic is unavoidable.  This one way
+   conversion is actually safe, it is the use of [genarray] by C
+   functions that must be taken care of. *)
 
 type 'a plan = {
   plan: 'a fftw_plan;
@@ -233,11 +233,12 @@ module Genarray = struct
         i = genarray i;
         offseto = offseto;
         strideo = strideo;
-        no = n;                         (* LOGICAL dims FIXME: what we want? *)
+        no = n;                       (* LOGICAL dims FIXME: what we want? *)
         o = genarray o;
       } in
-    (if is_c_layout i then Fftw3_geomC.apply else Fftw3_geomF.apply) name make
-      hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o ~logical_dims
+    (if is_c_layout i then Fftw3_geomC.apply else Fftw3_geomF.apply)
+      name make hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o ~logical_dims
+
 
   let dft_name =  "$FFTW.Genarray.dft"
   let dft dir ?(meas=Measure)
