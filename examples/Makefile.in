@@ -15,8 +15,6 @@ endif
 ifneq ($(strip $(ARCHIMEDES_PATH)),)
   export ARCHIMEDES_EXISTS=-DARCHIMEDES_EXISTS
   export PACKS += archimedes
-else
-  export GNUPLOT_EXISTS=
 endif
 
 define PROJ_mem

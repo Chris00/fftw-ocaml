@@ -1,4 +1,4 @@
-(*pp camlp4o pa_macro.cmo $GNUPLOT_EXISTS *)
+(*pp camlp4o pa_macro.cmo $ARCHIMEDES_EXISTS *)
 (** Maximum entropy method.
 
     Example demonstrating the "Maximum Entropy Method" as explained in
@@ -14,8 +14,8 @@ open Bigarray
 open Lacaml.D
 module FFT = Fftw3.D
 
-IFDEF GNUPLOT_EXISTS THEN
-module G = Gnuplot.Bigarray
+IFDEF ARCHIMEDES_EXISTS THEN
+module A = Archimedes
 ENDIF;;
 
 let delta = sqrt epsilon_float
@@ -87,8 +87,8 @@ let mem (consts:vec) n =
     for k = 1 to n do
       let yk = abs_float y.{k} in
       if yk > 0. then begin
-	s := !s +. yk;
-	h := !h +. yk *. log yk; (* y=0 => y *. log y = 0 *)
+        s := !s +. yk;
+        h := !h +. yk *. log yk; (* y=0 => y *. log y = 0 *)
       end
     done;
     (* Given the discussion in Jon D Harrop book, the term [!h] of the
@@ -134,8 +134,8 @@ let mem_harrop (consts: vec) n =
     for k = 1 to n do
       let yk = abs_float y.{k}.Complex.im in
       if yk > 0. then begin
-	s := !s +. yk;
-	h := !h +. yk *. log yk;
+        s := !s +. yk;
+        h := !h +. yk *. log yk;
       end
     done;
     log !s -. !h (* /. !s *)
@@ -193,21 +193,21 @@ let () =
 
   let consts = read_consts (Scanning.from_file !input) in
   let x = mem consts !n in
-  if !output = "" then begin
-    IFDEF GNUPLOT_EXISTS THEN
+  if !output = "" then (
+    IFDEF ARCHIMEDES_EXISTS THEN
       (* Plot the graph of the result, indicating what is extended *)
-      let g = G.init G.X in
-      G.box g;
-      G.pen g 1;
-      G.x g ~n0:(Vec.dim consts) x ~ofsx:(Vec.dim consts);
-      G.pen g 2;
-      G.x g consts;
-      G.close g;
+      let vp = A.init [] in
+      A.Axes.box vp;
+      A.set_color vp A.Color.red;
+      A.Vec.y vp x;
+      A.set_color vp A.Color.blue;
+      A.Vec.y vp consts;
+      A.close vp;
     ELSE
       (* Spit out the result on the standard output *)
       print_vec Format.std_formatter x
     ENDIF
-  end
+  )
   else begin
     let fh = open_out !output in
     fprintf fh "# Maximum Entropy Method (#const=%i, n=%i)\n"
