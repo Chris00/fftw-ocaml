@@ -195,7 +195,7 @@ module type Sig = sig
     val dft :
       dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -221,10 +221,11 @@ module type Sig = sig
 	  [~meas] is [Estimate], creating a plan requires some trials
 	  that will destroy the content of the arrays.
 
-	  - [preserve_input] specifies that an out-of-place transform
-	  must {i not change its input} array.  Overwriting input may
+	  - [destroy_input] specifies that an out-of-place transform
+	  may {i overwrite its input} array.  Overwriting input may
 	  sometimes allow more efficient algorithms to be employed.
-	  Default: [true] except for c2r and HC2R.
+	  Default: [false] (i.e. perserve the content of the input
+	  array) except for c2r and HC2R.
 
           - [unaligned] specifies that the algorithm may not impose
           any alignment requirements.  You normally do not need this
@@ -327,7 +328,7 @@ module type Sig = sig
        *)
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -344,7 +345,7 @@ module type Sig = sig
 	  optional parameters. *)
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -355,8 +356,8 @@ module type Sig = sig
           transform from the complex array [i] to the complex array
           [o].  Note that, by default, executing the plan returned by
           [c2r] destroys the input array [i].  You can use
-          [preserve_input=true] to generate a plan that does not
-          modify [i] at the expense of being slower -- if no such plan
+          [~destroy_input:false] to generate a plan that does not
+          modify [i] at the expense of being slower — if no such plan
           can be created, {!Fftw3.Sig.Failure} is raised.
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
@@ -364,7 +365,7 @@ module type Sig = sig
 
     val r2r : r2r_kind array ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -377,10 +378,11 @@ module type Sig = sig
           [kind.(k)] (you must give as many kinds as there are
           dimensions to the input array [i]).
 
-          Note that the default value of [preserve_input] is [true]
-          but you may want to change it to [false] in case one of the
-          {!r2r_kind} is [HC2R] in order to allow the use of more
-          efficient algorithms.
+          Note that the default value of [destroy_input] is [false]
+          but you may want to change it to [true], especially in case
+          one of the {!r2r_kind} is [HC2R] in order to allow the use
+          of more efficient algorithms.  Try this if
+          {!Fftw3.Sig.Failure} is raised.
 
           See {!Fftw3.Sig.Genarray.dft} for the meaning of optional
           parameters. *)
@@ -404,7 +406,7 @@ module type Sig = sig
 
 
     val dft : dir -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
       ?ni:int -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
@@ -414,7 +416,7 @@ module type Sig = sig
       (** [dft dir x y] returns a plan to compute the DFT of [x] and
           store it in [y].
 
-          The parameters [meas], [preserve_input], [unaligned]
+          The parameters [meas], [destroy_input], [unaligned]
           are as for {!Fftw3.Sig.Genarray.dft}.
 
           @param n the logical length of the array.  If not provided, it
@@ -425,7 +427,7 @@ module type Sig = sig
           use {!Fftw3.Sig.Array2.dft} with [~many:true]. *)
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
       ?ni: int -> ?ofsi: int -> ?inci: int -> 'l float_array ->
@@ -435,7 +437,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
       ?ni: int -> ?ofsi: int -> ?inci: int -> 'l complex_array ->
@@ -445,7 +447,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
     val r2r : r2r_kind -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
       ?ni:int -> ?ofsi:int -> ?inci:int -> 'l float_array ->
@@ -471,7 +473,7 @@ module type Sig = sig
 
     val dft : dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -481,7 +483,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -491,7 +493,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -501,7 +503,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.c2r}. *)
 
     val r2r : r2r_kind * r2r_kind -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -528,7 +530,7 @@ module type Sig = sig
 
     val dft : dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n: int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -538,7 +540,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.dft}. *)
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -548,7 +550,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -559,7 +561,7 @@ module type Sig = sig
 
     val r2r : r2r_kind * r2r_kind * r2r_kind ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->

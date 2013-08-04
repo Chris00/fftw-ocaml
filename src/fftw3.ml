@@ -70,7 +70,7 @@ module type Sig = sig
 
     val dft : dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -79,7 +79,7 @@ module type Sig = sig
       -> c2c plan
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -88,7 +88,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -98,7 +98,7 @@ module type Sig = sig
 
     val r2r : r2r_kind array ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -116,7 +116,7 @@ module type Sig = sig
     type 'l float_array   = (float, float_elt, 'l) Array1.t
 
     val dft : dir -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
       ?ni:int -> ?ofsi:int -> ?inci:int -> 'l complex_array ->
@@ -125,7 +125,7 @@ module type Sig = sig
       -> c2c plan
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
       ?ni: int -> ?ofsi: int -> ?inci: int -> 'l float_array ->
@@ -134,7 +134,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: int list ->
       ?ni: int -> ?ofsi: int -> ?inci: int -> 'l complex_array ->
@@ -143,7 +143,7 @@ module type Sig = sig
       -> c2r plan
 
     val r2r : r2r_kind -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi:int list ->
       ?ni:int -> ?ofsi:int -> ?inci:int -> 'l float_array ->
@@ -161,7 +161,7 @@ module type Sig = sig
 
     val dft : dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -170,7 +170,7 @@ module type Sig = sig
       -> c2c plan
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -179,7 +179,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -188,7 +188,7 @@ module type Sig = sig
       -> c2r plan
 
     val r2r : r2r_kind * r2r_kind -> ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -208,7 +208,7 @@ module type Sig = sig
 
     val dft : dir ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n: int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -217,7 +217,7 @@ module type Sig = sig
       -> c2c plan
 
     val r2c : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
@@ -226,7 +226,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -236,7 +236,7 @@ module type Sig = sig
 
     val r2r : r2r_kind * r2r_kind * r2r_kind ->
       ?meas:measure ->
-      ?preserve_input:bool -> ?unaligned:bool ->
+      ?destroy_input:bool -> ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l float_array ->
