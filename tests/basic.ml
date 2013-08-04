@@ -37,7 +37,7 @@ let () =
   let u = FFT.Array2.create float64 c_layout n0 n1
   and fu = FFT.Array2.create complex64 c_layout n0 (n1/2 + 1) in
   let forward = FFT.Array2.r2c u fu ~meas:FFT.Measure in
-  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure in
+  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure ~preserve_input:false in
   for i = 0 to n0 - 1 do
     for j = 0 to n1 - 1 do
       u.{i, j} <- float(i+j)
@@ -63,7 +63,7 @@ let () =
   let u = FFT.Array2.create float64 fortran_layout n0 n1
   and fu = FFT.Array2.create complex64 fortran_layout (n0/2 + 1) n1 in
   let forward = FFT.Array2.r2c u fu ~meas:FFT.Measure in
-  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure in
+  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure ~preserve_input:false in
   for i = 1 to n0 do
     for j = 1 to n1 do
       u.{i, j} <- float(i+j)

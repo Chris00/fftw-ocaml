@@ -242,7 +242,7 @@ module Genarray = struct
 
   let dft_name =  "$FFTW.Genarray.dft"
   let dft dir ?(meas=Measure)
-      ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
     apply dft_name ~logical_dims:Geom.logical_c2c
@@ -253,7 +253,7 @@ module Genarray = struct
      be if OCaml bug 0004333 is resolved. *)
   let r2c_name = "$FFTW.Genarray.r2c"
   let r2c ?(meas=Measure)
-      ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
     apply r2c_name ~logical_dims:Geom.logical_r2c
@@ -337,7 +337,7 @@ module Array1 = struct
 
   let c2r_name = "$FFTW.Array1.c2r"
   let c2r ?(meas=Measure)
-      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=1) (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=1) (o: 'l float_array) =
     let gi = genarray_of_array1 i
@@ -409,7 +409,7 @@ module Array2 = struct
 
   let c2r_name = "$FFTW.Array2.c2r"
   let c2r ?(meas=Measure)
-      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1)) (o: 'l float_array) =
     let gi = genarray_of_array2 i
@@ -481,7 +481,7 @@ module Array3 = struct
 
   let c2r_name = "$FFTW.Array3.c2r"
   let c2r ?(meas=Measure)
-      ?(preserve_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(preserve_input=false) ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1,1)) (o: 'l float_array) =
     let gi = genarray_of_array3 i
