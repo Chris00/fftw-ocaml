@@ -6,6 +6,7 @@ DISTFILES := LICENSE README.md \
 	examples/*.ml examples/*.txt examples/Makefile.in
 VERSION = @PACKAGE_VERSION@
 PKG_TARBALL = $(PKG_NAME)-$(VERSION).tar.gz
+OPAM_DIR = /tmp/fftw3.$(VERSION)
 
 # Web site locally and on sourceforge:
 SRC_WEB		= web
@@ -27,7 +28,7 @@ pnc:
 	$(MAKE) -C examples -B pnc
 
 
-.PHONY: tar dist doc
+.PHONY: tar dist opam doc
 doc:
 	$(MAKE) -C src htdoc
 	mkdir -p doc
@@ -41,6 +42,16 @@ tar dist:
 	cp -r --preserve --parents $(DISTFILES) $(PKG_NAME)-$(VERSION)
 	tar zcvf $(PKG_TARBALL) $(PKG_NAME)-$(VERSION)
 	$(RM) -rf $(PKG_NAME)-$(VERSION)
+
+opam: tar
+	@mkdir -p $(OPAM_DIR)
+	@cp _opam $(OPAM_DIR)/opam
+	@echo "Binding to the famous Fast Fourier Transform library FFTW" \
+	  > $(OPAM_DIR)/descr
+	@echo "archive: \"\"" > $(OPAM_DIR)/url
+	@echo "checksum: \"`md5sum $(PKG_TARBALL) | cut -d " " -f1`\"" \
+	  >> $(OPAM_DIR)/url
+	@echo "Created $(OPAM_DIR)"
 
 # Release a Sourceforge tarball and publish the HTML doc 
 .PHONY: web upload
