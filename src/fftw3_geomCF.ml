@@ -29,82 +29,85 @@ open Fftw3_utils
 let get_geom name ofsname ofs incname inc nname n mat =
   let num_dims = Genarray.num_dims mat in
   let ofs = match ofs with
-    | Some o ->
-        if Array.length o = num_dims then o
-        else invalid_arg(sprintf "%s: length %s <> %i" name ofsname num_dims)
     | None -> Array.make num_dims FIRST_INDEX
+    | Some o ->
+       if Array.length o <> num_dims then
+         invalid_arg(sprintf "%s: length %s <> %i" name ofsname num_dims);
+       for k = 0 to num_dims - 1 do
+         if o.(k) < FIRST_INDEX then
+           invalid_arg(sprintf "%s: %s.(%i) = %i < FIRST_INDEX ($LAYOUT)"
+                               name ofsname k o.(k));
+       done;
+       o
   and inc = match inc with
-    | Some i ->
-        if Array.length i = num_dims then i
-        else invalid_arg(sprintf "%s: length %s <> %i" name incname num_dims)
     | None -> Array.make num_dims 1
+    | Some i ->
+       if Array.length i <> num_dims then
+         invalid_arg(sprintf "%s: length %s <> %i" name incname num_dims);
+       i
   and n = match n with
+    | None -> Array.make num_dims 0
     | Some n ->
-        if Array.length n = num_dims then n
-        else invalid_arg(sprintf "%s: length %s <> %i" name nname num_dims)
-    | None -> Array.make num_dims 0 in
-  let rank = ref 0 (* Number of dims <> 1 in the transform *)
-  and n_sub = Array.make num_dims 1 (* dimensions of the sub-array *)
-  and up = Array.make num_dims 0 (* greater submatrix corner *) in
-  let set_n_sub v = n_sub.(!rank) <- v; incr rank in
-  (* Return the upper bound for the dimension [k].  Set [n_sub] and
-     increment [rank] if appropriate. *)
-  let upper_bound k abs_inck dimk =
-    if n.(k) = 0 then begin
+       (* FIXME: do we allow to modify [n] or do we want to copy it? *)
+       if Array.length n <> num_dims then
+         invalid_arg(sprintf "%s: length %s <> %i" name nname num_dims);
+       for k = 0 to num_dims - 1 do
+         if n.(k) < 0 then
+           invalid_arg(sprintf "%s: %s.(%i) = %i < 0" name nname k n.(k));
+       done;
+       n in
+  let rank = ref 0 (* Number of dims <> 1 in the transform. *)
+  and up = Array.make num_dims 0 (* submatrix "greater" corner *) in
+  (* Compute the dimensions, rank and offset of the transform. *)
+  let pdim = ref 1 (* product of physical dims > k; FORTRAN: < k *)
+  and offset = ref 0 (* offset for external functions which use C layout *) in
+  for k = C_FORTRAN{num_dims - 1 downto 0, 0 to num_dims - 1} do
+    let dimk = Genarray.nth_dim mat k in
+    let abs_inck = abs inc.(k) in
+    if n.(k) = 0 && abs_inck <> 0 then (
       (* nk = max {n| ofs.(k) + (n-1) * abs inc.(k) <= LAST_INDEX(dimk)} *)
       let nk = 1 + (LAST_INDEX(dimk) - ofs.(k)) / abs_inck in
-      if nk > 1 then set_n_sub nk
+      if nk > 1 then incr rank
       else if nk < 1 then
-        invalid_arg(sprintf "%s: dim %i empty; no n >= 1 s.t. %i\
-	            %+i*(n-1) $LT %i" name k ofs.(k) inc.(k) dimk);
-      ofs.(k) + (nk - 1) * abs_inck;
-    end
-    else if n.(k) > 1 then begin
-      (* n.(k) > 1 is given; bound check.   *)
+        invalid_arg(sprintf "%s: dim %i empty; no n >= 1 s.t. %i + abs(%i)*\
+                             (n-1) $LT %i = dim %i"
+                            name k ofs.(k) inc.(k) dimk k);
+      n.(k) <- nk;
+      up.(k) <- ofs.(k) + (nk - 1) * abs_inck;
+    )
+    else (
+      (* n.(k) >= 1 || inc.(k) = 0; bound check. *)
       let last = ofs.(k) + (n.(k) - 1) * abs_inck in
       if last > LAST_INDEX(dimk) then
-        invalid_arg(sprintf "%s: %s.(%i) + (%s.(%i) - 1) * abs %s.(%i) \
-	                     = %i $GE %i ($LAYOUT) where %s.(%i) = %i \
-                             is the physical dim"
-                            name ofsname k nname k incname k last dimk
-                            nname k n.(k));
-      set_n_sub n.(k);
-      last;
-    end
-    else (* n.(k) = 1 => ignore this dimension (do not incr rank) *)
-      ofs.(k)
-  in
-  let pdim = ref 1 (* product of physical dims > k; FORTRAN: < k *)
-  and offset = ref 0 (* external functions use the C layout *)
-  and stride = Array.make num_dims 0 in
-  (* C: decreasing order of k; FORTRAN: increasing order of k *)
-  for FOR_DIM(k, num_dims) do
-    let dimk = Genarray.nth_dim mat k in
-    if n.(k) < 0 then
-      invalid_arg(sprintf "%s: %s.(%i) < 0" name nname k);
-    if ofs.(k) < FIRST_INDEX then
-      invalid_arg(sprintf "%s: %s.(%i) < FIRST_INDEX ($LAYOUT)" name ofsname k);
-    stride.(!rank) <- inc.(k) * !pdim;
-    if inc.(k) > 0 then (
-      up.(k) <- upper_bound k inc.(k) dimk;
-      offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
-    )
-    else if inc.(k) < 0 then (
-      up.(k) <- upper_bound k (-inc.(k)) dimk;
-      offset := !offset + (up.(k) - FIRST_INDEX) * !pdim;
-    )
-    else ( (* inc.(k) = 0 => dimension ignored for the transform. *)
-      if ofs.(k) > LAST_INDEX(dimk) then
-        invalid_arg(sprintf "%s: %s.(%i) = %i $GE %i ($LAYOUT)"
-                            name ofsname k ofs.(k) dimk);
-      up.(k) <- ofs.(k);
-      offset := !offset + (ofs.(k) - FIRST_INDEX) * !pdim;
+        invalid_arg (sprintf "%s: %s.(%i) + (%s.(%i) - 1) * abs %s.(%i) = %i \
+                              $GE %i ($LAYOUT) where %s.(%i) = %i, %s.(%i) = %i"
+                             name ofsname k nname k incname k last dimk
+                             nname k n.(k) incname k inc.(k));
+      if last <> ofs.(k) then incr rank;
+      up.(k) <- last;
     );
+    let start = if inc.(k) >= 0 then ofs.(k) else up.(k) in
+    offset := !offset + (start - FIRST_INDEX) * !pdim;
     pdim := !pdim * dimk;
   done;
-  DEBUG{eprintf "DEBUG: %s: n_sub=%s (rank=%i); offset=%i stride=%s\n%!" name
-                (string_of_array n_sub) !rank !offset (string_of_array stride)};
-  !offset, (Array.sub n_sub 0 !rank), stride, ofs, up
+  (* [n_sub] and [stride] are for the C stubs (C layout) and do not
+     take into account dimensions [n.(k) = 1]. *)
+  let n_sub = Array.make !rank 0
+  and stride = Array.make !rank 0 in
+  let d = ref(!rank - 1) in
+  let pdim = ref 1 (* product of physical dims > k; FORTRAN: < k *) in
+  for k = C_FORTRAN{num_dims - 1 downto 0, 0 to num_dims - 1} do
+    if n.(k) > 1 && inc.(k) <> 0 then (
+      n_sub.(!d) <- n.(k);
+      stride.(!d) <- inc.(k) * !pdim;
+      decr d;
+    );
+    pdim := !pdim * Genarray.nth_dim mat k;
+  done;
+  DEBUG{eprintf "DEBUG: %s: %s=%s rank=%i offset=%i n_sub=%s stride=%s\n%!"
+                name nname (string_of_array n) !rank !offset
+                (string_of_array n_sub) (string_of_array stride)};
+  !offset, n_sub, stride, ofs, up
 ;;
 
 (** [only_ones d] tells whether [d] entries are all [1] -- which is in
@@ -152,7 +155,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
       if hm_n.(i) = 0 then (
         (* Dimension for [i]th "howmany vector" [v] to determine *)
         let ni = ref max_int in
-        for FOR_HM(k, num_dims) do
+        for k = C_FORTRAN{0 to num_dims - 1, num_dims - 1 downto 0} do
                let dimk = Genarray.nth_dim mat k in
                if v.(k) > 0 then
                  (* max{j | up.(k) + v.(k)*(j-1) <= LAST_INDEX(dimk)} *)
@@ -166,7 +169,7 @@ let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
       )
       else (
         (* dimension [hm_n.(i)] provided; bound check *)
-        for FOR_HM(k, num_dims) do
+        for k = C_FORTRAN{0 to num_dims - 1, num_dims - 1 downto 0} do
                let dimk = Genarray.nth_dim mat k in
                if (v.(k) > 0 && up.(k) + v.(k)*(hm_n.(i)-1) > LAST_INDEX(dimk))
                  || (v.(k) < 0 && low.(k) + v.(k)*(hm_n.(i)-1) < FIRST_INDEX)
@@ -200,9 +203,9 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
     invalid_arg(name ^ ": input and output arrays do not have the same \
 	                NUMBER of dimensions");
   let offseti, ni, stridei, lowi, upi =
-    get_geom name "ofsi" ofsi "inci" inci "n" ni i
+    get_geom name "ofsi" ofsi "inci" inci "ni" ni i
   and offseto, no, strideo, lowo, upo =
-    get_geom name "ofso" ofso "inco" inco "n" no o in
+    get_geom name "ofso" ofso "inco" inco "no" no o in
   let n =                               (* or raise invalid_arg *)
     logical_dims ni no
                  (sprintf "%s: dim input = %s incompatible with dim ouput = %s"

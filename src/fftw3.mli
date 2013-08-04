@@ -240,17 +240,19 @@ module type Sig = sig
           the same regardless of whether the matrix has a C or FORTRAN
           layout.)
 
-          - [ni] is the array with an entry for each dimension [k]
-          of [i].  [ni.(k)] indicates how many increments [inci.(k)]
-          we want to consider in the dimension [k].  Of course, the
+          - [ni] is the array with an entry for each dimension [k] of
+          [i].  [ni.(k)] indicates how many increments [inci.(k)] we
+          want to consider in the dimension [k].  Of course, the
           [ni.(k)] must be small enough so that the the subarrays fits
           in [i], i.e., for all [k], [ofsi.(k) + (ni.(k) - 1)
-          abs(inc.(k))] must be [< dim i k] (c_layout) or [<= dim i k]
+          abs(inci.(k))] must be [< dim i k] (c_layout) or [<= dim i k]
           (fortran_layout).  If [ni.(k) = 0], it means that we want
           the larger dimension [ni.(k)] that the choice of [ofsi.(k)]
-          and [inci.(k)] allow.  Note that [ni.(k) = 1] means that the
-          direction [k] is to be ignored (i.e. the [k]th index is
-          constant with value [ofsi.(k)]).
+          and [inci.(k)] allow.  In this case, [ni.(k)] will be {i
+          overwritten} with the dimension that was automatically
+          determined.  Note that [ni.(k) = 1] means that the direction
+          [k] is to be ignored (i.e. the [k]th index is constant with
+          value [ofsi.(k)]).
 
           - [ofsi] the initial element in the input array.  Default:
           [[|0;...;0|]] for c_layout and [[|1;...;1|]] for fortran_layout.
@@ -307,8 +309,8 @@ module type Sig = sig
           - [howmanyi] is a list of vectors [[v1;...;vp]] generating
           the lattice of multiple arrays.  In other words, if [a] is
           an element of (vector) index [k] in the "first" array, then
-          the same element in the other arrays is at indexes [k + i1 *
-          v1 + ... + ip * vp].
+          the same element in the other arrays is at indices [k + i₁ *
+          v1 + ... + iₚ * vp].
 
           - [howmanyo] same as [howmanyi] but for output.
 
@@ -332,10 +334,10 @@ module type Sig = sig
       ?no: coord -> ?ofso: coord -> ?inco: coord -> 'l complex_array
       -> r2c plan
       (** [r2c i o] returns a plan for computing the {i forward}
-          transform from the real array [i] to the complex array [o].
+          transform from the real array [i] to the complex array [o].
           Note that the last (for the C layout, or first for the
           fortran layout) dimension of [o] must be d/2+1 where d
-          denotes the last dimension of [i].
+          denotes the last dimension of [i].
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)

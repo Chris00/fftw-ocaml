@@ -46,15 +46,13 @@ let () =
              "\\$FFTW", "Fftw3.S"]
 
 let () =
-  let for_dim = "FOR_DIM(\\([a-z0-9_]+\\), *\\([a-z0-9_]+\\))" in
-  let for_hm =  "FOR_HM(\\([a-z0-9_]+\\), *\\([a-z0-9_]+\\))" in
-  let debug = "DEBUG{\\([^}]+\\)};", if debug then "\\1" else "" in
+  let c_fortran = "C_FORTRAN{\\([^,}]*\\), *\\([^}]*\\)}" in
+  let debug = "DEBUG{\\([^}]+\\)};", if debug then "\\1;" else "" in
   transform "fftw3_geomCF.ml" "fftw3_geomC.ml"
             ["\\$LAYOUT", "c_layout";
              "FIRST_INDEX", "0";
              "LAST_INDEX(\\([a-z0-9]+\\))", "\\1 - 1";
-             for_dim, "\\1 = \\2 - 1 downto 0 "; (* do ... done *)
-             for_hm,  "\\1 = 0 to \\2 - 1 ";
+             c_fortran, "\\1";
              "\\$LT", "<";
              "\\$GE", ">=";
              debug];
@@ -62,8 +60,7 @@ let () =
             ["\\$LAYOUT", "fortran_layout";
              "FIRST_INDEX", "1";
              "LAST_INDEX(\\([a-z0-9]+\\))", "\\1";
-             for_dim, "\\1 = 0 to \\2 - 1 ";
-             for_hm, "\\1 = \\2 - 1 downto 0 ";
+             c_fortran, "\\2";
              "\\$LT", "<=";
              "\\$GE", ">";
              debug]
