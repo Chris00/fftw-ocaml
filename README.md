@@ -7,7 +7,8 @@ Perquisites
 -----------
 
 The FFTW, version 3, with its development files (``fftw3.h``) must be
-installed on your platform.
+installed on your platform.  For example, on Debian or Ubuntu, you
+need to install the package ``libfftw3-dev``.
 
 
 Compilation
