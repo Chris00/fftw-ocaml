@@ -179,7 +179,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?destroy_input:bool -> ?unaligned:bool ->
+      ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -226,7 +226,7 @@ module type Sig = sig
       -> r2c plan
 
     val c2r : ?meas:measure ->
-      ?destroy_input:bool -> ?unaligned:bool ->
+      ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->

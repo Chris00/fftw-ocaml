@@ -183,7 +183,7 @@ let sign_of_dir = function
   | Backward -> 1
 
 (* WARNING: keep in sync with fftw3.h *)
-let flags meas unaligned destroy_input : int =
+let flags meas unaligned ~destroy_input : int =
   let f = match meas with
     | Measure -> 0 (* 0U *)
     | Exhaustive -> 8 (* 1U lsl 3 *)
@@ -409,13 +409,13 @@ module Array2 = struct
 
   let c2r_name = "$FFTW.Array2.c2r"
   let c2r ?(meas=Measure)
-      ?(destroy_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1)) (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1)) (o: 'l float_array) =
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
     apply c2r_name ~logical_dims:Geom.logical_c2r
-      (guru_c2r gi go (flags meas unaligned destroy_input))
+      (guru_c2r gi go (flags meas unaligned ~destroy_input:true))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let r2r_name = "$FFTW.Array2.r2r"
@@ -481,13 +481,13 @@ module Array3 = struct
 
   let c2r_name = "$FFTW.Array3.c2r"
   let c2r ?(meas=Measure)
-      ?(destroy_input=true) ?(unaligned=false) ?(howmany_n=[| |])
+      ?(unaligned=false) ?(howmany_n=[| |])
       ?(howmanyi=[]) ?ni ?ofsi ?(inci=(1,1,1)) (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?(inco=(1,1,1)) (o: 'l float_array) =
     let gi = genarray_of_array3 i
     and go = genarray_of_array3 o in
     apply c2r_name ~logical_dims:Geom.logical_c2r
-      (guru_c2r gi go (flags meas unaligned destroy_input))
+      (guru_c2r gi go (flags meas unaligned ~destroy_input:true))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let r2r_name = "$FFTW.Array3.r2r"

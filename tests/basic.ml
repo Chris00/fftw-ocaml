@@ -37,14 +37,14 @@ let () =
   let u = FFT.Array2.create float64 c_layout n0 n1
   and fu = FFT.Array2.create complex64 c_layout n0 (n1/2 + 1) in
   let forward = FFT.Array2.r2c u fu ~meas:FFT.Measure in
-  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure ~destroy_input:true in
+  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure in
   for i = 0 to n0 - 1 do
     for j = 0 to n1 - 1 do
       u.{i, j} <- float(i+j)
     done
   done;
   FFT.exec forward;
-  FFT.exec backward;
+  FFT.exec backward;  (* destroys input *)
   (* [u] must be multiplied by n0 * n1 *)
   for i = 0 to n0 - 1 do
     for j = 0 to n1 - 1 do
@@ -63,14 +63,14 @@ let () =
   let u = FFT.Array2.create float64 fortran_layout n0 n1
   and fu = FFT.Array2.create complex64 fortran_layout (n0/2 + 1) n1 in
   let forward = FFT.Array2.r2c u fu ~meas:FFT.Measure in
-  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure ~destroy_input:true in
+  let backward = FFT.Array2.c2r fu u ~meas:FFT.Measure in
   for i = 1 to n0 do
     for j = 1 to n1 do
       u.{i, j} <- float(i+j)
     done
   done;
   FFT.exec forward;
-  FFT.exec backward;
+  FFT.exec backward;  (* destroys input *)
   (* [u] must be multiplied by d² *)
   for i = 1 to n0 do
     for j = 1 to n1 do

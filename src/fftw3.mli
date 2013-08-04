@@ -77,7 +77,7 @@ module type Sig = sig
   type c2r     (** [c2r plan] complex to real transform *)
   type r2r     (** [r2r plan] real to real transform *)
 
-  (** Direction of the transform -- see the FFTW manual. *)
+  (** Direction of the transform — see the FFTW manual. *)
   type dir = Forward | Backward
 
   (** Planning-rigor flags. *)
@@ -135,7 +135,7 @@ module type Sig = sig
   (** Guru execution of plans.
 
       If you want to transform other arrays than those specified in the
-      plan, you are advised to create a new plan -- it won't be too
+      plan, you are advised to create a new plan — it won't be too
       expensive if the wisdom can be reused.  To transform a known bunch
       of arrays of the same size, you should {b not} use the following
       functions but instead create a plan with [?howmany] set
@@ -357,8 +357,9 @@ module type Sig = sig
           [o].  Note that, by default, executing the plan returned by
           [c2r] destroys the input array [i].  You can use
           [~destroy_input:false] to generate a plan that does not
-          modify [i] at the expense of being slower — if no such plan
-          can be created, {!Fftw3.Sig.Failure} is raised.
+          modify [i] at the expense of being slower — it is only possible
+          in 1D and if no such plan can be created, {!Fftw3.Sig.Failure}
+          is raised.
 
 	  See {!Fftw3.Sig.Genarray.dft} for the meaning of the other
 	  optional parameters. *)
@@ -493,7 +494,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
-      ?destroy_input:bool -> ?unaligned:bool ->
+      ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
@@ -550,7 +551,7 @@ module type Sig = sig
       (** See {!Fftw3.Sig.Genarray.r2c}. *)
 
     val c2r : ?meas:measure ->
-      ?destroy_input:bool -> ?unaligned:bool ->
+      ?unaligned:bool ->
       ?howmany_n:int array ->
       ?howmanyi: coord list ->
       ?ni: coord -> ?ofsi: coord -> ?inci: coord -> 'l complex_array ->
