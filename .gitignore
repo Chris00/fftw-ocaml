@@ -28,3 +28,4 @@ examples/chirp
 *.tar.gz
 tests/basic
 doc/
+opam

@@ -1,5 +1,5 @@
 # Specifications for the OCaml Fftw3 library                    -*-conf-*-
-name="Fftw3"
+name="fftw3"
 version="@PACKAGE_VERSION@"
 description="OCaml FFTW3 interface"
 requires="bigarray"
