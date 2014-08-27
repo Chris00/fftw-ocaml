@@ -65,7 +65,7 @@ let get_geom name ofsname ofs incname inc nname n mat =
     let dimk = Genarray.nth_dim mat k in
     let abs_inck = abs inc.(k) in
     if n.(k) = 0 && abs_inck <> 0 then (
-      (* nk = max {n| ofs.(k) + (n-1) * abs inc.(k) <= LAST_INDEX(dimk)} *)
+      (* nk = max {n | ofs.(k) + (n-1) * abs inc.(k) <= LAST_INDEX(dimk)} *)
       let nk = 1 + (LAST_INDEX(dimk) - ofs.(k)) / abs_inck in
       if nk > 1 then incr rank
       else if nk < 1 then
