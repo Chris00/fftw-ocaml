@@ -13,6 +13,9 @@ build: [
 remove: [
   ["ocamlfind" "remove" "fftw3"]
 ]
+#libraries: [ "fftw3" ]
+#dev-repo: "https://github.com/Chris00/fftw-ocaml.git"
+#bug-reports: "https://github.com/Chris00/fftw-ocaml/issues"
 build-doc: [ make "doc" ]
 depends: ["ocamlfind"]
 depopts: ["archimedes" "lacaml"]
