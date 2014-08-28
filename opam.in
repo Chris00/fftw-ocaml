@@ -1,5 +1,5 @@
 opam-version: "1"
-name: "fftw3"
+name: "@PACKAGE_NAME@"
 version: "@PACKAGE_VERSION@"
 authors: ["Christophe Troestler <Christophe.Troestler@umons.ac.be>"]
 maintainer: "Christophe.Troestler@umons.ac.be"
