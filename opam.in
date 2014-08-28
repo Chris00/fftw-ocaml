@@ -20,4 +20,5 @@ depexts: [
   [ [ "debian"  ] [ "libfftw3-dev" ] ]
   [ [ "freebsd" ] [ "math/fftw3" ] ]
   [ [ "openbsd" ] [ "math/fftw3" ] ]
+  [ [ "osx" "homebrew" ] [ "fftw" ] ]
 ]
