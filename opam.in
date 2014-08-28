@@ -20,6 +20,7 @@ build-doc: [ make "doc" ]
 depends: ["ocamlfind"]
 depopts: ["archimedes" "lacaml"]
 depexts: [
+  [ [ "ubuntu"  ] [ "libfftw3-dev" ] ]
   [ [ "debian"  ] [ "libfftw3-dev" ] ]
   [ [ "freebsd" ] [ "math/fftw3" ] ]
   [ [ "openbsd" ] [ "math/fftw3" ] ]
