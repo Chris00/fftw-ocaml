@@ -34,6 +34,15 @@ OCAMLBIN=`dirname $OCAMLC`
 # Ocaml version number and library path
 OCAML_VERSION=`$OCAMLC -version`
 echo "ocaml version is $OCAML_VERSION"
+
+OCAML_VERSION_MAJOR=`echo $OCAML_VERSION | cut -d . -f 1`
+OCAML_VERSION_MINOR=`echo $OCAML_VERSION | cut -d . -f 2`
+
+if test $OCAML_VERSION_MAJOR -gt 4 -o "(" $OCAML_VERSION_MAJOR -eq 4 -a $OCAML_VERSION_MINOR -ge 2 ")"; then
+   AC_MSG_RESULT(Enable safe-string);
+   OCAMLFLAGS=" -safe-string"
+fi
+
 OCAMLLIBPATH=`$OCAMLC -where`
 echo "ocaml library path is $OCAMLLIBPATH"
 
@@ -214,6 +223,7 @@ AC_SUBST(OCAML_VERSION)
 AC_SUBST(HASH_EXISTS)
 AC_SUBST(OCAMLLIBPATH)
 AC_SUBST(OCAMLBIN)
+AC_SUBST(OCAMLFLAGS)
 AC_SUBST(OCAMLDOC)
 AC_SUBST(OCAMLFIND)
 AC_SUBST(OCAMLFIND_LDCONF)
