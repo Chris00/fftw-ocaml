@@ -1,7 +1,8 @@
 
 PKG_NAME := ocaml-@PACKAGE_NAME@
 DISTFILES := LICENSE README.md \
-	bootstrap configure.ac configure Makefile.in opam.in OCamlMakefile \
+	bootstrap configure.ac configure Makefile.in opam/opam.in \
+	OCamlMakefile \
 	src/*.ml src/*.mli src/*.c src/Makefile.in src/META.in \
 	examples/*.ml examples/*.txt examples/Makefile.in \
 	tests/*.ml tests/Makefile.in
@@ -46,9 +47,7 @@ tar dist:
 
 opam: tar
 	@mkdir -p $(OPAM_DIR)
-	@cp _opam $(OPAM_DIR)/opam
-	@echo "Binding to the famous Fast Fourier Transform library FFTW" \
-	  > $(OPAM_DIR)/descr
+	@cp opam/opam opam/descr opam/findlib $(OPAM_DIR)/
 	@echo "archive: \"\"" > $(OPAM_DIR)/url
 	@echo "checksum: \"`md5sum $(PKG_TARBALL) | cut -d " " -f1`\"" \
 	  >> $(OPAM_DIR)/url

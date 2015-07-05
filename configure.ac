@@ -241,7 +241,7 @@ AC_SUBST(ARCHIMEDES_PATH)
 
 # Finally create the Makefile and samples (read only to avoid changing
 # them by mistake)
-AC_CONFIG_FILES([opam],[chmod a-w opam])
+AC_CONFIG_FILES([opam/opam],[chmod a-w opam/opam])
 AC_CONFIG_FILES([Makefile],[chmod a-w Makefile])
 AC_CONFIG_FILES([src/META],[chmod a-w src/META])
 AC_CONFIG_FILES([src/Makefile],[chmod a-w src/Makefile])
