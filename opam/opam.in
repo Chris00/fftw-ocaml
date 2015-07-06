@@ -17,6 +17,8 @@ build: [
       "--includedir=%{lib}%/fftw3/include"
       "--datarootdir=%{lib}%/fftw3/share"]
   [make]
+]
+install: [
   [make "install"]
 ]
 remove: [
