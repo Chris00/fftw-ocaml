@@ -1,3 +1,8 @@
+#include <stdint.h>
+typedef uint32_t uint32;
+typedef int32_t  int32;
+typedef int64_t  int64;
+
 /* Verbatim copy of functions in "bigarray_stubs.c" of the OCaml
    distribution that are needed for the specially allocated fftw
    arrays (not defined here).  Everything must be declared
