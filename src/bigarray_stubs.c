@@ -1,7 +1,11 @@
+#ifdef CAML_GENERIC_TYPES
+
 #include <stdint.h>
 typedef uint32_t uint32;
 typedef int32_t  int32;
 typedef int64_t  int64;
+
+#endif // CAML_GENERIC_TYPES
 
 /* Verbatim copy of functions in "bigarray_stubs.c" of the OCaml
    distribution that are needed for the specially allocated fftw
