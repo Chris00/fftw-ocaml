@@ -1,2 +1,14 @@
 language: c
+sudo: false
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - ocaml
+    - ocaml-native-compilers
+    - opam
+    - libfftw3-dev
+    - liblapack-dev
+
 script: bash -ex travis-ci.sh
