@@ -30,6 +30,7 @@ depends: [
   "archimedes" {test}
   "lacaml" {test}
 ]
+available: [ ocaml-version >= "3.12.1" ]
 depexts: [
   [ [ "ubuntu"  ] [ "libfftw3-dev" ] ]
   [ [ "debian"  ] [ "libfftw3-dev" ] ]
