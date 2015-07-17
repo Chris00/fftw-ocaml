@@ -16,7 +16,7 @@ CAMLextern int caml_compare_unordered;
 #endif /* SIZEOF_BA_ARRAY */
 
 
-static uintnat caml_ba_num_elts(struct caml_bigarray * b)
+static uintnat caml_ba_num_elts(struct caml_ba_array * b)
 {
   uintnat num_elts;
   int i;
@@ -127,6 +127,10 @@ static int caml_ba_compare(value v1, value v2)
     num_elts *= 2; /*fallthrough*/
   case CAML_BA_FLOAT64:
     DO_FLOAT_COMPARISON(double);
+#ifdef CAML_BA_CHAR
+  case CAML_BA_CHAR:
+    DO_INTEGER_COMPARISON(uint8);
+#endif
   case CAML_BA_SINT8:
     DO_INTEGER_COMPARISON(int8);
   case CAML_BA_UINT8:
@@ -136,22 +140,9 @@ static int caml_ba_compare(value v1, value v2)
   case CAML_BA_UINT16:
     DO_INTEGER_COMPARISON(uint16);
   case CAML_BA_INT32:
-    DO_INTEGER_COMPARISON(int32);
+    DO_INTEGER_COMPARISON(int32_t);
   case CAML_BA_INT64:
-#ifdef ARCH_INT64_TYPE
-    DO_INTEGER_COMPARISON(int64);
-#else
-    { int64 * p1 = b1->data; int64 * p2 = b2->data;
-      for (n = 0; n < num_elts; n++) {
-        int64 e1 = *p1++; int64 e2 = *p2++;
-        if ((int32)e1.h > (int32)e2.h) return 1;
-        if ((int32)e1.h < (int32)e2.h) return -1;
-        if (e1.l > e2.l) return 1;
-        if (e1.l < e2.l) return -1;
-      }
-      return 0;
-    }
-#endif
+    DO_INTEGER_COMPARISON(int64_t);
   case CAML_BA_CAML_INT:
   case CAML_BA_NATIVE_INT:
     DO_INTEGER_COMPARISON(intnat);
@@ -172,7 +163,7 @@ static intnat caml_ba_hash(value v)
 {
   struct caml_ba_array * b = Caml_ba_array_val(v);
   intnat num_elts, n;
-  uint32 h, w;
+  uint32_t h, w;
   int i;
 
   num_elts = 1;
@@ -180,6 +171,9 @@ static intnat caml_ba_hash(value v)
   h = 0;
 
   switch (b->flags & CAML_BA_KIND_MASK) {
+#ifdef CAML_BA_CHAR
+  case CAML_BA_CHAR:
+#endif
   case CAML_BA_SINT8:
   case CAML_BA_UINT8: {
     uint8 * p = b->data;
@@ -211,7 +205,7 @@ static intnat caml_ba_hash(value v)
   }
   case CAML_BA_INT32:
   {
-    uint32 * p = b->data;
+    uint32_t * p = b->data;
     if (num_elts > 64) num_elts = 64;
     for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_uint32(h, *p);
     break;
@@ -226,7 +220,7 @@ static intnat caml_ba_hash(value v)
   }
   case CAML_BA_INT64:
   {
-    int64 * p = b->data;
+    int64_t * p = b->data;
     if (num_elts > 32) num_elts = 32;
     for (n = 0; n < num_elts; n++, p++) h = caml_hash_mix_int64(h, *p);
     break;
@@ -343,7 +337,7 @@ static void caml_ba_serialize_longarray(void * data,
   } else {
     caml_serialize_int_1(0);
     for (n = 0, p = data; n < num_elts; n++, p++)
-      caml_serialize_int_4((int32) *p);
+      caml_serialize_int_4((int32_t) *p);
   }
 #else
   caml_serialize_int_1(0);
@@ -372,6 +366,9 @@ static void caml_ba_serialize(value v,
   for (i = 0; i < b->num_dims; i++) num_elts = num_elts * b->dim[i];
   /* Serialize elements */
   switch (b->flags & CAML_BA_KIND_MASK) {
+#ifdef CAML_BA_CHAR
+  case CAML_BA_CHAR:
+#endif
   case CAML_BA_SINT8:
   case CAML_BA_UINT8:
     caml_serialize_block_1(b->data, num_elts); break;

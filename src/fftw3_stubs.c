@@ -35,6 +35,23 @@
 #define Assert(b) assert(b)
 #include <string.h>
 
+/* From recent config.h in OCaml sources. */
+#ifndef HAS_STDINT_H
+#ifndef ARCH_INT32_TYPE
+#if SIZEOF_INT == 4
+#define ARCH_UINT32_TYPE unsigned int
+#elif SIZEOF_LONG == 4
+#define ARCH_UINT32_TYPE unsigned long
+#elif SIZEOF_SHORT == 4
+#define ARCH_UINT32_TYPE unsigned short
+#else
+#error "No 32-bit integer type available"
+#endif
+#endif
+
+typedef ARCH_UINT32_TYPE uint32_t;
+#endif
+
 /*
  * Creating aligned Bigarray
  ***********************************************************************/
@@ -59,7 +76,7 @@ static void fftw3_caml_ba_finalize(value v)
   }
 }
 
-static unsigned long fftw3_caml_ba_deserialize(void * dst)
+uintnat fftw3_caml_ba_deserialize(void * dst)
 {
   struct caml_ba_array * b = dst;
   int i, elt_size;
@@ -73,7 +90,13 @@ static unsigned long fftw3_caml_ba_deserialize(void * dst)
   /* Compute total number of elements */
   num_elts = caml_ba_num_elts(b);
   /* Determine element size in bytes */
-  if ((b->flags & CAML_BA_KIND_MASK) > CAML_BA_COMPLEX64)
+  if ((b->flags & CAML_BA_KIND_MASK) >
+#ifdef CAML_BA_CHAR
+      CAML_BA_CHAR
+#else
+      CAML_BA_COMPLEX64
+#endif
+    )
     caml_deserialize_error("input_value: bad bigarray kind");
   elt_size = caml_ba_element_size[b->flags & CAML_BA_KIND_MASK];
   /* Allocate room for data */
@@ -82,6 +105,9 @@ static unsigned long fftw3_caml_ba_deserialize(void * dst)
     caml_deserialize_error("input_value: out of memory for bigarray");
   /* Read data */
   switch (b->flags & CAML_BA_KIND_MASK) {
+#ifdef CAML_BA_CHAR
+  case CAML_BA_CHAR:
+#endif
   case CAML_BA_SINT8:
   case CAML_BA_UINT8:
     caml_deserialize_block_1(b->data, num_elts); break;
@@ -113,20 +139,27 @@ static struct custom_operations fftw3_caml_ba_ops = {
   caml_ba_hash,
   caml_ba_serialize,
   fftw3_caml_ba_deserialize
+#ifdef custom_compare_ext_default
+  , custom_compare_ext_default
+#endif
 };
 
 /* TODO: register the struct custom_operations with the deserializer
  * using register_custom_operations  */
 
-static value fftw3_caml_ba_alloc(int flags, int num_dims, long * dim)
+static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
 {
-  void * data;
-  unsigned long num_elts, asize, size;
+  void * data = NULL;
+  uintnat num_elts, asize, size;
   int overflow, i;
   value res;
-  struct caml_bigarray * b;
-  long dimcopy[CAML_BA_MAX_NUM_DIMS];
+  struct caml_ba_array * b;
+  intnat dimcopy[CAML_BA_MAX_NUM_DIMS];
 
+  Assert(num_dims >= 1 && num_dims <= CAML_BA_MAX_NUM_DIMS);
+#ifdef CAML_BA_CHAR
+  Assert((flags & CAML_BA_KIND_MASK) <= CAML_BA_CHAR);
+#endif
   for (i = 0; i < num_dims; i++) dimcopy[i] = dim[i];
   size = 0;
   /* Data is allocated here (i.e. data == NULL in the original code). */
@@ -136,15 +169,15 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, long * dim)
     num_elts = caml_ba_multov(num_elts, dimcopy[i], &overflow);
   }
   size = caml_ba_multov(num_elts,
-                        caml_ba_element_size[flags & BIGARRAY_KIND_MASK],
+                        caml_ba_element_size[flags & CAML_BA_KIND_MASK],
                         &overflow);
-  if (overflow) raise_out_of_memory();
+  if (overflow) caml_raise_out_of_memory();
   data = fftw_malloc(size);
-  if (data == NULL && size != 0) raise_out_of_memory();
-  flags |= BIGARRAY_MANAGED;
+  if (data == NULL && size != 0) caml_raise_out_of_memory();
+  flags |= CAML_BA_MANAGED;
 
   asize = SIZEOF_BA_ARRAY + num_dims * sizeof(intnat);
-  res = alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);
+  res = caml_alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);
   b = Caml_ba_array_val(res);
   b->data = data;
   b->num_dims = num_dims;
@@ -155,21 +188,21 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, long * dim)
 }
 
 CAMLexport
-value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
+value caml_ba_create(value vkind, value vlayout, value vdim)
 {
-  long dim[MAX_NUM_DIMS];
+  intnat dim[CAML_BA_MAX_NUM_DIMS];
   mlsize_t num_dims;
   int i, flags;
 
   num_dims = Wosize_val(vdim);
-  if (num_dims < 1 || num_dims > MAX_NUM_DIMS)
-    invalid_argument("Fftw3.Genarray.create: bad number of dimensions");
+  if (num_dims < 1 || num_dims > CAML_BA_MAX_NUM_DIMS)
+    caml_invalid_argument("Fftw3.Genarray.create: bad number of dimensions");
   for (i = 0; i < num_dims; i++) {
     dim[i] = Long_val(Field(vdim, i));
-    if (dim[i] < 0 || dim[i] > 0x7FFFFFFFL)
-      invalid_argument("Fftw3.Genarray.create: negative dimension");
+    if (dim[i] < 0)
+      caml_invalid_argument("Fftw3.Genarray.create: negative dimension");
   }
-  flags = Int_val(vkind) | Int_val(vlayout);
+  flags = Caml_ba_kind_val(vkind) | Caml_ba_layout_val(vlayout);
   return fftw3_caml_ba_alloc(flags, num_dims, dim);
 }
 
