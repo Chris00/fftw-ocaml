@@ -20,7 +20,7 @@
 (** Interface for FFTW version 3.
 
    @author Christophe Troestler <Christophe.Troestler\@umons.ac.be>
-   @version 0.7.1
+   @version 0.7.2
 *)
 (** We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
