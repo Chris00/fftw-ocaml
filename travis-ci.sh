@@ -13,4 +13,5 @@ opam install -q -y ${OPAM_PACKAGES}
 
 
 # compile & run tests
-./bootstrap && ./configure && make && make tests
+./bootstrap && ./configure && make \
+    && make tests && ./tests/basic
