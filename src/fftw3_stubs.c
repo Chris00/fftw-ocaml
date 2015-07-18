@@ -52,6 +52,15 @@
 typedef ARCH_UINT32_TYPE uint32_t;
 #endif
 
+#ifndef Caml_ba_kind_val
+#define Caml_ba_kind_val(v) Int_val(v)
+#endif
+#ifndef Caml_ba_layout_val
+/* No CAML_BA_LAYOUT_SHIFT in older OCaml versions. */
+#define Caml_ba_layout_val(v) Int_val(v)
+#endif
+
+
 /*
  * Creating aligned Bigarray
  ***********************************************************************/
@@ -188,7 +197,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
 }
 
 CAMLexport
-value caml_ba_create(value vkind, value vlayout, value vdim)
+value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 {
   intnat dim[CAML_BA_MAX_NUM_DIMS];
   mlsize_t num_dims;
