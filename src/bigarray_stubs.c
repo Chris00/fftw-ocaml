@@ -3,6 +3,8 @@
    arrays (not defined here).  Everything must be declared
    "static". */
 
+#include <stdint.h>
+
 /* From ocaml/byterun/compare.h */
 CAMLextern int caml_compare_unordered;
 
@@ -14,7 +16,6 @@ CAMLextern int caml_compare_unordered;
 #define SIZEOF_BA_ARRAY (sizeof(struct caml_ba_array) - sizeof(intnat))
 #endif
 #endif /* SIZEOF_BA_ARRAY */
-
 
 static uintnat caml_ba_num_elts(struct caml_ba_array * b)
 {
