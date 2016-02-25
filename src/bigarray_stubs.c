@@ -3,6 +3,8 @@
    arrays (not defined here).  Everything must be declared
    "static". */
 
+#include <stdint.h>
+
 /* From ocaml/byterun/compare.h */
 CAMLextern int caml_compare_unordered;
 
