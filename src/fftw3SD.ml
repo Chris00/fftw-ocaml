@@ -57,31 +57,31 @@ type 'l float_array   = (float, floatXX_elt, 'l) Genarray.t
 (* Execution of plans
  ***********************************************************************)
 
-external fftw_exec : 'a fftw_plan -> unit = "fftw_ocaml_execute" "noalloc"
+external fftw_exec : 'a fftw_plan -> unit = "fftw_ocaml_execute" [@@noalloc]
 
 external exec_dft : c2c fftw_plan -> 'l complex_array -> 'l complex_array
-  -> unit = "fftw_ocaml_execute_dft" "noalloc"
+  -> unit = "fftw_ocaml_execute_dft" [@@noalloc]
 external exec_split_dft : c2c fftw_plan -> 'l float_array -> 'l float_array ->
   'l float_array -> 'l float_array -> unit
-  = "fftw_ocaml_execute_split_dft" "noalloc"
+  = "fftw_ocaml_execute_split_dft" [@@noalloc]
 
 external exec_dft_r2c : r2c fftw_plan -> 'l float_array -> 'l complex_array
   -> unit
-  = "fftw_ocaml_execute_dft_r2c" "noalloc"
+  = "fftw_ocaml_execute_dft_r2c" [@@noalloc]
 external exec_split_dft_r2c : r2c fftw_plan -> 'l float_array ->
   'l float_array -> 'l float_array -> unit
-  = "fftw_ocaml_execute_split_dft_r2c" "noalloc"
+  = "fftw_ocaml_execute_split_dft_r2c" [@@noalloc]
 
 external exec_dft_c2r : c2r fftw_plan -> 'l complex_array -> 'l float_array
   -> unit
-  = "fftw_ocaml_execute_dft_c2r" "noalloc"
+  = "fftw_ocaml_execute_dft_c2r" [@@noalloc]
 external exec_split_dft_c2r : c2r fftw_plan -> 'l float_array -> 'l float_array
   -> 'l float_array -> unit
-  = "fftw_ocaml_execute_split_dft_c2r" "noalloc"
+  = "fftw_ocaml_execute_split_dft_c2r" [@@noalloc]
 
 external exec_r2r : r2r fftw_plan -> 'l float_array -> 'l float_array
   -> unit
-  = "fftw_ocaml_execute_r2r" "noalloc"
+  = "fftw_ocaml_execute_r2r" [@@noalloc]
 
 
 (* Creating plans

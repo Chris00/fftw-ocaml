@@ -25,21 +25,28 @@ let transform fin fout tr =
   output_string fh s;
   close_out fh
 
+let ocaml_major, ocaml_minor =
+  Scanf.sscanf Sys.ocaml_version "%d.%d" (fun ma mi -> (ma, mi))
 
 let () =
+  let add_noalloc l =
+    if ocaml_major > 4 || (ocaml_major = 4 && ocaml_minor >= 2) then l
+    else ("\\[@@noalloc\\]", "\"noalloc\"") :: l in
   transform "fftw3SD.ml" "fftw3D.ml"
-            ["floatXX_elt", "Bigarray.float64_elt";
-             "floatXX", "Bigarray.float64";
-             "complexXX_elt", "Bigarray.complex64_elt";
-             "complexXX", "Bigarray.complex64";
-             "\\$FFTW", "Fftw3.D"];
+    (add_noalloc
+       ["floatXX_elt", "Bigarray.float64_elt";
+        "floatXX", "Bigarray.float64";
+        "complexXX_elt", "Bigarray.complex64_elt";
+        "complexXX", "Bigarray.complex64";
+        "\\$FFTW", "Fftw3.D"]);
   transform "fftw3SD.ml" "fftw3S.ml"
-            ["fftw_ocaml", "fftwf_ocaml"; (* C stubs *)
-             "floatXX_elt", "Bigarray.float32_elt";
-             "floatXX", "Bigarray.float32";
-             "complexXX_elt", "Bigarray.complex32_elt";
-             "complexXX", "Bigarray.complex32";
-             "\\$FFTW", "Fftw3.S"]
+    (add_noalloc
+       ["fftw_ocaml", "fftwf_ocaml"; (* C stubs *)
+        "floatXX_elt", "Bigarray.float32_elt";
+        "floatXX", "Bigarray.float32";
+        "complexXX_elt", "Bigarray.complex32_elt";
+        "complexXX", "Bigarray.complex32";
+        "\\$FFTW", "Fftw3.S"])
 
 let () =
   let c_fortran = "C_FORTRAN{\\([^,}]*\\), *\\([^}]*\\)}" in
