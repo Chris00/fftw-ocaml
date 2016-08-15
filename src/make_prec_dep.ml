@@ -21,6 +21,7 @@ let transform fin fout tr =
   (* Output *)
   let fh = open_out fout in
   fprintf fh "(* AUTOMATICALLY GENERATED from %S. *)\n" fin;
+  fprintf fh "#1 %S\n" fin;
   output_string fh s;
   close_out fh
 
