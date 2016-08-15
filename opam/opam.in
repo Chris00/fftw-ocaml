@@ -42,6 +42,7 @@ remove: [
 build-doc: [ make "doc" ]
 depends: [
   "ocamlfind" {build}
+  "base-bytes" {build}
   "archimedes" {test}
   "lacaml" {test}
 ]

@@ -9,11 +9,11 @@ let debug = false
 let string_of_file fname =
   let buf = Buffer.create 8192 in
   let fh = open_in fname in
-  let s = String.create 4096 in
+  let b = Bytes.create 4096 in
   let n = ref 1 (* enter the loop *) in
   while !n > 0 do
-    n := input fh s 0 4096;
-    Buffer.add_substring buf s 0 !n
+    n := input fh b 0 4096;
+    Buffer.add_substring buf (Bytes.unsafe_to_string b) 0 !n
   done;
   close_in fh;
   Buffer.contents buf

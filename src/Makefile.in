@@ -24,7 +24,7 @@ uninstall: libuninstall
 update: uninstall install
 
 $(PRE_TARGETS): fftw3SD.ml fftw3_geomCF.ml
-	$(OCAML) make_prec_dep.ml
+	$(OCAML) -safe-string make_prec_dep.ml
 
 OCAML           = @OCAML@
 OCAMLC		= @OCAMLC@
