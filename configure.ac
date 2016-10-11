@@ -202,6 +202,12 @@ OCAML_LIB(archimedes, [ARCHIMEDES_PATH=$ocaml_lib_path],
 		      [(Examples will not produce graphics.)])
 
 
+# Check if OCaml uses custom int types
+AC_CHECK_TYPE([int32], [], [CAML_GENERIC_TYPES=1], [[#include "$OCAMLLIBPATH/caml/config.h"]])
+
+if test "$CAML_GENERIC_TYPES" = 1; then
+    CFLAGS="$CFLAGS -DCAML_GENERIC_TYPES"
+fi
 
 if test "$OCAMLOPT" = no ; then
     BEST=byte
