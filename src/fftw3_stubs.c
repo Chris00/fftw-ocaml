@@ -17,7 +17,6 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 */
-/* $Id: fftw3_stub.c,v 1.1 2007/06/10 01:13:44 chris_77 Exp $ */
 
 #include <fftw3.h>
 
@@ -29,7 +28,10 @@
 #include <caml/callback.h>
 #include <caml/custom.h>
 #include <caml/intext.h>
+
+#define CAML_INTERNALS
 #include <caml/bigarray.h>
+#undef CAML_INTERNALS
 
 #include <assert.h>
 #define Assert(b) assert(b)
@@ -233,22 +235,26 @@ value fftw3_ocaml_ba_create(value vkind, value vlayout, value vdim)
 
 #ifdef FFTW3F_EXISTS
 #define FFTW(name) fftwf_ ## name
+#define FLOAT float
 #else
 /* Single precision version not present.  Use the double precision (to
    type check) but raise an exception when calling any FFTW function */
 #define FFTW(name) fftw_ ## name
+#define FLOAT double /* only to typecheck */
+#undef FFTW_RAISE_NO_FFTWF
 #define FFTW_RAISE_NO_FFTWF \
   caml_failwith("Fftw3.S: single precision C fftwf library not present")
 #endif /* FFTW3F_EXISTS */
 
 #define FFTW_OCAML(name) fftwf_ocaml_ ## name /* single precision stubs */
-#define FLOAT float
 #define PREC "S"
 #include "fftw3SD_stubs.c"
 #undef PREC
 #undef FLOAT
 #undef FFTW_OCAML
 #undef FFTW
+
+#undef FFTW_RAISE_NO_FFTWF
 
 /* Wisdom
  ***********************************************************************/
