@@ -9,9 +9,9 @@ open Printf
 open Bigarray
 module FFT = Fftw3.D
 
-IFDEF ARCHIMEDES_EXISTS THEN
+#ifdef ARCHIMEDES_EXISTS
 module A = Archimedes
-ENDIF;;
+#endif
 
 type mat = c_layout FFT.Array2.float_array
 
@@ -71,24 +71,25 @@ let () =
   Arg.parse args (fun _ -> raise(Arg.Bad "no anonymous argument")) usage;
 
   let (xy, fftxy) = henon_fft !n in
-  IFDEF ARCHIMEDES_EXISTS THEN (
+  #ifdef ARCHIMEDES_EXISTS
     (* Plot the Henon map and its Fourier transform *)
     let vp0 = A.init [] ~w:1000. ~h:500. in
     let vp = A.Viewport.columns vp0 2 in
     A.Axes.box vp.(0);
-    A.Viewport.set_mark_size vp.(0) 3.;
+    A.Viewport.set_mark_size vp.(0) 2.;
     A.set_color vp.(0) A.Color.red;
     A.CVec.xy vp.(0) (Array2.slice_left xy 0) (Array2.slice_left xy 1);
     A.Axes.box vp.(1);
     A.Viewport.set_mark_size vp.(0) 3.;
     A.set_color vp.(1) A.Color.red;
+    A.yrange vp.(1) (-1200.) 1200.;
     A.CVec.y vp.(1) (Array2.slice_left fftxy 0) ~style:`Lines
                     (* ~label:"fft(x)" *);
     A.set_color vp.(1) A.Color.blue;
     A.CVec.y vp.(1) (Array2.slice_left fftxy 1) ~style:`Lines
                     (* ~label:"fft(y)" *);
     A.close vp0
-  ) ELSE (
+  #else
     (* Output the data into a file *)
     let fh = open_out !fname in
     for i = 0 to !n - 1 do
@@ -96,5 +97,5 @@ let () =
     done;
     close_out fh;
     message "Wrote %S." !fname
-  ) END
+  #endif
 

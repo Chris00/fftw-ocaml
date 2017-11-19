@@ -12,9 +12,9 @@ open Printf
 open Bigarray
 module FFT = Fftw3.D
 
-IFDEF ARCHIMEDES_EXISTS THEN
+#ifdef ARCHIMEDES_EXISTS
 module A = Archimedes
-ENDIF;;
+#endif
 
 type vec = fortran_layout FFT.Array1.complex_array
 
@@ -96,7 +96,9 @@ let () =
   let n = 10          (* number of filters = DFT length *)
   and fs = 1000.      (* sampling frequency (arbitrary) *)
   and d = 1. in       (* duration in seconds *)
+  #ifdef ARCHIMEDES_EXISTS
   let n_graphs = 5 in (* technically =n but not space for all graphs *)
+  #endif
 
   let len = truncate(ceil(fs *. d)) + 1 in (* signal duration (samples) *)
   (* sine sweep from 0 Hz to fs/2 Hz: *)
@@ -110,8 +112,8 @@ let () =
   let h = create FFT.complex n in
   Array1.fill h Complex.one;            (* h = [| 1.; ...; 1. |] *)
 
-  IFDEF ARCHIMEDES_EXISTS THEN (
-    let vp0 = A.init [] ~w:1000. ~h:800. in
+  #ifdef ARCHIMEDES_EXISTS
+    let vp0 = A.init [] ~w:1000. ~h:720. in
     let vp = A.Viewport.rows vp0 (n_graphs + 1) in
     A.Axes.box vp.(0);
     A.set_color vp.(0) A.Color.red;
@@ -133,4 +135,4 @@ let () =
       A.Vec.xy vp.(k) t y_re ~style:`Lines
     done;
     A.close vp0
-  ) END
+  #endif

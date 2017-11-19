@@ -1,7 +1,6 @@
 (* Generate precision dependent files.  Avoid external dependencies
    such as "sed". *)
 
-#load "str.cma";;
 open Printf
 
 let debug = false

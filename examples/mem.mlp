@@ -14,9 +14,9 @@ open Bigarray
 open Lacaml.D
 module FFT = Fftw3.D
 
-IFDEF ARCHIMEDES_EXISTS THEN
+#ifdef ARCHIMEDES_EXISTS
 module A = Archimedes
-ENDIF;;
+#endif
 
 let delta = sqrt epsilon_float
 
@@ -50,7 +50,7 @@ let gradient_ascent ?(print=fun _ _ _ _ _ -> ()) (f: vec -> float) f' (x:vec) =
     print !step !lambda x !fx (nrm2 f'x);
     incr step;
     Array1.blit x new_x;
-    axpy ~alpha:!lambda ~x:f'x new_x;
+    axpy ~alpha:!lambda f'x new_x;
     let f_new_x = f new_x in
     if f_new_x <= !fx then lambda := 0.5 *. !lambda
     else (
@@ -194,7 +194,7 @@ let () =
   let consts = read_consts (Scanning.from_file !input) in
   let x = mem consts !n in
   if !output = "" then (
-    IFDEF ARCHIMEDES_EXISTS THEN
+    #ifdef ARCHIMEDES_EXISTS
       (* Plot the graph of the result, indicating what is extended *)
       let vp = A.init [] in
       A.Axes.box vp;
@@ -203,10 +203,10 @@ let () =
       A.set_color vp A.Color.blue;
       A.Vec.y vp consts;
       A.close vp;
-    ELSE
+    #else
       (* Spit out the result on the standard output *)
       print_vec Format.std_formatter x
-    ENDIF
+    #endif
   )
   else begin
     let fh = open_out !output in

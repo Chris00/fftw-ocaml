@@ -128,7 +128,7 @@ let xcorr ?maxlag ?scale (a:D.vec) (b:D.vec) =
           FFT.exec fft_xy;
           ignore(Z.Vec.mul y b' ~z:y);
           FFT.exec fft_yx;
-          D.axpy ~x c ~ofsy:(shift_seg !i) ~incy:inc_seg ~n:(l' + dimb - 1);
+          D.axpy x c ~ofsy:(shift_seg !i) ~incy:inc_seg ~n:(l' + dimb - 1);
           i := !i + l;
         done;
         D.scal (1. /. float n) c;       (* ifft normalization *)
