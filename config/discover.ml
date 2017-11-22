@@ -45,13 +45,13 @@ let ocaml_version c =
 
 let split_ws str = String.(split str ~on:' ' |> List.filter ~f:((<>) ""))
 
-let get_cflags conf =
+let get_cflags ?(default=[]) conf =
   match conf with Some c -> c.Configurator.Pkg_config.cflags
-                | None -> []
+                | None -> default
 
-let get_libs conf =
+let get_libs ?(default=[]) conf =
   match conf with Some c -> c.Configurator.Pkg_config.libs
-                | None -> []
+                | None -> default
 
 let discover c =
   let module C = Configurator in
@@ -64,7 +64,8 @@ let discover c =
     | alt_cflags -> split_ws alt_cflags in
   let libs =
     match Caml.Sys.getenv "FFTW3_LIBS" with
-    | exception Not_found -> get_libs fftw3 @ get_libs fftw3f
+    | exception Not_found -> get_libs fftw3 ~default:["-lfftw3"]
+                             @ get_libs fftw3f ~default:["-lfftw3f"]
     | alt_libs -> "-lm" :: split_ws alt_libs in
 
   if not(check_fftw3 c ~c_flags ~link_flags:libs) then
