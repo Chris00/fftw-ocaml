@@ -1,7 +1,7 @@
 # Hacking the build into Travis-CI "C" environment
 # See http://anil.recoil.org/2013/09/30/travis-and-ocaml.html
 
-OPAM_PACKAGES='ocamlfind'
+OPAM_PACKAGES='jbuilder configurator base stdio cppo archimedes lacaml'
 
 export OPAMYES=1
 opam init
@@ -13,5 +13,4 @@ opam install -q -y ${OPAM_PACKAGES}
 
 
 # compile & run tests
-./bootstrap && ./configure && make \
-    && make tests && ./tests/basic
+make && make test
