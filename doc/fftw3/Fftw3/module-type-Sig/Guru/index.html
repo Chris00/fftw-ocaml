@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Guru (fftw3.Fftw3.Sig.Guru)</title><link rel="stylesheet" href="../../../../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="generator" content="doc-ock-html v1.0.0-1-g1fc9bf0"/></head><body><nav id="top"><a href="../index.html">Up</a> &mdash; <span class="package">package <a href="../../../index.html">fftw3</a></span></nav><header><h1><span class="keyword">Module</span> <span class="module-path">Fftw3.Sig.Guru</span></h1></header><div class="doc"><p>Guru execution of plans.</p><p>If you want to transform other arrays than those specified in the
+plan, you are advised to create a new plan — it won't be too
+expensive if the wisdom can be reused. To transform a known bunch
+of arrays of the same size, you should <b>not</b> use the following
+functions but instead create a plan with <code class="code">?howmany</code> set
+appropriately.</p><p>These functions are thread safe. You can even execute the <i>same
+plan</i> in parallel by multiple threads by providing different
+arrays than the ones with which the plan was created.</p></div></body></html>
