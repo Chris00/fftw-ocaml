@@ -13,11 +13,10 @@ test runtest:
 install uninstall:
 	jbuilder $@
 
-doc:
-	sed -e 's/%%VERSION%%/$(PKGVERSION)/' src/Root1D.mli \
-	  > _build/default/src/Root1D.mli
+doc: build
+	sed -e 's/%%VERSION%%/$(PKGVERSION)/' src/fftw3.mli \
+	  > _build/default/src/fftw3.mli
 	jbuilder build @doc
-	echo '.def { background: #f9f9de; }' >> _build/default/_doc/odoc.css
 
 # Profiling
 pnc:

@@ -16,7 +16,6 @@
    LICENSE for more details. *)
 
 
-
 (** Interface for FFTW version 3.
 
    @author Christophe Troestler <Christophe.Troestler\@umons.ac.be>
@@ -24,11 +23,9 @@
 *)
 (** We advise against opening this module as it contains submodules with
     the same names as the [Bigarray] ones.  Instead, declare
-    {[
-      module FFT = Fftw3.D 						]}
+    {[module FFT = Fftw3.D 						]}
     or
-    {[
-      module FFT = Fftw3.S 						]}
+    {[module FFT = Fftw3.S 						]}
     depending to the precision you need (this way of proceeding makes it
     easy to change the precision of the FFT sould it be necessary) and
     then use it as
@@ -37,7 +34,8 @@
       let output = FFT.Array1.create FFT.complex Bigarray.c_layout dim in
       let dft    = FFT.Array1.dft FFT.Forward input output in
       (* code to initialize input and output arrays here *)
-      FFT.exec dft (* compute the DFT *) 	               	        ]}
+      FFT.exec dft (* compute the DFT *)
+    ]}
     The plan creation function will raise [FFT.Failure] in case of problems.
     The last line can be repeated as many times as needed to compute the
     FFT of [input] into [output].
@@ -593,8 +591,8 @@ module D : Sig
   and type complex_elt = Bigarray.complex64_elt
 
 (** Single precision FFTW.  This is only available if the single
-    precision FFTW3 library was available when this module was
-    compiled (if not all functions raise [Failure]). *)
+    precision FFTW3 library was found when this module was
+    compiled (if not, all functions raise [Failure]). *)
 module S : Sig
   with type float_elt = Bigarray.float32_elt
   and type complex_elt = Bigarray.complex32_elt
