@@ -40,7 +40,11 @@ remove: [
 ]
 build-doc: [ make "doc" ]
 depends: [
-  "ocamlfind" {build}
+  "jbuilder" {build}
+  "cppo"     {build}
+  "configurator" {build}
+  "base"     {build}
+  "stdio"    {build}
   "archimedes" {test}
   "lacaml" {test}
 ]
