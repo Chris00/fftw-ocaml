@@ -56,8 +56,9 @@ let get_libs ?(default=[]) conf =
 let discover c =
   let module C = Configurator in
   let module P = C.Pkg_config in
-  let fftw3 = Option.bind (P.get c) (fun p -> P.query p "fftw3") in
-  let fftw3f = Option.bind (P.get c) (fun p -> P.query p "fftw3f") in
+  let fftw3 = Option.bind (P.get c) ~f:(fun p -> P.query p ~package:"fftw3") in
+  let fftw3f = Option.bind (P.get c)
+                 ~f:(fun p -> P.query p ~package:"fftw3f") in
   let c_flags =
     match Caml.Sys.getenv "FFTW3_CFLAGS" with
     | exception Not_found -> get_cflags fftw3 @ get_cflags fftw3f

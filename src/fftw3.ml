@@ -19,18 +19,18 @@
 *)
 
 open Bigarray
-open Printf
 
 module type Sig = sig
   type float_elt
     (** Precision of float numbers. *)
+
   type complex_elt
     (** Precision of complex numbers. *)
 
   val float : (float, float_elt) Bigarray.kind
   val complex : (Complex.t, complex_elt) Bigarray.kind
 
-  type 'a plan (** Immutable FFTW plan. *)
+  type 'a plan (* Immutable FFTW plan. *)
   type c2c
   type r2c
   type c2r

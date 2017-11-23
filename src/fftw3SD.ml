@@ -246,7 +246,7 @@ module Genarray = struct
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
     apply dft_name ~logical_dims:Geom.logical_c2c
-      (guru_dft i o (sign_of_dir dir) (flags meas unaligned destroy_input))
+      (guru_dft i o (sign_of_dir dir) (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o
 
   (* At the moment, in place transforms are not possible but they may
@@ -257,7 +257,7 @@ module Genarray = struct
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l float_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l complex_array) =
     apply r2c_name ~logical_dims:Geom.logical_r2c
-      (guru_r2c i o (flags meas unaligned destroy_input))
+      (guru_r2c i o (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ofsi ?ni inci i  howmanyo ?no ofso inco o
 
   let c2r_name = "$FFTW.Genarray.c2r"
@@ -266,7 +266,7 @@ module Genarray = struct
       ?(howmanyi=[]) ?ni ?ofsi ?inci (i: 'l complex_array)
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
     apply c2r_name ~logical_dims:Geom.logical_c2r
-      (guru_c2r i o (flags meas unaligned destroy_input))
+      (guru_c2r i o (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o
 
   let r2r_name = "$FFTW.Genarray.r2r"
@@ -276,7 +276,7 @@ module Genarray = struct
       ?(howmanyo=[]) ?no ?ofso ?inco (o: 'l float_array) =
     (* FIXME: must check [kind] has the right length/order?? *)
     apply r2r_name ~logical_dims:Geom.logical_r2r
-      (guru_r2r i o kind (flags meas unaligned destroy_input))
+      (guru_r2r i o kind (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci i  howmanyo ?no ofso inco o
 end
 
@@ -321,7 +321,7 @@ module Array1 = struct
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
     apply dft_name ~logical_dims:Geom.logical_c2c
-      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned destroy_input))
+      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let r2c_name = "$FFTW.Array1.r2c"
@@ -332,7 +332,7 @@ module Array1 = struct
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
     apply r2c_name ~logical_dims:Geom.logical_r2c
-      (guru_r2c gi go (flags meas unaligned destroy_input))
+      (guru_r2c gi go (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go
 
   let c2r_name = "$FFTW.Array1.c2r"
@@ -343,7 +343,7 @@ module Array1 = struct
     let gi = genarray_of_array1 i
     and go = genarray_of_array1 o in
     apply c2r_name ~logical_dims:Geom.logical_c2r
-      (guru_c2r gi go (flags meas unaligned destroy_input))
+      (guru_c2r gi go (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi  howmanyo ?no ofso inco go
 
   let r2r_name = "$FFTW.Array1.r2r"
@@ -355,7 +355,7 @@ module Array1 = struct
     and go = genarray_of_array1 o in
     let kind = [| kind |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
-      (guru_r2r gi go kind (flags meas unaligned destroy_input))
+      (guru_r2r gi go kind (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 end
 
@@ -393,7 +393,7 @@ module Array2 = struct
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
     apply dft_name ~logical_dims:Geom.logical_c2c
-      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned destroy_input))
+      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let r2c_name = "$FFTW.Array2.r2c"
@@ -404,7 +404,7 @@ module Array2 = struct
     let gi = genarray_of_array2 i
     and go = genarray_of_array2 o in
     apply r2c_name ~logical_dims:Geom.logical_r2c
-      (guru_r2c gi go (flags meas unaligned destroy_input))
+      (guru_r2c gi go (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let c2r_name = "$FFTW.Array2.c2r"
@@ -427,7 +427,7 @@ module Array2 = struct
     and go = genarray_of_array2 o in
     let kind = [| kind1; kind2 |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
-      (guru_r2r gi go kind (flags meas unaligned destroy_input))
+      (guru_r2r gi go kind (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 end
 
@@ -465,7 +465,7 @@ module Array3 = struct
     let gi = genarray_of_array3 i
     and go = genarray_of_array3 o in
     apply dft_name ~logical_dims:Geom.logical_c2c
-      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned destroy_input))
+      (guru_dft gi go (sign_of_dir dir) (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let r2c_name = "$FFTW.Array3.r2c"
@@ -476,7 +476,7 @@ module Array3 = struct
     let gi = genarray_of_array3 i
     and go = genarray_of_array3 o in
     apply r2c_name ~logical_dims:Geom.logical_r2c
-      (guru_r2c gi go (flags meas unaligned destroy_input))
+      (guru_r2c gi go (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 
   let c2r_name = "$FFTW.Array3.c2r"
@@ -499,6 +499,6 @@ module Array3 = struct
     and go = genarray_of_array3 o in
     let kind = [| kind1; kind2; kind3 |] in
     apply r2r_name ~logical_dims:Geom.logical_r2r
-      (guru_r2r gi go kind (flags meas unaligned destroy_input))
+      (guru_r2r gi go kind (flags meas unaligned ~destroy_input))
       howmany_n  howmanyi ?ni ofsi inci gi howmanyo ?no ofso inco go
 end

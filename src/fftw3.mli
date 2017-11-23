@@ -58,11 +58,13 @@ module type Sig = sig
   (** {2 Precision} *)
 
   type float_elt (** Precision of float numbers. *)
+
   type complex_elt (** Precision of complex numbers. *)
 
   val float : (float, float_elt) Bigarray.kind
     (** Float of the precision of this module.  Use this to create
         precision independent code. *)
+
   val complex : (Complex.t, complex_elt) Bigarray.kind
     (** Complex of the precision of this module.  Use this to create
         precision independent code. *)
@@ -71,10 +73,14 @@ module type Sig = sig
   (** {2 Specifying plans} *)
 
   type 'a plan (** FFTW plan. *)
+
   type c2c     (** [c2c plan] usual discrete Fourier transform,
                    from complex to complex *)
+
   type r2c     (** [r2c plan] real to complex transform *)
+
   type c2r     (** [c2r plan] complex to real transform *)
+
   type r2r     (** [r2r plan] real to real transform *)
 
   (** Direction of the transform — see the FFTW manual. *)
@@ -185,8 +191,10 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Bigarray.Genarray.t
         (** Double precision complex array. *)
+
     type 'l float_array   = (float, float_elt, 'l) Bigarray.Genarray.t
         (** Double precision float array. *)
+
     type coord = int array
         (** Coordinates of elements or dimensions of an ND array
             (therefore the length of such an array of coordinates must
@@ -402,6 +410,7 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array1.t
         (** Double precision complex 1D array. *)
+
     type 'l float_array   = (float, float_elt, 'l) Array1.t
         (** Double precision float 1D array. *)
 
@@ -467,8 +476,10 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array2.t
         (** Double precision complex 2D array. *)
+
     type 'l float_array   = (float, float_elt, 'l) Array2.t
         (** Double precision float 2D array. *)
+
     type coord = int * int
         (** Coordinates of emlements of the 2D array. *)
 
@@ -524,8 +535,10 @@ module type Sig = sig
 
     type 'l complex_array = (Complex.t, complex_elt, 'l) Array3.t
         (** Double precision complex 3D array. *)
+
     type 'l float_array   = (float, float_elt, 'l) Array3.t
         (** Double precision float 3D array. *)
+
     type coord = int * int * int
         (** Coordinates of emlements of the 3D array. *)
 
@@ -619,16 +632,19 @@ sig
         This function is not thread safe.
 
         @raise Failure if the wisdom was not successfully read. *)
+
   val from_file : string -> unit
     (** [Widsom.from_file fname] replace the current wisdom with the
         one read from the file [fname].
 
         @raise Failure if the wisdom was not successfully read. *)
+
   val from_string : string -> unit
     (** [Wisdom.from_string s] replace the current wisdom whith the
         one read from [s].
 
         @raise Failure if the wisdom was not successfully read. *)
+
   val from_system : unit -> unit
     (** [Wisdom.from_system()] replace the current wisdom with one read
         from an implementation-defined standard file (e.g. /etc/fftw/wisdom).

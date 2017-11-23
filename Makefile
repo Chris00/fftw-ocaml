@@ -2,7 +2,7 @@
 PKGVERSION = $(shell git describe --always --dirty)
 
 all build byte native:
-	jbuilder build @install #--dev
+	jbuilder build @install --dev
 	jbuilder build @examples
 
 test runtest:

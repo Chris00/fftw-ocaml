@@ -122,7 +122,7 @@ let only_ones d =
     is a valid submatrix of the hermitian matrix [mat].  @return the
     [hm_stride], [hm_n] (howmany matrix), [stride] and [n] (logical
     dimensions). *)
-let get_geom_hm name hm_nname hm_n hmname hm  nname n low up  mat =
+let get_geom_hm name hm_nname hm_n hmname hm  low up  mat =
   let num_dims = Genarray.num_dims mat in
   if hm = [] then
     if only_ones hm_n then
@@ -211,9 +211,9 @@ let apply name make_plan hm_n  hmi ?ni ofsi inci i  hmo ?no ofso inco o
                  (sprintf "%s: dim input = %s incompatible with dim ouput = %s"
                           name (string_of_array ni) (string_of_array no)) in
   let hm_ni, hm_stridei =
-    get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  "n" ni lowi upi i
+    get_geom_hm name "howmany_n" hm_n "howmanyi" hmi  lowi upi i
   and hm_no, hm_strideo =
-    get_geom_hm name "howmany_n" hm_n "howmanyo" hmo  "n" no lowo upo o  in
+    get_geom_hm name "howmany_n" hm_n "howmanyo" hmo  lowo upo o  in
   if hm_ni <> hm_no then
     invalid_arg(sprintf "%s: howmany dim input = %s <> howmany dim output = %s"
                         name (string_of_array hm_ni) (string_of_array hm_no));
