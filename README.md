@@ -8,21 +8,22 @@ Perquisites
 
 The FFTW, version 3, with its development files (``fftw3.h``) must be
 installed on your platform.  For example, on Debian or Ubuntu, you
-need to install the package ``libfftw3-dev``.
+need to install the package ``libfftw3-dev`` (see the [opam
+file](fftw3.opam) for other distributions).
 
 
 Compilation
 -----------
 
-    ./bootstrap (optional, requires autoconf)
-    ./configure
-    make
+    jbuilder build @install
 
 If your fftw3 header files or libraries are not where you C compiler
-expects to find them, you need to tell configure by using the
-following syntax:
+expects to find them and `pkg-config` does not return the right
+location either, you need to tell the [discover
+script](config/discover.ml) where to find them by setting the
+environment variable `FFTW3_CFLAGS`:
 
-    CPPFLAGS="-I/opt/local/include" LDFLAGS="-L/opt/local/lib" ./configure
+    FFTW3_CFLAGS="-I/opt/local/include" LDFLAGS="-L/opt/local/lib"
 
 Of course, replace ``/opt/local/include`` (resp. ``/opt/local/lib``) by the
 actual paths of your header files (resp. library).
@@ -42,7 +43,7 @@ Examples
 --------
 
 Some examples need additional libraries:
-- [Lacaml](https://bitbucket.org/mmottl/lacaml)
+- [Lacaml](http://mmottl.github.io/lacaml/)
 - [Archimedes](https://forge.ocamlcore.org/projects/archimedes/)
 
 If these are not detected by the configure script, the corresponding
