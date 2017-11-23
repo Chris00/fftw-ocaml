@@ -6,39 +6,14 @@ homepage: "https://github.com/Chris00/fftw-ocaml"
 dev-repo: "https://github.com/Chris00/fftw-ocaml.git"
 bug-reports: "https://github.com/Chris00/fftw-ocaml/issues"
 doc: "https://Chris00.github.io/fftw-ocaml/doc"
+tags: ["FFT"]
 build: [
-  ["./configure"
-      "--prefix" prefix
-      "--sbindir=%{lib}%/fftw3/sbin"
-      "--libexecdir=%{lib}%/fftw3/libexec"
-      "--sysconfdir=%{lib}%/fftw3/etc"
-      "--sharedstatedir=%{lib}%/fftw3/com"
-      "--localstatedir=%{lib}%/fftw3/var"
-      "--libdir=%{lib}%/fftw3/lib"
-      "--includedir=%{lib}%/fftw3/include"
-      "--datarootdir=%{lib}%/fftw3/share"] { os != "darwin" }
-  ["./configure"
-      "CFLAGS=-I/usr/local/include"
-      "LDFLAGS=-L/usr/local/lib"
-      "OCAMLFLAGS=-ccopt -I/usr/local/include -cclib -L/usr/local/lib"
-      "--prefix" prefix
-      "--sbindir=%{lib}%/fftw3/sbin"
-      "--libexecdir=%{lib}%/fftw3/libexec"
-      "--sysconfdir=%{lib}%/fftw3/etc"
-      "--sharedstatedir=%{lib}%/fftw3/com"
-      "--localstatedir=%{lib}%/fftw3/var"
-      "--libdir=%{lib}%/fftw3/lib"
-      "--includedir=%{lib}%/fftw3/include"
-      "--datarootdir=%{lib}%/fftw3/share"] { os = "darwin" }
-  [make]
+  [ "jbuilder" "subst" ] {pinned}
+  [ "jbuilder" "build" "-p" name "-j" jobs ] { os != "darwin" }
+  [ "env" "FFTW3_CFLAGS=\"-I/usr/local/include -L/usr/local/lib -ccopt -I/usr/local/include -cclib -L/usr/local/lib\""
+    "jbuilder" "build" "-p" name "-j" jobs ] { os = "darwin" }
 ]
-install: [
-  [make "install"]
-]
-remove: [
-  ["ocamlfind" "remove" "fftw3"]
-]
-build-doc: [ make "doc" ]
+build-test: [[ "jbuilder" "runtest" "-p" name "-j" jobs ]]
 depends: [
   "jbuilder" {build}
   "cppo"     {build}
@@ -48,7 +23,7 @@ depends: [
   "archimedes" {test}
   "lacaml" {test}
 ]
-available: [ ocaml-version >= "3.12.1" ]
+available: [ ocaml-version >= "4.03.0" ]
 depexts: [
   [ [ "ubuntu"  ] [ "libfftw3-dev" ] ]
   [ [ "debian"  ] [ "libfftw3-dev" ] ]
