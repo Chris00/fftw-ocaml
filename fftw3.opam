@@ -10,7 +10,7 @@ tags: ["FFT"]
 build: [
   [ "jbuilder" "subst" ] {pinned}
   [ "jbuilder" "build" "-p" name "-j" jobs ] { os != "darwin" }
-  [ "env" "FFTW3_CFLAGS='-I /usr/local/include -L /usr/local/lib -I /usr/local/include -L /usr/local/lib'"
+  [ "env" "FFTW3_CFLAGS=-I /usr/local/include -L /usr/local/lib -I /usr/local/include -L /usr/local/lib"
     "jbuilder" "build" "-p" name "-j" jobs ] { os = "darwin" }
 ]
 build-test: [[ "jbuilder" "runtest" "-p" name "-j" jobs ]]
