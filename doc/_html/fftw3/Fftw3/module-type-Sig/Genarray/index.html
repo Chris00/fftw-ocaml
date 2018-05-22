@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Genarray (fftw3.Fftw3.D.Genarray)</title><link rel="stylesheet" href="../../../../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="generator" content="doc-ock-html v1.0.0-1-g1fc9bf0"/></head><body><nav id="top"><a href="../index.html">Up</a> &mdash; <span class="package">package <a href="../../../index.html">fftw3</a></span></nav><header><h1><span class="keyword">Module</span> <span class="module-path">Fftw3.D.Genarray</span></h1></header><div class="doc"><p>FFT of Bigarray.Genarray.</p></div><div class="spec val" id="val-create"><a href="#val-create" class="anchor"></a><div class="def val"><code><span class="keyword">external </span>create : (<span class="type-var">'a</span>, <span class="type-var">'b</span>) Bigarray.kind <span class="keyword">&#8209;&gt;</span> <span class="type-var">'c</span> Bigarray.layout <span class="keyword">&#8209;&gt;</span> int array <span class="keyword">&#8209;&gt;</span> (<span class="type-var">'a</span>, <span class="type-var">'b</span>, <span class="type-var">'c</span>) Bigarray.Genarray.t = &quot;fftw3_ocaml_ba_create&quot; </code></div><div class="doc"><p>Creates a new array, just as <code class="code">Bigarray.Genarray.create</code> does,
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Genarray (fftw3.Fftw3.Sig.Genarray)</title><link rel="stylesheet" href="../../../../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="generator" content="doc-ock-html v1.0.0-1-g1fc9bf0"/></head><body><nav id="top"><a href="../index.html">Up</a> &mdash; <span class="package">package <a href="../../../index.html">fftw3</a></span></nav><header><h1><span class="keyword">Module</span> <span class="module-path">Fftw3.Sig.Genarray</span></h1></header><div class="doc"><p>FFT of Bigarray.Genarray.</p></div><div class="spec val" id="val-create"><a href="#val-create" class="anchor"></a><div class="def val"><code><span class="keyword">external </span>create : (<span class="type-var">'a</span>, <span class="type-var">'b</span>) Bigarray.kind <span class="keyword">&#8209;&gt;</span> <span class="type-var">'c</span> Bigarray.layout <span class="keyword">&#8209;&gt;</span> int array <span class="keyword">&#8209;&gt;</span> (<span class="type-var">'a</span>, <span class="type-var">'b</span>, <span class="type-var">'c</span>) Bigarray.Genarray.t = &quot;fftw3_ocaml_ba_create&quot; </code></div><div class="doc"><p>Creates a new array, just as <code class="code">Bigarray.Genarray.create</code> does,
 but guarantees that it is aligned so one gets the better
 performance from FFTW.</p><p>Remark: In order to deserialize such a bigarray, this module
 must be linked to the program as the deserialization
@@ -10,7 +10,7 @@ direction <code class="code">dir</code> from <code class="code">i</code> to <cod
 same number of (logical) dimensions and may be equal. If
 <code class="code">i</code>, <code class="code">ofsi</code> and <code class="code">o</code>, <code class="code">ofso</code> are respectively the same, the
 transform is done in-place. If not, the sub-matrices should
-not overlap. Raises <a href="../../module-type-Sig/index.html#exception-Failure">Fftw3.Sig.Failure</a> if the plan cannot be
+not overlap. Raises <a href="../index.html#exception-Failure">Fftw3.Sig.Failure</a> if the plan cannot be
 created.</p><p>Note that FFTW computes an unnormalized DFT: computing a
 forward followed by a backward transform (or vice versa)
 results in the original array scaled by N, the product of
@@ -27,7 +27,7 @@ any alignment requirements. You normally do not need this
 flag unless you want to use the plan with <i>other unaligned
 arrays</i> (using the guru interface). Default: <code class="code">false</code>
 meaning that alignment may be used to speed up the
-computations (when <code class="code">in</code> and <code class="code">out</code> are aligned of course).</li></ul><div class="h10">Subarrays</div><p>Fftw3 allows you to perform the FFT transform on subarrays
+computations (when <code class="code">in</code> and <code class="code">out</code> are aligned of course).</li></ul><h6>Subarrays</h6><p>Fftw3 allows you to perform the FFT transform on subarrays
 defined by offset, strides and dimensions. (Only the offset
 specification is dependent on the layout, the other two are
 the same regardless of whether the matrix has a C or FORTRAN
@@ -54,19 +54,15 @@ value <code class="code">ofsi.(k)</code>). Default: <code class="code">[|1;...;1
 transform of the same dimensions as <code class="code">ni</code> i.e., neglecting
 the dimensions <code class="code">1</code>, the two matrices must be the same.</li></ul><ul><li><code class="code">ofso</code> same as <code class="code">ofsi</code> but for output.</li></ul><ul><li><code class="code">inco</code> same as <code class="code">inci</code> but for output.</li></ul><p>For example, if one wants the submatrix indicated by the
 stars of the following (C layout) matrix:
-</p><pre>
-            a = [[x x x x x x     one sets:  ofs = [|1; 1|]
+</p><pre>            a = [[x x x x x x     one sets:  ofs = [|1; 1|]
                   x * x * x x                inc = [|1; 2|]
  	          x * x * x x	             dim = [|2; 2|]
-	          x x x x x x ]]
-          </pre><p>
+	          x x x x x x ]]</pre><p>
 The slice represented by the stars
-</p><pre>
-            a = [[x * x x x
+</p><pre>            a = [[x * x x x
                   x * x x x
-                  x * x x x ]]
-          </pre><p>
-is defined by <code class="code">ofs = [|0; 1|]</code> and <code class="code">inc = [|1; 0|]</code></p><div class="h10">Multiple transforms</div><p>FFTW allows to compute several transforms at once by
+                  x * x x x ]]</pre><p>
+is defined by <code class="code">ofs = [|0; 1|]</code> and <code class="code">inc = [|1; 0|]</code></p><h6 id="many" class="anchored"><a href="#many" class="anchor"></a>Multiple transforms</h6><p>FFTW allows to compute several transforms at once by
 specifying submatrices of <code class="code">i</code> and <code class="code">o</code>. This is more
 efficient than to create a different plan for each
 transform. It is your responsability to ensure that the
@@ -80,27 +76,27 @@ as possible.</li></ul><ul><li><code class="code">howmanyi</code> is a list of ve
 the lattice of multiple arrays. In other words, if <code class="code">a</code> is
 an element of (vector) index <code class="code">k</code> in the &quot;first&quot; array, then
 the same element in the other arrays is at indices <code class="code">k + i₁ *
-          v1 + ... + iₚ * vp</code>.</li></ul><ul><li><code class="code">howmanyo</code> same as <code class="code">howmanyi</code> but for output.</li></ul><p>For example, for the two subarrays are identified by * and +
-</p><pre>
-            a = [[x * + * +
+          v1 + ... + iₚ * vp</code>. The dimension of each <code class="code">vᵢ</code> must be
+equal to the number of dimensions of the input array <code class="code">i</code>.</li></ul><ul><li><code class="code">howmanyo</code> same as <code class="code">howmanyi</code> but for output.</li></ul><p>For example, for the two subarrays are identified by * and +
+</p><pre>            a = [[x * + * +
                   x x x x x
                   x * + * +
-                  x x x x x ]]
-          </pre><p>
-one sets: <code class="code">ofs = [|0; 1|]</code>, <code class="code">inc = [|2; 2|]</code> and <code class="code">howmany =
-          [ [|0; 1|] ]</code>.</p></div></div><div class="spec val" id="val-r2c"><a href="#val-r2c" class="anchor"></a><div class="def val"><code><span class="keyword">val </span>r2c : ?&#8288;meas:<a href="../index.html#type-measure">measure</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;destroy_input:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;unaligned:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;howmany_n:int array <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyi:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;ni:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofsi:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inci:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-float_array">float_array</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyo:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;no:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofso:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inco:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-complex_array">complex_array</a> <span class="keyword">&#8209;&gt;</span> <a href="../index.html#type-r2c">r2c</a> <a href="../index.html#type-plan">plan</a></code></div><div class="doc"><p><code class="code">r2c i o</code> returns a plan for computing the <i>forward</i>
+                  x x x x x ]]</pre><p>
+one sets: <code class="code">ofsi = [|0; 1|]</code>, <code class="code">inci = [|2; 2|]</code> and <code class="code">howmanyi
+          = [ [|0; 1|] ]</code> (or <code class="code">ofso</code>, <code class="code">inco</code> and <code class="code">howmanyo</code> if it is an
+output array).</p></div></div><div class="spec val" id="val-r2c"><a href="#val-r2c" class="anchor"></a><div class="def val"><code><span class="keyword">val </span>r2c : ?&#8288;meas:<a href="../index.html#type-measure">measure</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;destroy_input:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;unaligned:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;howmany_n:int array <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyi:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;ni:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofsi:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inci:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-float_array">float_array</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyo:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;no:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofso:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inco:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-complex_array">complex_array</a> <span class="keyword">&#8209;&gt;</span> <a href="../index.html#type-r2c">r2c</a> <a href="../index.html#type-plan">plan</a></code></div><div class="doc"><p><code class="code">r2c i o</code> returns a plan for computing the <i>forward</i>
 transform from the real array <code class="code">i</code> to the complex array <code class="code">o</code>.
 Note that the last (for the C layout, or first for the
 fortran layout) dimension of <code class="code">o</code> must be d/2+1 where d
-denotes the last dimension of <code class="code">i</code>.</p><p>See <a href="../../module-type-Sig/Genarray/index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of the other
+denotes the last dimension of <code class="code">i</code>.</p><p>See <a href="index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of the other
 optional parameters.</p></div></div><div class="spec val" id="val-c2r"><a href="#val-c2r" class="anchor"></a><div class="def val"><code><span class="keyword">val </span>c2r : ?&#8288;meas:<a href="../index.html#type-measure">measure</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;destroy_input:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;unaligned:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;howmany_n:int array <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyi:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;ni:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofsi:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inci:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-complex_array">complex_array</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyo:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;no:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofso:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inco:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-float_array">float_array</a> <span class="keyword">&#8209;&gt;</span> <a href="../index.html#type-c2r">c2r</a> <a href="../index.html#type-plan">plan</a></code></div><div class="doc"><p><code class="code">c2r i o</code> returns a plan for computing the <i>backward</i>
 transform from the complex array <code class="code">i</code> to the complex array
 <code class="code">o</code>. Note that, by default, executing the plan returned by
 <code class="code">c2r</code> destroys the input array <code class="code">i</code>. You can use
 <code class="code">~destroy_input:false</code> to generate a plan that does not
 modify <code class="code">i</code> at the expense of being slower — it is only possible
-in 1D and if no such plan can be created, <a href="../../module-type-Sig/index.html#exception-Failure">Fftw3.Sig.Failure</a>
-is raised.</p><p>See <a href="../../module-type-Sig/Genarray/index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of the other
+in 1D and if no such plan can be created, <a href="../index.html#exception-Failure">Fftw3.Sig.Failure</a>
+is raised.</p><p>See <a href="index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of the other
 optional parameters.</p></div></div><div class="spec val" id="val-r2r"><a href="#val-r2r" class="anchor"></a><div class="def val"><code><span class="keyword">val </span>r2r : <a href="../index.html#type-r2r_kind">r2r_kind</a> array <span class="keyword">&#8209;&gt;</span> ?&#8288;meas:<a href="../index.html#type-measure">measure</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;destroy_input:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;unaligned:bool <span class="keyword">&#8209;&gt;</span> ?&#8288;howmany_n:int array <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyi:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;ni:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofsi:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inci:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-float_array">float_array</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;howmanyo:<a href="index.html#type-coord">coord</a> list <span class="keyword">&#8209;&gt;</span> ?&#8288;no:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;ofso:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> ?&#8288;inco:<a href="index.html#type-coord">coord</a> <span class="keyword">&#8209;&gt;</span> <span class="type-var">'l</span> <a href="index.html#type-float_array">float_array</a> <span class="keyword">&#8209;&gt;</span> <a href="../index.html#type-r2r">r2r</a> <a href="../index.html#type-plan">plan</a></code></div><div class="doc"><p><code class="code">r2r kind i o</code> returns a plan for computing the transform
 from the complex array <code class="code">i</code> to the complex array <code class="code">o</code>. The
 type of transform along the dimension <code class="code">k</code> is given by
@@ -109,5 +105,5 @@ dimensions to the input array <code class="code">i</code>).</p><p>Note that the 
 but you may want to change it to <code class="code">true</code>, especially in case
 one of the <a href="../index.html#type-r2r_kind">r2r_kind</a> is <code class="code">HC2R</code> in order to allow the use
 of more efficient algorithms. Try this if
-<a href="../../module-type-Sig/index.html#exception-Failure">Fftw3.Sig.Failure</a> is raised.</p><p>See <a href="../../module-type-Sig/Genarray/index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of optional
+<a href="../index.html#exception-Failure">Fftw3.Sig.Failure</a> is raised.</p><p>See <a href="index.html#val-dft">Fftw3.Sig.Genarray.dft</a> for the meaning of optional
 parameters.</p></div></div></body></html>
