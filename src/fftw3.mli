@@ -240,7 +240,7 @@ module type Sig = sig
           meaning that alignment may be used to speed up the
           computations (when [in] and [out] are aligned of course).
 
-          {9 Subarrays}
+          {5 Subarrays}
 
           Fftw3 allows you to perform the FFT transform on subarrays
           defined by offset, strides and dimensions.  (Only the offset
@@ -298,7 +298,7 @@ module type Sig = sig
           v}
           is defined by [ofs = [|0; 1|]] and [inc = [|1; 0|]]
 
-          {9 Multiple transforms}
+          {5:many Multiple transforms}
 
           FFTW allows to compute several transforms at once by
           specifying submatrices of [i] and [o].  This is more
@@ -318,7 +318,8 @@ module type Sig = sig
           the lattice of multiple arrays.  In other words, if [a] is
           an element of (vector) index [k] in the "first" array, then
           the same element in the other arrays is at indices [k + i₁ *
-          v1 + ... + iₚ * vp].
+          v1 + ... + iₚ * vp].  The dimension of each [vᵢ] must be
+          equal to the number of dimensions of the input array [i].
 
           - [howmanyo] same as [howmanyi] but for output.
 
@@ -329,8 +330,9 @@ module type Sig = sig
                   x * + * +
                   x x x x x ]]
           v}
-          one sets: [ofs = [|0; 1|]], [inc = [|2; 2|]] and [howmany =
-          [ [|0; 1|] ]].
+          one sets: [ofsi = [|0; 1|]], [inci = [|2; 2|]] and [howmanyi
+          = [ [|0; 1|] ]] (or [ofso], [inco] and [howmanyo] if it is an
+          output array).
        *)
 
     val r2c : ?meas:measure ->
@@ -432,7 +434,8 @@ module type Sig = sig
           x].
 
           Remark: If you want to transform several 1D arrays at once,
-          use {!Fftw3.Sig.Array2.dft} with [~many:true]. *)
+          use {!Fftw3.Sig.Array2.dft} with [~howmanyi] and [~howmanyo]
+          set {{:../Genarray#many} appropriately}. *)
 
     val r2c : ?meas:measure ->
       ?destroy_input:bool -> ?unaligned:bool ->
