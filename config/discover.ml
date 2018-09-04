@@ -1,4 +1,4 @@
-open Stdio
+module C = Configurator.V1
 
 module String = struct
   include String
@@ -56,23 +56,22 @@ end
  *     | Error _ -> false *)
 
 let ocaml_version c =
-  let v = Configurator.ocaml_config_var_exn c "version" in
+  let v = C.ocaml_config_var_exn c "version" in
   match String.split_on_char '.' v with
-  | major :: minor :: _ -> (Caml.int_of_string major, Caml.int_of_string minor)
+  | major :: minor :: _ -> (int_of_string major, int_of_string minor)
   | _ -> assert false
 
 let split_ws str = String.split_on_char ' ' str |> List.filter ((<>) "")
 
 let get_cflags ?(default=[]) conf =
-  match conf with Some c -> c.Configurator.Pkg_config.cflags
+  match conf with Some c -> c.C.Pkg_config.cflags
                 | None -> default
 
 let get_libs ?(default=[]) conf =
-  match conf with Some c -> c.Configurator.Pkg_config.libs
+  match conf with Some c -> c.C.Pkg_config.libs
                 | None -> default
 
 let discover c =
-  let module C = Configurator in
   let module P = C.Pkg_config in
   let fftw3 = match P.get c with
     | Some p -> P.query p ~package:"fftw3"
@@ -81,11 +80,11 @@ let discover c =
     | Some p -> P.query p ~package:"fftw3f"
     | None -> None in
   let c_flags =
-    match Caml.Sys.getenv "FFTW3_CFLAGS" with
+    match Sys.getenv "FFTW3_CFLAGS" with
     | exception Not_found -> get_cflags fftw3 @ get_cflags fftw3f
     | alt_cflags -> split_ws alt_cflags in
   let libs =
-    match Caml.Sys.getenv "FFTW3_LIBS" with
+    match Sys.getenv "FFTW3_LIBS" with
     | exception Not_found -> get_libs fftw3 ~default:["-lfftw3"]
                              @ get_libs fftw3f ~default:["-lfftw3f"]
     | alt_libs -> "-lm" :: split_ws alt_libs in
@@ -108,11 +107,9 @@ let discover c =
    *          changed.\n  Please use a newer version of the OCaml-fftw3 \
    *          library or report the issue."; *)
 
-  let write_sexp file sexp =
-    Out_channel.write_all file ~data:(Base.Sexp.to_string sexp) in
-  write_sexp "c_flags.sexp" (Base.sexp_of_list Base.sexp_of_string c_flags);
-  write_sexp "c_library_flags.sexp" (Base.sexp_of_list Base.sexp_of_string libs)
+  C.Flags.write_sexp "c_flags.sexp" c_flags;
+  C.Flags.write_sexp "c_library_flags.sexp" libs
 
 
 let () =
-  Configurator.main ~name:"fftw3" discover
+  C.main ~name:"fftw3" discover

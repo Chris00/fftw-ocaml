@@ -2,7 +2,7 @@
 (executable
  (name      discover)
  (modules   discover)
- (libraries base stdio configurator))
+ (libraries dune.configurator))
 
 (executable
  (name      make_prec_dep)
@@ -11,5 +11,4 @@
 
 (executable
  (name      examples)
- (modules   examples)
- (libraries base stdio))
+ (modules   examples))
