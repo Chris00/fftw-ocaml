@@ -1,21 +1,5 @@
 module C = Configurator.V1
 
-module String = struct
-  include String
-
-  (* Make sure this exists even for OCaml < 4.04.0 *)
-  let split_on_char sep s =
-    let r = ref [] in
-    let j = ref (length s) in
-    for i = length s - 1 downto 0 do
-      if unsafe_get s i = sep then begin
-        r := sub s (i + 1) (!j - i - 1) :: !r;
-        j := i
-      end
-    done;
-    sub s 0 !j :: !r
-end
-
 (* let check_fftw3 ?c_flags ?link_flags c =
  *   Configurator.C.compile c ?c_flags ?link_flags
  *     "#include <fftw3.h>
@@ -57,11 +41,10 @@ end
 
 let ocaml_version c =
   let v = C.ocaml_config_var_exn c "version" in
-  match String.split_on_char '.' v with
+  let is_word_char c = '0' <= c && c <= '9' in
+  match C.Flags.extract_words ~is_word_char v with
   | major :: minor :: _ -> (int_of_string major, int_of_string minor)
   | _ -> assert false
-
-let split_ws str = String.split_on_char ' ' str |> List.filter ((<>) "")
 
 let get_cflags ?(default=[]) conf =
   match conf with Some c -> c.C.Pkg_config.cflags
@@ -82,12 +65,12 @@ let discover c =
   let c_flags =
     match Sys.getenv "FFTW3_CFLAGS" with
     | exception Not_found -> get_cflags fftw3 @ get_cflags fftw3f
-    | alt_cflags -> split_ws alt_cflags in
+    | alt_cflags -> C.Flags.extract_blank_separated_words alt_cflags in
   let libs =
     match Sys.getenv "FFTW3_LIBS" with
     | exception Not_found -> get_libs fftw3 ~default:["-lfftw3"]
                              @ get_libs fftw3f ~default:["-lfftw3f"]
-    | alt_libs -> "-lm" :: split_ws alt_libs in
+    | alt_libs -> "-lm" :: C.Flags.extract_blank_separated_words alt_libs in
 
   (* if not(check_fftw3 c ~c_flags ~link_flags:libs) then
    *   C.die "Please install FFTW3 and/or set environment variables \
