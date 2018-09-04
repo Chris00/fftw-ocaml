@@ -15,5 +15,5 @@ install:
 build_script:
   - cd "%APPVEYOR_BUILD_FOLDER%"
   - opam install cppo configurator base stdio
-  - jbuilder subst
-  - jbuilder build -p fftw3
+  - dune subst
+  - dune build -p fftw3

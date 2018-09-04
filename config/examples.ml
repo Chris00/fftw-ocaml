@@ -13,9 +13,9 @@ let archimedes_installed =
 
 let () =
   let d = Array.to_list(Caml.Sys.readdir ".") in
-  let d = List.filter d ~f:(fun f -> String.is_suffix f ".mlp") in
+  let d = List.filter d ~f:(fun f -> String.is_suffix f ~suffix:".mlp") in
   let arch = if archimedes_installed then "-D ARCHIMEDES_EXISTS" else "" in
   List.iter d ~f:(fun f ->
-      let f_out = String.sub f 0 (String.length f - 1) in
+      let f_out = String.sub f ~pos:0 ~len:(String.length f - 1) in
       run(Printf.sprintf "cppo %s %s -o %s" arch f f_out)
     )

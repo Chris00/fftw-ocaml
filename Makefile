@@ -2,21 +2,19 @@
 PKGVERSION = $(shell git describe --always --dirty)
 
 all build byte native:
-	jbuilder build @install --dev
-	jbuilder build @examples
+	dune build @install
+	dune build @examples
 
 test runtest:
-# Force the tests to be run
-	$(RM) -rf _build/default/tests/
-	jbuilder runtest
+	dune runtest --force
 
 install uninstall:
-	jbuilder $@
+	dune $@
 
 doc: build
 	sed -e 's/%%VERSION%%/$(PKGVERSION)/' src/fftw3.mli \
 	  > _build/default/src/fftw3.mli
-	jbuilder build @doc
+	dune build @doc
 
 # Profiling
 pnc:
@@ -27,6 +25,6 @@ lint:
 	opam lint fftw3.opam
 
 clean::
-	jbuilder clean
+	dune clean
 
 .PHONY: all byte native test runtest install uninstall doc pnc clean lint

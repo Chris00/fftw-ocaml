@@ -35,7 +35,7 @@ let message fmt =
 let henon ?(a=1.4) ?(b=0.3) ?(xy0=(1.,1.)) ?(n_init=0) (xy: mat) =
   let henon_map (x, y) = (a +. b *. y -. x *. x,  x) in
   let v = ref xy0 in
-  for i = 1 to n_init do v := henon_map !v done;
+  for _i = 1 to n_init do v := henon_map !v done;
   for i = 0 to Array2.dim2 xy - 1 do
     let (x,y) = !v in
     xy.{0,i} <- x;

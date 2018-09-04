@@ -1,7 +1,7 @@
 # Hacking the build into Travis-CI "C" environment
 # See http://anil.recoil.org/2013/09/30/travis-and-ocaml.html
 
-OPAM_PACKAGES='jbuilder configurator base stdio cppo archimedes lacaml'
+OPAM_PACKAGES='dune configurator base stdio cppo archimedes lacaml'
 
 export OPAMYES=1
 opam init

@@ -101,7 +101,7 @@ let mem (consts:vec) n =
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
               Format.eprintf
-                "%3i: l = %#-6.g  x = %#-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                "%3i: l = %-6g  x = %-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
                 i l (nrm2 x) h h');
   Array1.blit v vars;
   x (* return [const] followed by the optimal [vars]. *)
@@ -144,7 +144,7 @@ let mem_harrop (consts: vec) n =
   gradient_ascent entropy (grad entropy) v
     ~print:(fun i l x h h' ->
               Format.eprintf
-                "%3i: l = %#-6.g  x = %#-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
+                "%3i: l = %-6g  x = %-2g  H(x) = %1.14f  H'(x) = %.5g@\n%!"
                 i l (nrm2 x) h h');
   let x = copy consts ~y:(create n) (* first components of [x] are [const] *) in
   ignore(copy v ~y:x ~ofsy:(d + 1));
@@ -188,7 +188,7 @@ let () =
      "fname output file (default: standard output or graphical display \
       if gnuplot is found).");
   ] in
-  Arg.parse args (fun s -> raise(Arg.Bad "no anonymous argument")) usage;
+  Arg.parse args (fun _ -> raise(Arg.Bad "no anonymous argument")) usage;
   if !input = "" then (Arg.usage args usage; exit 1);
 
   let consts = read_consts (Scanning.from_file !input) in

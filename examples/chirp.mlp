@@ -8,7 +8,6 @@
    did not however to avoid this additional dependency.
 *)
 
-open Printf
 open Bigarray
 module FFT = Fftw3.D
 
@@ -17,8 +16,6 @@ module A = Archimedes
 #endif
 
 type vec = fortran_layout FFT.Array1.complex_array
-
-let pi = 4. *. atan 1.
 
 (** Chirp signal
  ***********************************************************************)
