@@ -64,6 +64,9 @@ let discover c =
     if major > 4 || (major = 4 &&  minor >= 6) then "-DOCAML_4_06" :: c_flags
     else c_flags in
 
+  let c_flags = if fftw3f = None then c_flags
+                else "-DFFTW3F_EXISTS" :: c_flags in
+
   if not(check_r2r_kind ~c_flags c) then
     C.die "The values of the fields FFTW_R2HC,... in fftw3.h have \
            changed.\n  Please use a newer version of the OCaml-fftw3 \
