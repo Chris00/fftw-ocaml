@@ -7,7 +7,7 @@ Perquisites
 -----------
 
 The FFTW, version 3, with its development files (``fftw3.h``) must be
-installed on your platform.  For example, on Debian or Ubuntu, you
+installed on your system.  For example, on Debian or Ubuntu, you
 need to install the package ``libfftw3-dev`` (see the [opam
 file](fftw3.opam) for other distributions).
 
@@ -15,7 +15,14 @@ file](fftw3.opam) for other distributions).
 Compilation
 -----------
 
-    jbuilder build @install
+The easier way to install this library is by using [opam][]:
+
+    opam install fftw3
+
+If you cloned this repository, you can use [Dune][dune] to
+compile it:
+
+    dune build @install
 
 If your fftw3 header files or libraries are not where you C compiler
 expects to find them and `pkg-config` does not return the right
@@ -28,6 +35,8 @@ environment variable `FFTW3_CFLAGS`:
 Of course, replace ``/opt/local/include`` (resp. ``/opt/local/lib``) by the
 actual paths of your header files (resp. library).
 
+[opam]: https://opam.ocaml.org/
+[dune]: https://github.com/ocaml/dune
 
 Usage
 -----
@@ -36,7 +45,9 @@ Fftw3 contains two submodules differing only by precision ``Fftw3.D`` for
 double precision and ``Fftw3.S`` for single precision.  Note that the
 functions of the single precision module will raise ``Failure`` if the
 corresponding FFTW3 library was not discovered by the configure
-script.  See the mli file for more details.
+script.  See the [mli file](src/fftw3.mli) for more details
+or consult the documentation
+[online](https://chris00.github.io/fftw-ocaml/doc/fftw3/Fftw3/).
 
 
 Examples
