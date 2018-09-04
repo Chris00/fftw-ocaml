@@ -1,43 +1,30 @@
 module C = Configurator.V1
 
-(* let check_fftw3 ?c_flags ?link_flags c =
- *   Configurator.C.compile c ?c_flags ?link_flags
- *     "#include <fftw3.h>
- *      int main() {
- *        const int n = 10;
- *        fftw_complex in[10], out[10];
- *        fftw_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
- *        return 0;
- *      }"
- *
- * (\* Test single precision *\)
- * let check_fftw3l ?c_flags ?link_flags c =
- *   Configurator.C.compile c ?c_flags ?link_flags
- *     "#include <fftw3.h>
- *      int main() {
- *        const int n = 10;
- *        fftwf_complex in[10], out[10];
- *        fftwf_plan_dft_1d(n, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
- *        return(0);
- *      }"
- *
- * (\* Keep the order of "type r2r_kind" in fftw3SD.ml in sync with
- *    fftw3.h values. *\)
- * let check_r2r_kind ?c_flags ?link_flags c =
- *   Configurator.C.run c ?c_flags ?link_flags
- *     "#include <fftw3.h>
- *      int main() {
- *        if(FFTW_R2HC==0 && FFTW_HC2R==1 && FFTW_DHT==2 &&
- *           FFTW_REDFT00==3 && FFTW_REDFT01==4 && FFTW_REDFT10==5 &&
- *           FFTW_REDFT11==6 && FFTW_RODFT00==7 && FFTW_RODFT01==8 &&
- *           FFTW_RODFT10==9 && FFTW_RODFT11==10)
- *          return(0);
- *        else
- *          return(1);
- *      }"
- *   |> function
- *     | Ok { exit_code; _ } -> exit_code = 0
- *     | Error _ -> false *)
+(* Keep the order of "type r2r_kind" in fftw3SD.ml in sync with
+   fftw3.h values. *)
+let check_r2r_kind ?c_flags c =
+  let v = C.C_define.(import c ?c_flags ~includes:["fftw3.h"]
+                        ["FFTW_R2HC", Type.Int;
+                         "FFTW_HC2R", Type.Int;
+                         "FFTW_DHT", Type.Int;
+                         "FFTW_REDFT00", Type.Int;
+                         "FFTW_REDFT01", Type.Int;
+                         "FFTW_REDFT10", Type.Int;
+                         "FFTW_REDFT11", Type.Int;
+                         "FFTW_RODFT00", Type.Int;
+                         "FFTW_RODFT01", Type.Int;
+                         "FFTW_RODFT10", Type.Int;
+                         "FFTW_RODFT11", Type.Int;  ]) in
+  let get name = match List.assoc name v with
+    | C.C_define.Value.Int i -> i
+    | exception _ -> C.die "Cannot find %S in the header file <fftw3.h>. \
+                            Contact the authors." name
+    | _ -> C.die "Macro %S does not have an integer value.  Contact the \
+                  authors." name in
+  get "FFTW_R2HC" = 0 && get "FFTW_HC2R" = 1 && get "FFTW_DHT" = 2
+  && get "FFTW_REDFT00" = 3 && get "FFTW_REDFT01" = 4 && get "FFTW_REDFT10" = 5
+  && get "FFTW_REDFT11" = 6 && get "FFTW_RODFT00" = 7 && get "FFTW_RODFT01" = 8
+  && get "FFTW_RODFT10" = 9 && get "FFTW_RODFT11" = 10
 
 let ocaml_version c =
   let v = C.ocaml_config_var_exn c "version" in
@@ -72,23 +59,15 @@ let discover c =
                              @ get_libs fftw3f ~default:["-lfftw3f"]
     | alt_libs -> "-lm" :: C.Flags.extract_blank_separated_words alt_libs in
 
-  (* if not(check_fftw3 c ~c_flags ~link_flags:libs) then
-   *   C.die "Please install FFTW3 and/or set environment variables \
-   *          FFTW3_CFLAGS and FFTW3_LIBS.";
-   *
-   * if not(check_fftw3l c ~c_flags ~link_flags:libs) then
-   *   printf "warning: FFTW3 single precision not installed.  Functions of the \
-   *           corresponding OCaml module will raise exceptions.\n"; *)
-
   let major, minor = ocaml_version c in
   let c_flags =
     if major > 4 || (major = 4 &&  minor >= 6) then "-DOCAML_4_06" :: c_flags
     else c_flags in
 
-  (* if not(check_r2r_kind ~c_flags c) then
-   *   C.die "The values of the fields FFTW_R2HC,... in fftw3.h have \
-   *          changed.\n  Please use a newer version of the OCaml-fftw3 \
-   *          library or report the issue."; *)
+  if not(check_r2r_kind ~c_flags c) then
+    C.die "The values of the fields FFTW_R2HC,... in fftw3.h have \
+           changed.\n  Please use a newer version of the OCaml-fftw3 \
+           library or report the issue.";
 
   C.Flags.write_sexp "c_flags.sexp" c_flags;
   C.Flags.write_sexp "c_library_flags.sexp" libs
