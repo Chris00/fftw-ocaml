@@ -101,13 +101,7 @@ uintnat fftw3_caml_ba_deserialize(void * dst)
   /* Compute total number of elements */
   num_elts = caml_ba_num_elts(b);
   /* Determine element size in bytes */
-  if ((b->flags & CAML_BA_KIND_MASK) >
-#ifdef CAML_BA_CHAR
-      CAML_BA_CHAR
-#else
-      CAML_BA_COMPLEX64
-#endif
-    )
+  if ((b->flags & CAML_BA_KIND_MASK) > CAML_BA_CHAR)
     caml_deserialize_error("input_value: bad bigarray kind");
   elt_size = caml_ba_element_size[b->flags & CAML_BA_KIND_MASK];
   /* Allocate room for data */
@@ -116,9 +110,7 @@ uintnat fftw3_caml_ba_deserialize(void * dst)
     caml_deserialize_error("input_value: out of memory for bigarray");
   /* Read data */
   switch (b->flags & CAML_BA_KIND_MASK) {
-#ifdef CAML_BA_CHAR
   case CAML_BA_CHAR:
-#endif
   case CAML_BA_SINT8:
   case CAML_BA_UINT8:
     caml_deserialize_block_1(b->data, num_elts); break;
@@ -166,9 +158,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   intnat dimcopy[CAML_BA_MAX_NUM_DIMS];
 
   Assert(num_dims >= 1 && num_dims <= CAML_BA_MAX_NUM_DIMS);
-#ifdef CAML_BA_CHAR
   Assert((flags & CAML_BA_KIND_MASK) <= CAML_BA_CHAR);
-#endif
   for (i = 0; i < num_dims; i++) dimcopy[i] = dim[i];
   size = 0;
   /* Data is allocated here (i.e. data == NULL in the original code). */
