@@ -22,3 +22,4 @@ depends: [
   "lacaml" {with-test}
   "conf-fftw3"
 ]
+synopsis: "Binding to the famous Fast Fourier Transform library FFTW"
