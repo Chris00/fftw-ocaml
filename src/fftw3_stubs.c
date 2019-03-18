@@ -149,10 +149,8 @@ static struct custom_operations fftw3_caml_ba_ops = {
   caml_ba_compare,
   caml_ba_hash,
   caml_ba_serialize,
-  fftw3_caml_ba_deserialize
-#ifdef custom_compare_ext_default
-  , custom_compare_ext_default
-#endif
+  fftw3_caml_ba_deserialize,
+  custom_compare_ext_default
 };
 
 /* TODO: register the struct custom_operations with the deserializer
