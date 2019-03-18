@@ -1,19 +1,13 @@
 language: c
-sudo: false
-addons:
-  apt:
-    sources:
-    - avsm
-    packages:
-    - ocaml
-    - ocaml-native-compilers
-    - opam
-    - libfftw3-dev
-    - liblapack-dev
-
-script: bash -ex travis-ci.sh
+sudo: required
+install: test -e .travis.opam.sh || wget https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-opam.sh
+script: bash -ex .travis-opam.sh
 env:
-  - OPAM_SWITCH=4.03.0
-  - OPAM_SWITCH=4.04.2
-  - OPAM_SWITCH=4.05.0
-  - OPAM_SWITCH=4.06.0
+  - OCAML_VERSION=4.03
+  - OCAML_VERSION=4.04
+  - OCAML_VERSION=4.05
+  - OCAML_VERSION=4.06
+  - OCAML_VERSION=4.07
+os:
+  - linux
+  - osx

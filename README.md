@@ -1,7 +1,8 @@
+[![Build status](https://travis-ci.org/Chris00/fftw-ocaml.png)](https://travis-ci.org/Chris00/fftw-ocaml)
+[![Build status](https://ci.appveyor.com/api/projects/status/etbmhio3tior36og?svg=true)](https://ci.appveyor.com/project/Chris00/fftw-ocaml)
+
 Interface to FFTW, version 3
 ============================
-
-[![Build status](https://travis-ci.org/Chris00/fftw-ocaml.png)](https://travis-ci.org/Chris00/fftw-ocaml)
 
 Perquisites
 -----------
