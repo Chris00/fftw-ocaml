@@ -1,9 +1,7 @@
-
 PKGVERSION = $(shell git describe --always --dirty)
 
 all build byte native:
-	dune build @install
-	dune build @examples
+	dune build @install @examples
 
 test runtest:
 	dune runtest --force

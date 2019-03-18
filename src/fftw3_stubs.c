@@ -176,7 +176,11 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   flags |= CAML_BA_MANAGED;
 
   asize = SIZEOF_BA_ARRAY + num_dims * sizeof(intnat);
+#ifdef OCAML_4_08
+  res = caml_alloc_custom_mem(&caml_ba_ops, asize, size);
+#else
   res = caml_alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);
+#endif
   b = Caml_ba_array_val(res);
   b->data = data;
   b->num_dims = num_dims;

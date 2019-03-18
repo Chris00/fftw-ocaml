@@ -62,7 +62,9 @@ caml_ba_multov(uintnat a, uintnat b, int * overflow)
 }
 
 
+#ifndef OCAML_4_08
 #define CAML_BA_MAX_MEMORY 1024*1024*1024
+#endif
 
 static void caml_ba_deserialize_longarray(void * dest, intnat num_elts)
 {

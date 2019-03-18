@@ -61,7 +61,10 @@ let discover c =
 
   let major, minor = ocaml_version c in
   let c_flags =
-    if major > 4 || (major = 4 &&  minor >= 6) then "-DOCAML_4_06" :: c_flags
+    if major > 4 || (major = 4 && minor >= 6) then "-DOCAML_4_06" :: c_flags
+    else c_flags in
+  let c_flags =
+    if major > 4 || (major = 4 && minor >= 8) then "-DOCAML_4_08" :: c_flags
     else c_flags in
 
   let c_flags = if fftw3f = None then c_flags
