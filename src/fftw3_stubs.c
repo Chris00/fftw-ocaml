@@ -90,14 +90,36 @@ static void fftw3_caml_ba_finalize(value v)
 uintnat fftw3_caml_ba_deserialize(void * dst)
 {
   struct caml_ba_array * b = dst;
-  int i, elt_size;
+  int i;
   uintnat num_elts;
+#ifdef OCAML_4_08
+  uintnat size;
+#else
+  int elt_size;
+#endif
 
   /* Read back header information */
   b->num_dims = caml_deserialize_uint_4();
   b->flags = caml_deserialize_uint_4() | CAML_BA_MANAGED;
   b->proxy = NULL;
   for (i = 0; i < b->num_dims; i++) b->dim[i] = caml_deserialize_uint_4();
+#ifdef OCAML_4_08
+    /* Compute total number of elements.  Watch out for overflows (MPR#7765). */
+  num_elts = 1;
+  for (i = 0; i < b->num_dims; i++) {
+    if (caml_umul_overflow(num_elts, b->dim[i], &num_elts))
+      caml_deserialize_error("input_value: size overflow for bigarray");
+  }
+  /* Determine array size in bytes.  Watch out for overflows (MPR#7765). */
+  if ((b->flags & CAML_BA_KIND_MASK) > CAML_BA_CHAR)
+    caml_deserialize_error("input_value: bad bigarray kind");
+  if (caml_umul_overflow(num_elts,
+                         caml_ba_element_size[b->flags & CAML_BA_KIND_MASK],
+                         &size))
+    caml_deserialize_error("input_value: size overflow for bigarray");
+  /* Allocate room for data */
+  b->data = fftw_malloc(size);
+#else
   /* Compute total number of elements */
   num_elts = caml_ba_num_elts(b);
   /* Determine element size in bytes */
@@ -106,6 +128,7 @@ uintnat fftw3_caml_ba_deserialize(void * dst)
   elt_size = caml_ba_element_size[b->flags & CAML_BA_KIND_MASK];
   /* Allocate room for data */
   b->data = fftw_malloc(elt_size * num_elts);
+#endif
   if (b->data == NULL)
     caml_deserialize_error("input_value: out of memory for bigarray");
   /* Read data */
@@ -152,7 +175,10 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
 {
   void * data = NULL;
   uintnat num_elts, asize, size;
-  int overflow, i;
+#ifndef OCAML_4_08
+  int overflow;
+#endif
+  int i;
   value res;
   struct caml_ba_array * b;
   intnat dimcopy[CAML_BA_MAX_NUM_DIMS];
@@ -164,6 +190,16 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   /* Data is allocated here (i.e. data == NULL in the original code). */
   overflow = 0;
   num_elts = 1;
+#ifdef OCAML_4_08
+    for (i = 0; i < num_dims; i++) {
+      if (caml_umul_overflow(num_elts, dimcopy[i], &num_elts))
+        caml_raise_out_of_memory();
+    }
+    if (caml_umul_overflow(num_elts,
+                           caml_ba_element_size[flags & CAML_BA_KIND_MASK],
+                           &size))
+      caml_raise_out_of_memory();
+#else
   for (i = 0; i < num_dims; i++) {
     num_elts = caml_ba_multov(num_elts, dimcopy[i], &overflow);
   }
@@ -171,6 +207,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
                         caml_ba_element_size[flags & CAML_BA_KIND_MASK],
                         &overflow);
   if (overflow) caml_raise_out_of_memory();
+#endif
   data = fftw_malloc(size);
   if (data == NULL && size != 0) caml_raise_out_of_memory();
   flags |= CAML_BA_MANAGED;
