@@ -1,3 +1,10 @@
+0.8.3 2019-03-19
+----------------
+
+- Compatibility with OCaml 4.08.
+- Upgrade to OPAM 2.
+- Remove conditionals to support older versions of OCaml.
+
 0.8.2 2018-09-05
 ----------------
 
