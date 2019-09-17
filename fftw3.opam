@@ -19,7 +19,7 @@ depends: [
   "ocaml" {>= "4.03.0"}
   "dune"
   "cppo" {build}
-  "lacaml" {with-test}
+  "lacaml" {with-test & os = "linux"}
   "conf-fftw3"
 ]
 synopsis: "Binding to the famous Fast Fourier Transform library FFTW"
