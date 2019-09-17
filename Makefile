@@ -10,9 +10,9 @@ install uninstall:
 	dune $@
 
 doc: build
-	sed -e 's/%%VERSION%%/$(PKGVERSION)/' src/fftw3.mli \
-	  > _build/default/src/fftw3.mli
 	dune build @doc
+	sed -e 's/%%VERSION%%/$(PKGVERSION)/' --in-place \
+	  _build/default/_doc/_html/fftw3/Fftw3/index.html
 
 # Profiling
 pnc:
