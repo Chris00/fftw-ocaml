@@ -8,9 +8,10 @@ Perquisites
 -----------
 
 The FFTW, version 3, with its development files (``fftw3.h``) must be
-installed on your system.  For example, on Debian or Ubuntu, you
-need to install the package ``libfftw3-dev`` (see the [opam
-file](fftw3.opam) for other distributions).
+installed on your system.  For example, on Debian or Ubuntu, you need
+to install the package ``libfftw3-dev`` (see the package
+[conf-fftw3](https://opam.ocaml.org/packages/conf-fftw3/) for other
+distributions — click the “Edit” link).
 
 
 Compilation
