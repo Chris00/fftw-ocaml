@@ -188,7 +188,9 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   for (i = 0; i < num_dims; i++) dimcopy[i] = dim[i];
   size = 0;
   /* Data is allocated here (i.e. data == NULL in the original code). */
+#ifndef OCAML_4_08
   overflow = 0;
+#endif
   num_elts = 1;
 #ifdef OCAML_4_08
     for (i = 0; i < num_dims; i++) {
@@ -214,7 +216,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
 
   asize = SIZEOF_BA_ARRAY + num_dims * sizeof(intnat);
 #ifdef OCAML_4_08
-  res = caml_alloc_custom_mem(&caml_ba_ops, asize, size);
+  res = caml_alloc_custom_mem(&fftw3_caml_ba_ops, asize, size);
 #else
   res = caml_alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);
 #endif
