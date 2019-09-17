@@ -1,7 +1,7 @@
 0.8.3 2019-03-19
 ----------------
 
-- Compatibility with OCaml 4.08.
+- Compatibility with OCaml 4.08 and the newer `Bigarray` code.
 - Upgrade to OPAM 2.
 - Remove conditionals to support older versions of OCaml.
 
