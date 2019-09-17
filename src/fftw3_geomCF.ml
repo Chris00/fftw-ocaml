@@ -119,9 +119,9 @@ let only_ones d =
   with Exit -> false
 
 (** Check whether the matrix given by [hm_n] (howmany matrix) and [hm]
-    is a valid submatrix of the hermitian matrix [mat].  @return the
-    [hm_stride], [hm_n] (howmany matrix), [stride] and [n] (logical
-    dimensions). *)
+    is a valid submatrix of the hermitian matrix [mat].
+    @return the [hm_stride], [hm_n] (howmany matrix), [stride] and [n]
+    (logical dimensions). *)
 let get_geom_hm name hm_nname hm_n hmname hm  low up  mat =
   let num_dims = Genarray.num_dims mat in
   if hm = [] then
