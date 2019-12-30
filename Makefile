@@ -1,10 +1,10 @@
 PKGVERSION = $(shell git describe --always --dirty)
 
 all build byte native:
-	dune build @install @examples
+	dune build --workspace dune-workspace.dev @install @examples
 
 test runtest:
-	dune runtest --force
+	dune runtest --force --workspace dune-workspace.dev
 
 install uninstall:
 	dune $@
