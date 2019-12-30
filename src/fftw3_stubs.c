@@ -93,7 +93,7 @@ uintnat fftw3_caml_ba_deserialize(void * dst)
   struct caml_ba_array * b = dst;
   int i;
   uintnat num_elts;
-#ifdef OCAML_4_08
+#if OCAML_VERSION >= 40800
   uintnat size;
 #else
   int elt_size;
@@ -104,7 +104,7 @@ uintnat fftw3_caml_ba_deserialize(void * dst)
   b->flags = caml_deserialize_uint_4() | CAML_BA_MANAGED;
   b->proxy = NULL;
   for (i = 0; i < b->num_dims; i++) b->dim[i] = caml_deserialize_uint_4();
-#ifdef OCAML_4_08
+#if OCAML_VERSION >= 40800
     /* Compute total number of elements.  Watch out for overflows (MPR#7765). */
   num_elts = 1;
   for (i = 0; i < b->num_dims; i++) {
@@ -176,7 +176,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
 {
   void * data = NULL;
   uintnat num_elts, asize, size;
-#ifndef OCAML_4_08
+#if OCAML_VERSION < 40800
   int overflow;
 #endif
   int i;
@@ -189,11 +189,11 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   for (i = 0; i < num_dims; i++) dimcopy[i] = dim[i];
   size = 0;
   /* Data is allocated here (i.e. data == NULL in the original code). */
-#ifndef OCAML_4_08
+#if OCAML_VERSION < 40800
   overflow = 0;
 #endif
   num_elts = 1;
-#ifdef OCAML_4_08
+#if OCAML_VERSION >= 40800
     for (i = 0; i < num_dims; i++) {
       if (caml_umul_overflow(num_elts, dimcopy[i], &num_elts))
         caml_raise_out_of_memory();
@@ -216,7 +216,7 @@ static value fftw3_caml_ba_alloc(int flags, int num_dims, intnat * dim)
   flags |= CAML_BA_MANAGED;
 
   asize = SIZEOF_BA_ARRAY + num_dims * sizeof(intnat);
-#ifdef OCAML_4_08
+#if OCAML_VERSION >= 40800
   res = caml_alloc_custom_mem(&fftw3_caml_ba_ops, asize, size);
 #else
   res = caml_alloc_custom(&fftw3_caml_ba_ops, asize, size, CAML_BA_MAX_MEMORY);

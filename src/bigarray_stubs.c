@@ -19,9 +19,9 @@ CAMLextern int caml_compare_unordered;
 #endif
 #endif /* SIZEOF_BA_ARRAY */
 
-#ifndef OCAML_4_06
+#if OCAML_VERSION < 40600
 #include "bigarray_stubs_old.c"
-#endif /* OCAML_4_06 */
+#endif
 
 
 static uintnat
@@ -64,7 +64,7 @@ caml_ba_multov(uintnat a, uintnat b, int * overflow)
 }
 
 
-#ifndef OCAML_4_08
+#if OCAML_VERSION < 40800
 #define CAML_BA_MAX_MEMORY 1024*1024*1024
 #endif
 
