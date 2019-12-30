@@ -319,7 +319,7 @@ value fftw3_ocaml_export_wisdom_to_string(value unit)
 
 static void fftw3_ocaml_export_write(char c, void* data)
 {
-  static value* write = NULL;
+  static const value* write = NULL;
   if (write == NULL)
     /* First time around, look up by name */
     write = caml_named_value("fftw3_wisdom_export");
@@ -374,7 +374,7 @@ value fftw3_ocaml_import_wisdom_from_string(value s)
 
 static int fftw3_ocaml_import_wisdom_read(void* data)
 {
-  static value* read = NULL;
+  static const value* read = NULL;
   if (read == NULL)
     /* First time around, look up by name */
     read = caml_named_value("fftw3_wisdom_import");
