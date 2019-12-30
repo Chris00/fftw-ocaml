@@ -18,7 +18,7 @@
 
 (** Interface for FFTW version 3.
 
-   @author Christophe Troestler <Christophe.Troestler\@umons.ac.be>
+   @author Christophe Troestler <Christophe.Troestler@umons.ac.be>
    @version %%VERSION%%
 *)
 (** We advise against opening this module as it contains submodules with
