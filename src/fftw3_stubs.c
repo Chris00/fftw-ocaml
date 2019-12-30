@@ -28,6 +28,7 @@
 #include <caml/callback.h>
 #include <caml/custom.h>
 #include <caml/intext.h>
+#include <caml/version.h>
 
 #define CAML_INTERNALS
 #include <caml/bigarray.h>

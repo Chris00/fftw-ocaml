@@ -5,8 +5,10 @@
 
 #include <stdint.h>
 
+#if OCAML_VERSION < 41000
 /* From ocaml/byterun/compare.h */
 CAMLextern int caml_compare_unordered;
+#endif
 
 /* From bigarray.h in latest versions of OCaml */
 #ifndef SIZEOF_BA_ARRAY
