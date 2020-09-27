@@ -2,7 +2,7 @@
 (executable
  (name      discover)
  (modules   discover)
- (libraries dune.configurator))
+ (libraries dune-configurator))
 
 (executable
  (name      make_prec_dep)
