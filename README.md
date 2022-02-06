@@ -1,5 +1,5 @@
-[![Build status](https://travis-ci.org/Chris00/fftw-ocaml.png)](https://travis-ci.org/Chris00/fftw-ocaml)
-[![Build status](https://ci.appveyor.com/api/projects/status/etbmhio3tior36og?svg=true)](https://ci.appveyor.com/project/Chris00/fftw-ocaml)
+[![Continuous
+Integration](https://github.com/Chris00/fftw-ocaml/actions/workflows/main.yml/badge.svg)](https://github.com/Chris00/fftw-ocaml/actions/workflows/main.yml)
 
 Interface to FFTW, version 3
 ============================
