@@ -3,6 +3,7 @@
 
 - Update to `dune-configurator`.
 - Remove the special OPAM rule for MacOS (@neynt).
+- Fix deprecation warnings.
 
 0.8.4 2019-12-30
 ----------------

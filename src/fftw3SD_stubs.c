@@ -3,7 +3,7 @@
 #define PLAN_VAL(v) (* (FFTW(plan) *) Data_custom_val(v))
 
 #define ALLOC_PLAN()                                            \
-  alloc_custom(&FFTW_OCAML(plan_ops), sizeof(FFTW(plan)),       \
+  caml_alloc_custom(&FFTW_OCAML(plan_ops), sizeof(FFTW(plan)),       \
                sizeof(FFTW(plan)), 500 * sizeof(FFTW(plan)))
 
 
@@ -50,9 +50,9 @@ CAMLexport value FFTW_OCAML(execute)(value vp)
   FFTW(plan) p = PLAN_VAL(vp);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute)(p);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -60,13 +60,13 @@ CAMLexport value FFTW_OCAML(execute_dft)(value vp, value vi, value vo)
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FFTW(complex) *i = Data_bigarray_val(vi);
-  FFTW(complex) *o = Data_bigarray_val(vo);
+  FFTW(complex) *i = Caml_ba_data_val(vi);
+  FFTW(complex) *o = Caml_ba_data_val(vo);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_dft)(p, i, o);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -76,15 +76,15 @@ CAMLexport value FFTW_OCAML(execute_split_dft)(value vp,
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FLOAT *ri = Data_bigarray_val(vri);
-  FLOAT *ii = Data_bigarray_val(vii);
-  FLOAT *ro = Data_bigarray_val(vro);
-  FLOAT *io = Data_bigarray_val(vio);
+  FLOAT *ri = Caml_ba_data_val(vri);
+  FLOAT *ii = Caml_ba_data_val(vii);
+  FLOAT *ro = Caml_ba_data_val(vro);
+  FLOAT *io = Caml_ba_data_val(vio);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft)(p, ri, ii, ro, io);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -93,13 +93,13 @@ CAMLexport value FFTW_OCAML(execute_dft_r2c)(value vp, value vi, value vo)
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FLOAT *i = Data_bigarray_val(vi);
-  FFTW(complex) *o = Data_bigarray_val(vo);
+  FLOAT *i = Caml_ba_data_val(vi);
+  FFTW(complex) *o = Caml_ba_data_val(vo);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_dft_r2c)(p, i, o);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -109,14 +109,14 @@ CAMLexport value FFTW_OCAML(execute_split_dft_r2c)(value vp,
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FLOAT *i = Data_bigarray_val(vi);
-  FLOAT *ro = Data_bigarray_val(vro);
-  FLOAT *io = Data_bigarray_val(vio);
+  FLOAT *i = Caml_ba_data_val(vi);
+  FLOAT *ro = Caml_ba_data_val(vro);
+  FLOAT *io = Caml_ba_data_val(vio);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft_r2c)(p, i, ro, io);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -125,13 +125,13 @@ CAMLexport value FFTW_OCAML(execute_dft_c2r)(value vp, value vi, value vo)
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FFTW(complex) *i = Data_bigarray_val(vi);
-  FLOAT *o = Data_bigarray_val(vo);
+  FFTW(complex) *i = Caml_ba_data_val(vi);
+  FLOAT *o = Caml_ba_data_val(vo);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_dft_c2r)(p, i, o);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -141,14 +141,14 @@ CAMLexport value FFTW_OCAML(execute_split_dft_c2r)(value vp,
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FLOAT *ri = Data_bigarray_val(vri);
-  FLOAT *ii = Data_bigarray_val(vii);
-  FLOAT *o = Data_bigarray_val(vo);
+  FLOAT *ri = Caml_ba_data_val(vri);
+  FLOAT *ii = Caml_ba_data_val(vii);
+  FLOAT *o = Caml_ba_data_val(vo);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_split_dft_c2r)(p, ri, ii, o);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -157,13 +157,13 @@ CAMLexport value FFTW_OCAML(execute_r2r)(value vp, value vi, value vo)
 {
   /* noalloc */
   FFTW(plan) p = PLAN_VAL(vp);
-  FLOAT *i = Data_bigarray_val(vi);
-  FLOAT *o = Data_bigarray_val(vo);
+  FLOAT *i = Caml_ba_data_val(vi);
+  FLOAT *o = Caml_ba_data_val(vo);
 
   FFTW_RAISE_NO_FFTWF;
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   FFTW(execute_r2r)(p, i, o);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
   return(Val_unit);
 }
 
@@ -176,7 +176,7 @@ CAMLexport value FFTW_OCAML(execute_r2r)(value vp, value vi, value vo)
 #define MAKE_DIMS()                                             \
   const int rank = Wosize_val(vn);                              \
   const int howmany_rank = Wosize_val(vhowmany);                \
-  FFTW(iodim) dims[MAX_NUM_DIMS], howmany_dims[MAX_NUM_DIMS];   \
+  FFTW(iodim) dims[CAML_BA_MAX_NUM_DIMS], howmany_dims[CAML_BA_MAX_NUM_DIMS];   \
   int k;                                                        \
                                                                 \
   for(k = 0; k < rank; k++) {                                   \
@@ -203,17 +203,17 @@ value FFTW_OCAML(guru_dft)(value vi, value vo,  value vsign, value vflags,
   int sign = Int_val(vsign);
   unsigned flags = Int_val(vflags);
   FFTW(plan) p;
-  FFTW(complex) *i = Data_bigarray_val(vi);
-  FFTW(complex) *o = Data_bigarray_val(vo);
+  FFTW(complex) *i = Caml_ba_data_val(vi);
+  FFTW(complex) *o = Caml_ba_data_val(vo);
   MAKE_DIMS();
   
   FFTW_RAISE_NO_FFTWF;
   i += Int_val(vofsi);
   o += Int_val(vofso);
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft)(rank, dims, howmany_rank, howmany_dims,
                           i, o, sign, flags);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
 
   if (p == NULL) caml_failwith("Fftw3." PREC ".Genarray.dft");
   plan = ALLOC_PLAN();
@@ -242,17 +242,17 @@ value FFTW_OCAML(guru_r2c)(value vi, value vo, value vflags,
   CAMLlocal1(plan);
   unsigned flags = Int_val(vflags);
   FFTW(plan) p;
-  FLOAT *i = Data_bigarray_val(vi);
-  FFTW(complex) *o = Data_bigarray_val(vo);
+  FLOAT *i = Caml_ba_data_val(vi);
+  FFTW(complex) *o = Caml_ba_data_val(vo);
   MAKE_DIMS();
   
   FFTW_RAISE_NO_FFTWF;
   i += Int_val(vofsi);
   o += Int_val(vofso);
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft_r2c)(rank, dims, howmany_rank, howmany_dims,
                               i, o, flags);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
 
   if (p == NULL) caml_failwith("Fftw3." PREC ".Genarray.r2c");
   plan = ALLOC_PLAN();
@@ -282,17 +282,17 @@ value FFTW_OCAML(guru_c2r)(value vi, value vo, value vflags,
   CAMLlocal1(plan);
   unsigned flags = Int_val(vflags);
   FFTW(plan) p;
-  FFTW(complex) *i = Data_bigarray_val(vi);
-  FLOAT *o = Data_bigarray_val(vo);
+  FFTW(complex) *i = Caml_ba_data_val(vi);
+  FLOAT *o = Caml_ba_data_val(vo);
   MAKE_DIMS();
   
   FFTW_RAISE_NO_FFTWF;
   i += Int_val(vofsi);
   o += Int_val(vofso);
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_dft_c2r)(rank, dims, howmany_rank, howmany_dims,
                               i, o, flags);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
 
   if (p == NULL) caml_failwith("Fftw3." PREC ".Genarray.c2r");
   plan = ALLOC_PLAN();
@@ -321,9 +321,9 @@ value FFTW_OCAML(guru_r2r)(value vi, value vo, value vkind, value vflags,
   CAMLlocal1(plan);
   unsigned flags = Int_val(vflags);
   FFTW(plan) p;
-  FLOAT *i = Data_bigarray_val(vi);
-  FLOAT *o = Data_bigarray_val(vo);
-  FFTW(r2r_kind) kind[MAX_NUM_DIMS];
+  FLOAT *i = Caml_ba_data_val(vi);
+  FLOAT *o = Caml_ba_data_val(vo);
+  FFTW(r2r_kind) kind[CAML_BA_MAX_NUM_DIMS];
   MAKE_DIMS();
 
   FFTW_RAISE_NO_FFTWF;
@@ -334,10 +334,10 @@ value FFTW_OCAML(guru_r2r)(value vi, value vo, value vkind, value vflags,
 
   i += Int_val(vofsi);
   o += Int_val(vofso);
-  enter_blocking_section();  /* Allow other threads */
+  caml_enter_blocking_section();  /* Allow other threads */
   p = FFTW(plan_guru_r2r)(rank, dims, howmany_rank, howmany_dims,
                           i, o, kind, flags);
-  leave_blocking_section();  /* Disallow other threads */
+  caml_leave_blocking_section();  /* Disallow other threads */
 
   if (p == NULL) caml_failwith("Fftw3." PREC ".Genarray.r2r");
   plan = ALLOC_PLAN();

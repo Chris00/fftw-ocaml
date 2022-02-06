@@ -74,7 +74,7 @@ typedef ARCH_UINT32_TYPE uint32_t;
 
 static void fftw3_caml_ba_finalize(value v)
 {
-  struct caml_bigarray * b = Bigarray_val(v);
+  struct caml_ba_array * b = Caml_ba_array_val(v);
 
   /* We do not have to distinguish according to BIGARRAY_MANAGED_MASK
      because it will always be BIGARRAY_MANAGED by creation. */
