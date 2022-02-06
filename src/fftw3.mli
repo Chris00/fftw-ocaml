@@ -46,6 +46,13 @@
     HINT: Plan creation functions like {!Fftw3.Sig.Array1.dft} have
     many optional arguments for maximum flexibility.  The
     important one is [~meas].  The other ones can be ignored at first.
+
+    {2 Thread safety}
+
+    If you use Async or Lwt, please read the
+    {{:https://www.fftw.org/fftw3_doc/Thread-safety.html}{thread safety
+    guidelines}} of FFTW.  If you encounter problems, please
+    {{:https://github.com/Chris00/fftw-ocaml/issues/15}{let us know}}.
 *)
 
 
