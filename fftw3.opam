@@ -9,10 +9,7 @@ doc: "https://Chris00.github.io/fftw-ocaml/doc"
 tags: ["FFT"]
 build: [
   ["dune" "subst"] {pinned}
-  ["dune" "build" "-p" name "-j" jobs] {os != "macos"}
-  ["env" "FFTW3_CFLAGS=-I /usr/local/include -L /usr/local/lib -I /usr/local/include -L /usr/local/lib"
-   "dune" "build" "-p" name "-j" jobs
-  ] {os = "macos"}
+  ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
