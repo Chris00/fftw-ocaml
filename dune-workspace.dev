@@ -2,4 +2,4 @@
 
 (context default)
 (context (opam (switch 4.08.1)))
-(context (opam (switch 4.09.0)))
+(context (opam (switch 4.12.0)))
