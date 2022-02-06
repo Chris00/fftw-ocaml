@@ -22,12 +22,12 @@ static int FFTW_OCAML(plan_compare)(value v1, value v2)
 }
 
 /* compare v1 v2 = 0 ==> hash(v1) = hash(v2) */
-static long FFTW_OCAML(plan_hash)(value plan)
+static intnat FFTW_OCAML(plan_hash)(value plan)
 {
   CAMLparam1(plan);
   /* We do not know much about the plan internals, just return the
      pointer value as hash. */
-  CAMLreturn((long) PLAN_VAL(plan));
+  CAMLreturn((intnat) PLAN_VAL(plan));
 }
 
 
