@@ -6,9 +6,13 @@ open Printf
 let debug = false
 
 let string_of_file fname =
-  let buf = Buffer.create 8192 in
+  let buf = Buffer.create 4096 in
   let fh = open_in fname in
-  Buffer.add_channel buf fh (in_channel_length fh);
+  let b = Bytes.create 4096 in
+  let n = ref 0 in
+  while n := input fh b 0 4096;  !n > 0 do
+    Buffer.add_subbytes buf b 0 !n
+  done;
   close_in fh;
   Buffer.contents buf
 
